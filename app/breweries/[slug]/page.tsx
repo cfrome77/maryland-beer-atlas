@@ -131,36 +131,39 @@ export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
                 </p>
               </div>
 
-              {/* Tap List */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
-                  <BeerIcon className="w-5 h-5 text-amber-500 fill-current" />
-                  <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">On Tap Today</h2>
+              {/* Live Tap List CTA */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 dark:from-amber-500/5 dark:to-zinc-900 border border-amber-500/20 space-y-4 shadow-sm">
+                <div className="flex flex-col md:flex-row items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0">
+                    <BeerIcon className="w-6 h-6 fill-current" />
+                  </div>
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Looking for what's on tap?</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      Tap lists change frequently. Check {brewery.name}'s official resources for their up-to-the-minute draft, can, and bottle offerings!
+                    </p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {brewery.beers.map((beer, idx) => (
-                    <div
-                      key={idx}
-                      className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 space-y-2 flex flex-col justify-between"
+                <div className="flex flex-wrap gap-3 pt-1 pl-0 md:pl-14">
+                  <a
+                    href={brewery.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 text-sm font-bold transition-colors shadow-sm"
+                  >
+                    <Globe className="w-4 h-4" />
+                    Visit Official Website
+                  </a>
+                  {brewery.socialLinks.instagram && (
+                    <a
+                      href={brewery.socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 text-sm font-semibold border border-zinc-200 dark:border-zinc-700 transition-colors"
                     >
-                      <div className="space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50 leading-snug">
-                            {beer.name}
-                          </h3>
-                          <span className="shrink-0 px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                            {beer.abv}% ABV
-                          </span>
-                        </div>
-                        <span className="inline-block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                          {beer.style}
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-400 text-xs leading-relaxed">
-                          {beer.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                      Check Instagram
+                    </a>
+                  )}
                 </div>
               </div>
 

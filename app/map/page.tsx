@@ -232,18 +232,17 @@ export default function InteractiveMapPage() {
                     </div>
                   </div>
 
-                  {/* Highlights on tap */}
+                  {/* Specialty Styles highlights */}
                   <div className="space-y-2 pt-4 border-t border-zinc-100 dark:border-zinc-850">
                     <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1">
                       <BeerIcon className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                      Brewery Tap Highlights
+                      Specialty Styles
                     </h4>
-                    <div className="space-y-1.5">
-                      {selectedBrewery.beers.slice(0, 2).map((beer, idx) => (
-                        <div key={idx} className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 px-3 py-2 rounded-xl flex items-center justify-between text-xs gap-2">
-                          <span className="font-semibold truncate text-zinc-900 dark:text-zinc-100">{beer.name}</span>
-                          <span className="shrink-0 text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">{beer.abv}%</span>
-                        </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedBrewery.beerStyles.slice(0, 3).map((style, idx) => (
+                        <span key={idx} className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 px-2.5 py-1 rounded-lg text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                          {style}
+                        </span>
                       ))}
                     </div>
                   </div>

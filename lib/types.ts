@@ -2,13 +2,6 @@ export type MarylandRegion = 'Capital' | 'Central' | 'Eastern Shore' | 'Southern
 
 export type BreweryType = 'Microbrewery' | 'Brewpub' | 'Production' | 'Farm Brewery';
 
-export interface Beer {
-  name: string;
-  style: string;
-  abv: number;
-  description: string;
-}
-
 export interface Coordinates {
   lat: number;
   lng: number;
@@ -40,7 +33,6 @@ export interface Brewery {
   description: string;
   image: string;
   hours: OperatingHours[];
-  beers: Beer[];
   beerStyles: string[];
   amenities: string[];
   featured: boolean;
