@@ -1,8 +1,20 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { BookOpen, Calendar, User, ArrowRight, Compass } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
+
+export const metadata: Metadata = {
+  title: "Maryland Beer Travel Guides | Local Craft Beer Tourism",
+  description: "Read expert Maryland beer travel guides. Get local tips, hotel recommendations, food pairings, and scenic routes for your next Maryland brewery vacation.",
+  openGraph: {
+    title: "Maryland Beer Travel Guides | Craft Beer Tourism & Tips",
+    description: "Expertly curated travel guides exploring Maryland's diverse craft beer regions, complete with stop suggestions and tourism highlights.",
+    type: "website",
+    url: "https://marylandbeeratlas.com/guides",
+  }
+};
 
 export default async function TravelGuidesDirectoryPage() {
   const guides = await contentService.guides.getAll();

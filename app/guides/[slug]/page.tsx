@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -9,6 +10,34 @@ interface GuideDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+export async function generateMetadata({ params }: GuideDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const guide = await contentService.guides.getBySlug(slug);
+
+  if (!guide) {
+    return {
+      title: 'Guide Not Found | Maryland Beer Atlas',
+    };
+  }
+
+  return {
+    title: `${guide.title} | Maryland Beer Guide`,
+    description: guide.description,
+    openGraph: {
+      title: `${guide.title} | Maryland Beer Travel Guide`,
+      description: guide.description,
+      type: 'article',
+      url: `https://marylandbeeratlas.com/guides/${slug}`,
+      images: [
+        {
+          url: guide.image,
+          alt: guide.title,
+        }
+      ],
+    }
+  };
+}
+
 export default async function GuideDetailPage({ params }: GuideDetailPageProps) {
   const { slug } = await params;
   const guide = await contentService.guides.getBySlug(slug);
@@ -17,8 +46,37 @@ export default async function GuideDetailPage({ params }: GuideDetailPageProps) 
     notFound();
   }
 
+  const guideSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": guide.title,
+    "description": guide.description,
+    "image": guide.image,
+    "datePublished": new Date(guide.publishDate).toISOString().split('T')[0] || guide.publishDate,
+    "author": {
+      "@type": "Person",
+      "name": guide.author
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Maryland Beer Atlas",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=200"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://marylandbeeratlas.com/guides/${slug}`
+    }
+  };
+
   return (
     <div className="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(guideSchema) }}
+      />
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back Button */}
         <Link

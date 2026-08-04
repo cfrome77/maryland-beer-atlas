@@ -64,24 +64,58 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal / Social Placeholder */}
+          {/* Counties & Categories SEO links */}
           <div className="md:col-span-4 space-y-4">
             <h3 className="text-xs font-bold text-zinc-50 uppercase tracking-widest border-l-2 border-amber-500 pl-2.5">
-              About the Project
+              Popular Local Guides
             </h3>
-            <p className="text-sm text-zinc-400 leading-relaxed font-normal">
-              The Beer Atlas is built with professional tourism styling, modern accessibility, and responsive components for craft lovers and adventurers.
-            </p>
-            <div className="pt-2 text-xs text-zinc-500 flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <Shield className="w-3.5 h-3.5 text-zinc-500" />
-                Accessible Design
-              </span>
-              <span className="flex items-center gap-1">
-                <Compass className="w-3.5 h-3.5 text-zinc-500" />
-                Mobile First
-              </span>
-            </div>
+            <ul className="grid grid-cols-2 gap-x-2 gap-y-2.5 text-xs font-medium text-zinc-400">
+              <li>
+                <Link href="/breweries/county/frederick" className="hover:text-amber-400 transition-colors">
+                  Frederick County
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/county/baltimore-city" className="hover:text-amber-400 transition-colors">
+                  Baltimore City
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/county/montgomery" className="hover:text-amber-400 transition-colors">
+                  Montgomery County
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/county/baltimore-county" className="hover:text-amber-400 transition-colors">
+                  Baltimore County
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/category/dog-friendly" className="hover:text-amber-400 transition-colors font-semibold text-amber-500">
+                  🐕 Dog-Friendly Taprooms
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/category/farm-brewery" className="hover:text-amber-400 transition-colors">
+                  Farm Breweries
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/category/brewpub" className="hover:text-amber-400 transition-colors">
+                  Local Brewpubs
+                </Link>
+              </li>
+              <li>
+                <Link href="/breweries/category/microbrewery" className="hover:text-amber-400 transition-colors">
+                  Microbreweries
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal / Social Placeholder */}
+          <div className="md:col-span-12 lg:md:col-span-5 space-y-4 hidden md:block">
+            {/* Kept minimal or removed to keep grid nice under 12-cols constraint */}
           </div>
         </div>
 

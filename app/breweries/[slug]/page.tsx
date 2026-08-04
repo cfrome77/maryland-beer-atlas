@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -9,6 +10,37 @@ interface BreweryDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+export async function generateMetadata({ params }: BreweryDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const brewery = await contentService.breweries.getBySlug(slug);
+
+  if (!brewery) {
+    return {
+      title: 'Brewery Not Found | Maryland Beer Atlas',
+    };
+  }
+
+  const isDogFriendly = brewery.amenities.some(a => a.toLowerCase().includes('dog friendly'));
+  const dogFriendlyText = isDogFriendly ? 'Dog-friendly taproom. ' : '';
+
+  return {
+    title: `${brewery.name} | ${brewery.city}, MD Brewery Details`,
+    description: `Visit ${brewery.name} in ${brewery.city}, MD (${brewery.county} County). ${dogFriendlyText}Specialty styles: ${brewery.beerStyles.join(', ')}. View hours, amenities, and taproom details.`,
+    openGraph: {
+      title: `${brewery.name} | ${brewery.city}, MD Brewery`,
+      description: brewery.description,
+      type: 'article',
+      url: `https://marylandbeeratlas.com/breweries/${slug}`,
+      images: [
+        {
+          url: brewery.image,
+          alt: brewery.name,
+        }
+      ],
+    }
+  };
+}
+
 export default async function BreweryDetailPage({ params }: BreweryDetailPageProps) {
   const { slug } = await params;
   const brewery = await contentService.breweries.getBySlug(slug);
@@ -17,8 +49,51 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
     notFound();
   }
 
+  const brewerySchema = {
+    "@context": "https://schema.org",
+    "@type": brewery.type === "Brewpub" ? "Brewery" : ["Brewery", "LocalBusiness"],
+    "name": brewery.name,
+    "description": brewery.description,
+    "image": brewery.image,
+    "telephone": brewery.phone,
+    "url": brewery.website,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": brewery.address,
+      "addressLocality": brewery.city,
+      "addressRegion": "MD",
+      "postalCode": brewery.zipCode,
+      "addressCountry": "US"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": brewery.coordinates.lat,
+      "longitude": brewery.coordinates.lng
+    },
+    "openingHoursSpecification": brewery.hours.map(item => {
+      // Basic translation of text like "4:00 PM - 9:00 PM" into ISO format if possible,
+      // but schema.org accepts open-format string descriptions, or simpler representations.
+      return {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": item.day,
+        "opens": item.hours.split(" - ")[0] || "",
+        "closes": item.hours.split(" - ")[1] || ""
+      };
+    }),
+    "servesCuisine": "Craft Beer",
+    "amenityFeature": brewery.amenities.map(a => ({
+      "@type": "LocationFeatureSpecification",
+      "name": a,
+      "value": true
+    }))
+  };
+
   return (
     <div className="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(brewerySchema) }}
+      />
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Back Button */}
         <Link

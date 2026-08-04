@@ -1,9 +1,21 @@
 import React, { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { TrailCard } from '@/components/ui/trail-card';
 import { LoadingGrid } from '@/components/ui/loading-state';
+
+export const metadata: Metadata = {
+  title: "Maryland Beer Trails | Curated Craft Beer Itineraries & Road Trips",
+  description: "Explore curated, self-guided Maryland beer trails. Plan craft beer road trips through historic Frederick, active hiking spots, and beautiful scenic coastal roads.",
+  openGraph: {
+    title: "Maryland Beer Trails | Curated Craft Beer Itineraries",
+    description: "Plan your ultimate self-guided Maryland beer road trip. Curated itineraries pairing beautiful scenic drives, historic streets, and scenic views with great craft beers.",
+    type: "website",
+    url: "https://marylandbeeratlas.com/trails",
+  }
+};
 
 export default async function TrailsDirectoryPage() {
   const trails = await contentService.trails.getAll();

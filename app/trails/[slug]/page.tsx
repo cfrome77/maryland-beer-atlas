@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -8,6 +9,34 @@ import { Brewery } from '@/lib/types';
 
 interface TrailDetailPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: TrailDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const trail = await contentService.trails.getBySlug(slug);
+
+  if (!trail) {
+    return {
+      title: 'Trail Not Found | Maryland Beer Atlas',
+    };
+  }
+
+  return {
+    title: `${trail.name} | Maryland Beer Trail Itinerary`,
+    description: `Explore the ${trail.name}. Distance: ${trail.distance} (${trail.duration}). Stop highlights: ${trail.breweries.map(b => b.name).join(', ')}. Get the ultimate self-guided route.`,
+    openGraph: {
+      title: `${trail.name} | Curated Maryland Beer Trail`,
+      description: trail.description,
+      type: 'article',
+      url: `https://marylandbeeratlas.com/trails/${slug}`,
+      images: [
+        {
+          url: trail.image,
+          alt: trail.name,
+        }
+      ],
+    }
+  };
 }
 
 interface BreweryStopCardProps {
@@ -101,8 +130,42 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
     notFound();
   }
 
+  const trailSchema = {
+    "@context": "https://schema.org",
+    "@type": "TouristRoute",
+    "name": trail.name,
+    "description": trail.description,
+    "image": trail.image,
+    "distance": trail.distance,
+    "itinerary": {
+      "@type": "ItemList",
+      "numberOfItems": trail.breweries.length,
+      "itemListElement": trail.breweries.map((brewery, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Brewery",
+          "name": brewery.name,
+          "description": brewery.description,
+          "image": brewery.image,
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": brewery.address,
+            "addressLocality": brewery.city,
+            "addressRegion": "MD",
+            "postalCode": brewery.zipCode
+          }
+        }
+      }))
+    }
+  };
+
   return (
     <div className="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(trailSchema) }}
+      />
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Back Button */}
         <Link
