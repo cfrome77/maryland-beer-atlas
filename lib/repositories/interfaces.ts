@@ -10,6 +10,7 @@ export interface IBreweryRepository {
 export interface ITrailRepository {
   getAll(): Promise<BeerTrail[]>;
   getById(id: string): Promise<BeerTrail | null>;
+  getBySlug(slug: string): Promise<BeerTrail | null>;
 }
 
 export interface IGuideRepository {
