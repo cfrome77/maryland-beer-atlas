@@ -1,13 +1,13 @@
-'use client';
-
 import React, { Suspense } from 'react';
-import { mockTrails } from '@/lib/data/mock-data';
+import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { TrailCard } from '@/components/ui/trail-card';
 import { LoadingGrid } from '@/components/ui/loading-state';
 
-export default function TrailsDirectoryPage() {
+export default async function TrailsDirectoryPage() {
+  const trails = await contentService.trails.getAll();
+
   const breadcrumbs = [
     { label: 'Trails', href: '/trails' },
   ];
@@ -26,7 +26,7 @@ export default function TrailsDirectoryPage() {
       <PageContainer size="default">
         <Suspense fallback={<LoadingGrid count={2} type="trail" className="grid-cols-1 md:grid-cols-2" />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {mockTrails.map((trail) => (
+            {trails.map((trail) => (
               <TrailCard key={trail.id} trail={trail} />
             ))}
           </div>
