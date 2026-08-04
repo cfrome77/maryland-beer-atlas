@@ -29,3 +29,47 @@
 ⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
  GET /trails 200 in 26ms (next.js: 6ms, application-code: 20ms)
 ⨯ upstream image response failed for https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 234ms (next.js: 20ms, application-code: 214ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries?search=flying 200 in 34ms (next.js: 7ms, application-code: 26ms)
+ GET /breweries 200 in 39ms (next.js: 4ms, application-code: 35ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 65ms (next.js: 4ms, application-code: 61ms)
+ GET /breweries?county=Montgomery+County 200 in 28ms (next.js: 5ms, application-code: 23ms)
+ GET /breweries 200 in 20ms (next.js: 5ms, application-code: 15ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 40ms (next.js: 5ms, application-code: 35ms)
+ GET /breweries 200 in 215ms (next.js: 9ms, application-code: 205ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries?search=flying 200 in 36ms (next.js: 8ms, application-code: 28ms)
+ GET /breweries 200 in 31ms (next.js: 15ms, application-code: 17ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 83ms (next.js: 5ms, application-code: 78ms)
+ GET /breweries?county=Montgomery+County 200 in 52ms (next.js: 8ms, application-code: 43ms)
+ GET /breweries 200 in 16ms (next.js: 6ms, application-code: 10ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 56ms (next.js: 16ms, application-code: 40ms)
+ GET /breweries?amenities=Dog+Friendly 200 in 49ms (next.js: 8ms, application-code: 41ms)
+ GET /breweries 200 in 133ms (next.js: 5ms, application-code: 128ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries?search=flying 200 in 32ms (next.js: 7ms, application-code: 25ms)
+ GET /breweries 200 in 36ms (next.js: 6ms, application-code: 30ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 58ms (next.js: 9ms, application-code: 50ms)
+ GET /breweries?county=Montgomery+County 200 in 47ms (next.js: 11ms, application-code: 36ms)
+ GET /breweries 200 in 21ms (next.js: 4ms, application-code: 17ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 30ms (next.js: 4ms, application-code: 26ms)
+ GET /breweries?amenities=Dog+Friendly 200 in 29ms (next.js: 8ms, application-code: 21ms)
+ GET /breweries 200 in 123ms (next.js: 4ms, application-code: 119ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries?search=flying 200 in 45ms (next.js: 12ms, application-code: 33ms)
+ GET /breweries 200 in 33ms (next.js: 6ms, application-code: 27ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 39ms (next.js: 12ms, application-code: 27ms)
+ GET /breweries?county=Montgomery+County 200 in 33ms (next.js: 4ms, application-code: 29ms)
+ GET /breweries 200 in 22ms (next.js: 4ms, application-code: 19ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries 200 in 72ms (next.js: 6ms, application-code: 66ms)
+ GET /breweries?amenities=Dog+Friendly 200 in 23ms (next.js: 3ms, application-code: 20ms)
+ GET /breweries/elder-pine 200 in 1307ms (next.js: 1272ms, application-code: 35ms)

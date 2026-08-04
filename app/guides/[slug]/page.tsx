@@ -105,9 +105,9 @@ export default function GuideDetailPage({ params }: GuideDetailPageProps) {
                   </h3>
                   <div className="space-y-3">
                     {guide.recommendedStops.map((brewery) => (
-                      <div key={brewery.id} className="border-b border-zinc-105 dark:border-zinc-800 last:border-0 pb-3 last:pb-0 space-y-1">
+                      <div key={brewery.slug} className="border-b border-zinc-200 dark:border-zinc-850 last:border-0 pb-3 last:pb-0 space-y-1">
                         <span className="block font-bold text-xs text-zinc-900 dark:text-zinc-100 hover:text-amber-500 transition-colors">
-                          <Link href={`/breweries/${brewery.id}`}>{brewery.name}</Link>
+                          <Link href={`/breweries/${brewery.slug}`}>{brewery.name}</Link>
                         </span>
                         <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
                           <MapPin className="w-3 h-3 text-amber-500" />

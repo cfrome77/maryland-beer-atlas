@@ -19,11 +19,19 @@ export interface OperatingHours {
   hours: string;
 }
 
+export interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+}
+
 export interface Brewery {
   id: string;
+  slug: string;
   name: string;
   type: BreweryType;
   region: MarylandRegion;
+  county: string;
   address: string;
   city: string;
   zipCode: string;
@@ -34,8 +42,11 @@ export interface Brewery {
   image: string;
   hours: OperatingHours[];
   beers: Beer[];
+  beerStyles: string[];
   amenities: string[];
   featured: boolean;
+  socialLinks: SocialLinks;
+  lastVerified: string;
 }
 
 export interface BeerTrail {

@@ -37,26 +37,47 @@ export function BreweryCard({ brewery }: BreweryCardProps) {
 
       {/* Content wrapper */}
       <CardContent className="p-6 flex-1 flex flex-col justify-between gap-4">
-        <div className="space-y-2">
-          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            {brewery.region} Region
-          </span>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-1 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span>{brewery.region} Region</span>
+            <span>•</span>
+            <span className="text-amber-600 dark:text-amber-400">{brewery.county}</span>
+          </div>
           <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-amber-500 transition-colors leading-snug">
             {brewery.name}
           </h3>
           <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-2">
             {brewery.description}
           </p>
+
+          {/* Styles Focus */}
+          <div className="flex flex-wrap gap-1 pt-1">
+            {brewery.beerStyles.slice(0, 3).map((style) => (
+              <span key={style} className="text-[10px] font-medium bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 rounded px-1.5 py-0.5">
+                {style}
+              </span>
+            ))}
+            {brewery.beerStyles.length > 3 && (
+              <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 self-center pl-1">
+                +{brewery.beerStyles.length - 3} more
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Footer info within CardContent */}
         <div className="pt-4 border-t border-zinc-100 dark:border-zinc-850 flex items-center justify-between text-xs mt-auto">
-          <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 font-medium">
-            <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span className="truncate max-w-[140px]">{brewery.city}</span>
-          </span>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 font-medium">
+              <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="truncate max-w-[110px]">{brewery.city}</span>
+            </span>
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              Verified {brewery.lastVerified}
+            </span>
+          </div>
           <Link
-            href={`/breweries/${brewery.id}`}
+            href={`/breweries/${brewery.slug}`}
             className="font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors inline-flex items-center gap-1 shrink-0"
             aria-label={`View ${brewery.name} details`}
           >

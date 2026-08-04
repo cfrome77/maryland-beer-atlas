@@ -3,9 +3,11 @@ import { Brewery, BeerTrail, TravelGuide } from '../types';
 export const mockBreweries: Brewery[] = [
   {
     id: 'flying-dog',
+    slug: 'flying-dog',
     name: 'Flying Dog Brewery',
     type: 'Production',
     region: 'Central',
+    county: 'Frederick County',
     address: '4607 Wedgewood Blvd',
     city: 'Frederick',
     zipCode: '21703',
@@ -26,13 +28,22 @@ export const mockBreweries: Brewery[] = [
       { name: 'The Truth', style: 'Imperial IPA', abv: 8.7, description: 'Sharp hop bitterness with heavy pine and citrus notes.' },
       { name: 'Snake Dog', style: 'IPA', abv: 7.1, description: 'A classic Colorado-style IPA brewed with Columbus and Warrior hops.' }
     ],
-    amenities: ['Tasting Room', 'Brewery Tours', 'Outdoor Seating', 'Food Trucks', 'Merch Shop']
+    beerStyles: ['IPA', 'Imperial IPA', 'Belgian IPA', 'Sour', 'Stout'],
+    amenities: ['Tasting Room', 'Brewery Tours', 'Outdoor Seating', 'Food Trucks', 'Merch Shop'],
+    socialLinks: {
+      facebook: 'https://facebook.com/flyingdog',
+      instagram: 'https://instagram.com/flyingdogbrewery',
+      twitter: 'https://twitter.com/flyingdog'
+    },
+    lastVerified: '2025-05-10'
   },
   {
     id: 'elder-pine',
+    slug: 'elder-pine',
     name: 'Elder Pine Brewing & Blending',
     type: 'Farm Brewery',
     region: 'Capital',
+    county: 'Montgomery County',
     address: '4200 Sundown Rd',
     city: 'Gaithersburg',
     zipCode: '20882',
@@ -54,13 +65,21 @@ export const mockBreweries: Brewery[] = [
       { name: 'Under the Canopy', style: 'Czech Pilsner', abv: 4.8, description: 'Traditional bohemian pilsner, naturally carbonated and lagered for months.' },
       { name: 'Pineapple Sour', style: 'Fruited Sour', abv: 6.0, description: 'Tart, refreshing ale bursting with real pineapple and tropical vibes.' }
     ],
-    amenities: ['Dog Friendly', 'Outdoor Pine Grove', 'Food Trucks', 'Kid Friendly', 'Cans To-Go']
+    beerStyles: ['Hazy IPA', 'Czech Pilsner', 'Fruited Sour', 'Wild Ale', 'Lager'],
+    amenities: ['Dog Friendly', 'Outdoor Pine Grove', 'Food Trucks', 'Kid Friendly', 'Cans To-Go'],
+    socialLinks: {
+      facebook: 'https://facebook.com/elderpine',
+      instagram: 'https://instagram.com/elderpine'
+    },
+    lastVerified: '2025-05-08'
   },
   {
     id: 'heavy-seas',
+    slug: 'heavy-seas',
     name: 'Heavy Seas Beer',
     type: 'Production',
     region: 'Central',
+    county: 'Baltimore County',
     address: '4615 Hollins Ferry Rd',
     city: 'Halethorpe',
     zipCode: '21227',
@@ -80,13 +99,22 @@ export const mockBreweries: Brewery[] = [
       { name: 'Double Cannon', style: 'Double IPA', abv: 9.5, description: 'A massive, hop-forward tribute to their flagship, with extra strength and piney warmth.' },
       { name: 'Peg Leg', style: 'Imperial Stout', abv: 8.0, description: 'A dark, roasted malt profile with rich chocolate and espresso flavors.' }
     ],
-    amenities: ['Tasting Room', 'Merchandise', 'Outdoor Seating', 'Weekly Events']
+    beerStyles: ['IPA', 'Double IPA', 'Stout', 'Pale Ale', 'Amber Ale'],
+    amenities: ['Tasting Room', 'Merchandise', 'Outdoor Seating', 'Weekly Events'],
+    socialLinks: {
+      facebook: 'https://facebook.com/heavyseasbeer',
+      instagram: 'https://instagram.com/heavyseasbeer',
+      twitter: 'https://twitter.com/heavyseasbeer'
+    },
+    lastVerified: '2025-04-20'
   },
   {
     id: 'union-craft',
+    slug: 'union-craft',
     name: 'Union Craft Brewing',
     type: 'Production',
     region: 'Central',
+    county: 'Baltimore City',
     address: '1700 W 41st St',
     city: 'Baltimore',
     zipCode: '21211',
@@ -108,13 +136,21 @@ export const mockBreweries: Brewery[] = [
       { name: 'Divine', style: 'IPA', abv: 6.5, description: 'An evergreen, classic IPA with a dry finish and robust hops.' },
       { name: 'Balt-Altbier', style: 'Altbier', abv: 5.0, description: 'A traditional German-style brown ale with toasted malt notes and clean lager-like finish.' }
     ],
-    amenities: ['Large Beer Hall', 'Outdoor Plaza', 'Kid Friendly', 'Shared Collective Spaces', 'Food Vendors']
+    beerStyles: ['Pale Ale', 'IPA', 'Altbier', 'Lager', 'Gose'],
+    amenities: ['Large Beer Hall', 'Outdoor Plaza', 'Kid Friendly', 'Shared Collective Spaces', 'Food Vendors'],
+    socialLinks: {
+      facebook: 'https://facebook.com/unioncraftbrewing',
+      instagram: 'https://instagram.com/unioncraftbrewing'
+    },
+    lastVerified: '2025-05-12'
   },
   {
     id: 'cushwa',
+    slug: 'cushwa',
     name: 'Cushwa Brewing Company',
     type: 'Microbrewery',
     region: 'Western',
+    county: 'Washington County',
     address: '10212 Governor Lane Blvd',
     city: 'Williamsport',
     zipCode: '21795',
@@ -137,13 +173,21 @@ export const mockBreweries: Brewery[] = [
       { name: 'Canal Crossing', style: 'Pilsner', abv: 5.2, description: 'Crisp, light, cracker-like malt flavor with a touch of noble hops.' },
       { name: 'Sour Fusion', style: 'Fruited Sour', abv: 7.0, description: 'A velvety sour packed with raspberry, blackberry, and vanilla.' }
     ],
-    amenities: ['Pizza Kitchen', 'C&O Canal Proximity', 'Outdoor Seating', 'Tasting Room']
+    beerStyles: ['Hazy IPA', 'Pilsner', 'Fruited Sour', 'Stout'],
+    amenities: ['Pizza Kitchen', 'C&O Canal Proximity', 'Outdoor Seating', 'Tasting Room'],
+    socialLinks: {
+      facebook: 'https://facebook.com/cushwabrewing',
+      instagram: 'https://instagram.com/cushwabrewingco'
+    },
+    lastVerified: '2025-05-01'
   },
   {
     id: 'burley-oak',
+    slug: 'burley-oak',
     name: 'Burley Oak Brewing Company',
     type: 'Microbrewery',
     region: 'Eastern Shore',
+    county: 'Worcester County',
     address: '10016 Old Ocean City Blvd',
     city: 'Berlin',
     zipCode: '21811',
@@ -167,13 +211,22 @@ export const mockBreweries: Brewery[] = [
       { name: 'Double Strawberry J.R.E.A.M.', style: 'Fruited Sour', abv: 7.0, description: 'Double dry-hopped sour ale with strawberry, lactose, and vanilla.' },
       { name: 'Aboriginal Gangster', style: 'IPA', abv: 6.5, description: 'Brewed with Nelson Sauvin and Motueka hops for white wine and grape flavors.' }
     ],
-    amenities: ['Live Music', 'Rustic Taproom', 'Outdoor Patio', 'Sustainable Focus', 'Local Taproom Specials']
+    beerStyles: ['Fruited Sour', 'Pilsner', 'IPA', 'Stout', 'Pale Ale'],
+    amenities: ['Live Music', 'Rustic Taproom', 'Outdoor Patio', 'Sustainable Focus', 'Local Taproom Specials'],
+    socialLinks: {
+      facebook: 'https://facebook.com/burleyoak',
+      instagram: 'https://instagram.com/burleyoak',
+      twitter: 'https://twitter.com/burleyoak'
+    },
+    lastVerified: '2025-05-14'
   },
   {
     id: 'calvert-brewing',
+    slug: 'calvert-brewing',
     name: 'Calvert Brewing Company',
     type: 'Production',
     region: 'Southern',
+    county: "Prince George's County",
     address: '15850 Commerce Ct',
     city: 'Upper Marlboro',
     zipCode: '20774',
@@ -194,7 +247,13 @@ export const mockBreweries: Brewery[] = [
       { name: 'I-95', style: 'Amber Ale', abv: 5.4, description: 'Caramel malt sweetness balanced nicely with light floral hops.' },
       { name: 'Autumn Frost', style: 'Spiced Ale', abv: 6.2, description: 'Brewed with cinnamon, nutmeg, and vanilla for cozy seasonal vibes.' }
     ],
-    amenities: ['Spacious Taproom', 'Food Trucks', 'Trivia Nights', 'Huge Outdoor Seating Area']
+    beerStyles: ['IPA', 'Amber Ale', 'Spiced Ale', 'Lager', 'Stout'],
+    amenities: ['Spacious Taproom', 'Food Trucks', 'Trivia Nights', 'Huge Outdoor Seating Area'],
+    socialLinks: {
+      facebook: 'https://facebook.com/calvertbrewingco',
+      instagram: 'https://instagram.com/calvertbrewing'
+    },
+    lastVerified: '2025-04-15'
   }
 ];
 
