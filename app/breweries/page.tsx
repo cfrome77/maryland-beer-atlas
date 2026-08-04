@@ -1,8 +1,20 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { BreweriesDirectoryContainer } from '@/components/ui/breweries-directory-content';
+
+export const metadata: Metadata = {
+  title: "Maryland Brewery Directory | Find Local MD Craft Breweries",
+  description: "Browse and filter Maryland craft breweries by region, county, brewery type, and amenities. Search for dog-friendly breweries or find your new favorite taproom.",
+  openGraph: {
+    title: "Maryland Brewery Directory | Find Local MD Craft Breweries",
+    description: "Complete database of Maryland's craft breweries. Filter by county, region, amenities (like dog friendly), or type to map out your next visit.",
+    type: "website",
+    url: "https://marylandbeeratlas.com/breweries",
+  }
+};
 
 export default async function BreweriesDirectoryPage() {
   const breweries = await contentService.breweries.getAll();

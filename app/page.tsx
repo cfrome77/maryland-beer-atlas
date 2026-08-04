@@ -1,9 +1,37 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import type { Metadata } from 'next';
 import { Beer, Map, Compass, BookOpen, ArrowRight, Star, MapPin } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { BreweryCard } from '@/components/ui/brewery-card';
+
+export const metadata: Metadata = {
+  title: "Maryland Beer Atlas | Best MD Craft Breweries, Trails & Dog-Friendly Taprooms",
+  description: "Discover the best breweries in Maryland. Explore curated Maryland beer trails, search dog-friendly taprooms in Frederick, Baltimore, and beyond, and map your next craft beer adventure.",
+  openGraph: {
+    title: "Maryland Beer Atlas | Discover Maryland Craft Breweries & Trails",
+    description: "Your ultimate guide to Maryland's craft beer scene. Find dog-friendly breweries, explore curated trails, and map your next destination.",
+    url: "https://marylandbeeratlas.com",
+    siteName: "Maryland Beer Atlas",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=1200&h=630",
+        width: 1200,
+        height: 630,
+        alt: "Maryland Craft Beer Brewery",
+      }
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Maryland Beer Atlas | Best MD Craft Breweries & Trails",
+    description: "Explore local microbreweries, map beer trails, and find dog-friendly taprooms in Maryland.",
+    images: ["https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=1200&h=630"],
+  }
+};
 
 export default async function Home() {
   const featuredBreweries = await contentService.breweries.getFeatured();
@@ -16,8 +44,41 @@ export default async function Home() {
   const featuredTrail = allTrails[0];
   const latestGuide = allGuides[0];
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Maryland Beer Atlas",
+    "url": "https://marylandbeeratlas.com",
+    "description": "Your ultimate directory, interactive map, curated beer trails, and expert travel guides for exploring the Maryland craft beer scene.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://marylandbeeratlas.com/breweries?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Maryland Beer Atlas",
+    "url": "https://marylandbeeratlas.com",
+    "logo": "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=200",
+    "sameAs": [
+      "https://facebook.com/marylandbeeratlas",
+      "https://instagram.com/marylandbeeratlas"
+    ]
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
       {/* Hero Section - Keep full width for gorgeous landing page splash */}
       <section className="relative py-20 md:py-32 overflow-hidden bg-zinc-900 text-white">
         {/* Abstract background elements */}
