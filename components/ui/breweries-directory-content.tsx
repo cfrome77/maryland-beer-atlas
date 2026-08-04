@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Filter, RotateCcw, Beer as BeerIcon } from 'lucide-react';
 import { Brewery } from '@/lib/types';
 import { BreweryType, MarylandRegion } from '@/lib/types';
-import { PageContainer } from '@/components/layout/page-container';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 
