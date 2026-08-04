@@ -5,29 +5,8 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 573ms
-✓ Running next.config.ts took 47ms
+✓ Ready in 566ms
+✓ Running next.config.ts took 46ms
 
-○ Compiling / ...
- HEAD / 200 in 3.9s (next.js: 3.4s, application-code: 527ms)
- GET / 200 in 206ms (next.js: 11ms, application-code: 195ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /trails 200 in 1257ms (next.js: 1000ms, application-code: 258ms)
-[browser] Image with src "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
-⨯ upstream image response failed for https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800 404
- GET /trails/frederick-beer-adventure 200 in 1515ms
- GET / 200 in 170ms (next.js: 5ms, application-code: 165ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /trails 200 in 123ms (next.js: 4ms, application-code: 119ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800 404
-[browser] Image with src "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /trails/frederick-beer-adventure 200 in 153ms (next.js: 21ms, application-code: 132ms)
- GET / 200 in 147ms (next.js: 4ms, application-code: 143ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /trails 200 in 118ms (next.js: 5ms, application-code: 113ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800 404
-[browser] Image with src "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /trails/frederick-beer-adventure 200 in 128ms (next.js: 30ms, application-code: 98ms)
+○ Compiling /breweries/[slug] ...
+ GET /breweries/flying-dog-brewery 200 in 5.8s (next.js: 5.3s, application-code: 444ms)

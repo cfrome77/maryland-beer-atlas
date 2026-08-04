@@ -30,7 +30,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Belgian IPA', 'Imperial IPA', 'IPA', 'Pale Ale', 'Stout'],
     amenities: ['Tasting Room', 'Brewery Tours', 'Outdoor Seating', 'Food Trucks', 'Merch Shop'],
-    lastVerified: '2025-05-10'
+    lastVerified: '2025-05-10',
+    verificationSource: 'Official Website & Socials',
+    verificationStatus: 'Verified'
   },
   {
     id: 'elder-pine',
@@ -61,7 +63,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Double IPA', 'Czech Pilsner', 'Fruited Sour', 'Lager', 'Hazy IPA', 'Wild Ale'],
     amenities: ['Dog Friendly', 'Outdoor Pine Grove', 'Food Trucks', 'Kid Friendly', 'Cans To-Go'],
-    lastVerified: '2025-06-01'
+    lastVerified: '2025-06-01',
+    verificationSource: 'Brewery Management',
+    verificationStatus: 'Verified'
   },
   {
     id: 'heavy-seas',
@@ -91,7 +95,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['American IPA', 'Double IPA', 'Imperial Stout', 'English Pale Ale'],
     amenities: ['Tasting Room', 'Merchandise', 'Outdoor Seating', 'Weekly Events'],
-    lastVerified: '2025-04-18'
+    lastVerified: '2025-04-18',
+    verificationSource: 'Community Report',
+    verificationStatus: 'Community Submitted'
   },
   {
     id: 'union-craft',
@@ -122,7 +128,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Pale Ale', 'IPA', 'Altbier', 'Lager', 'Gose'],
     amenities: ['Large Beer Hall', 'Outdoor Plaza', 'Kid Friendly', 'Shared Collective Spaces', 'Food Vendors'],
-    lastVerified: '2025-05-22'
+    lastVerified: '2025-05-22',
+    verificationSource: 'Official Website & Socials',
+    verificationStatus: 'Verified'
   },
   {
     id: 'cushwa',
@@ -154,7 +162,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Hazy IPA', 'Pilsner', 'Fruited Sour', 'Stout', 'Lager'],
     amenities: ['Pizza Kitchen', 'C&O Canal Proximity', 'Outdoor Seating', 'Tasting Room'],
-    lastVerified: '2025-06-03'
+    lastVerified: '2025-06-03',
+    verificationSource: 'Outdated Info Alert',
+    verificationStatus: 'Needs Review'
   },
   {
     id: 'burley-oak',
@@ -187,7 +197,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['American Pilsner', 'Fruited Sour', 'IPA', 'Lager', 'Stout'],
     amenities: ['Live Music', 'Rustic Taproom', 'Outdoor Patio', 'Sustainable Focus', 'Local Taproom Specials'],
-    lastVerified: '2025-05-15'
+    lastVerified: '2025-05-15',
+    verificationSource: 'Brewery Representative',
+    verificationStatus: 'Verified'
   },
   {
     id: 'calvert-brewing',
@@ -217,7 +229,9 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Amber Ale', 'Spiced Ale', 'Lager', 'Stout'],
     amenities: ['Spacious Taproom', 'Food Trucks', 'Trivia Nights', 'Huge Outdoor Seating Area'],
-    lastVerified: '2025-04-30'
+    lastVerified: '2025-04-30',
+    verificationSource: 'Community Submission Forum',
+    verificationStatus: 'Community Submitted'
   }
 ];
 

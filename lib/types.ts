@@ -37,6 +37,8 @@ export interface Brewery {
   amenities: string[];
   featured: boolean;
   lastVerified: string;
+  verificationSource: string;
+  verificationStatus: 'Verified' | 'Needs Review' | 'Community Submitted';
 }
 
 export interface BeerTrail {
