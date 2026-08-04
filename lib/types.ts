@@ -2,13 +2,6 @@ export type MarylandRegion = 'Capital' | 'Central' | 'Eastern Shore' | 'Southern
 
 export type BreweryType = 'Microbrewery' | 'Brewpub' | 'Production' | 'Farm Brewery';
 
-export interface Beer {
-  name: string;
-  style: string;
-  abv: number;
-  description: string;
-}
-
 export interface Coordinates {
   lat: number;
   lng: number;
@@ -21,21 +14,29 @@ export interface OperatingHours {
 
 export interface Brewery {
   id: string;
+  slug: string;
   name: string;
   type: BreweryType;
   region: MarylandRegion;
   address: string;
   city: string;
+  county: string;
   zipCode: string;
   phone: string;
   website: string;
+  socialLinks: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+  };
   coordinates: Coordinates;
   description: string;
   image: string;
   hours: OperatingHours[];
-  beers: Beer[];
+  beerStyles: string[];
   amenities: string[];
   featured: boolean;
+  lastVerified: string;
 }
 
 export interface BeerTrail {

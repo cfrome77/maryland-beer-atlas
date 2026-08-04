@@ -72,7 +72,7 @@ export default function Home() {
                     Gaithersburg, Maryland
                   </div>
                   <Link
-                    href="/breweries/elder-pine"
+                    href="/breweries/elder-pine-brewing-and-blending"
                     className="flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-850 text-sm font-bold transition-all border border-zinc-800 group cursor-pointer"
                   >
                     View Brewery Details

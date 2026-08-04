@@ -56,7 +56,7 @@ export function BreweryCard({ brewery }: BreweryCardProps) {
             <span className="truncate max-w-[140px]">{brewery.city}</span>
           </span>
           <Link
-            href={`/breweries/${brewery.id}`}
+            href={`/breweries/${brewery.slug}`}
             className="font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors inline-flex items-center gap-1 shrink-0"
             aria-label={`View ${brewery.name} details`}
           >

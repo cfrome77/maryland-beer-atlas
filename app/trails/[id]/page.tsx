@@ -133,10 +133,10 @@ export default function TrailDetailPage({ params }: TrailDetailPageProps) {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-850">
                           <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                             <BeerIcon className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                            Sample Beer: <span className="font-bold text-zinc-800 dark:text-zinc-200">{brewery.beers[0].name} ({brewery.beers[0].style})</span>
+                            Styles: <span className="font-bold text-zinc-800 dark:text-zinc-200">{brewery.beerStyles.slice(0, 2).join(', ')}</span>
                           </div>
                           <Link
-                            href={`/breweries/${brewery.id}`}
+                            href={`/breweries/${brewery.slug}`}
                             className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1 self-start"
                           >
                             Explore Stop Detail &rarr;

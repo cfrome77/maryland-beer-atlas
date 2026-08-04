@@ -19,46 +19,70 @@ function BreweriesDirectoryContent() {
   const initialRegion = searchParams?.get('region') as MarylandRegion || '';
   const initialType = searchParams?.get('type') as BreweryType || '';
   const initialSearch = searchParams?.get('search') || '';
+  const initialCounty = searchParams?.get('county') || '';
+  const initialAmenity = searchParams?.get('amenity') || '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedRegion, setSelectedRegion] = useState<MarylandRegion | ''>(initialRegion);
   const [selectedType, setSelectedType] = useState<BreweryType | ''>(initialType);
+  const [selectedCounty, setSelectedCounty] = useState<string>(initialCounty);
+  const [selectedAmenity, setSelectedAmenity] = useState<string>(initialAmenity);
 
-  // Region and Type lists
+  // Region, Type, County and Amenity lists
   const regions: MarylandRegion[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
   const breweryTypes: BreweryType[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];
 
+  // Dynamically extract unique counties and amenities from the mock dataset
+  const counties = Array.from(new Set(mockBreweries.map(b => b.county))).sort();
+  const amenities = Array.from(new Set(mockBreweries.flatMap(b => b.amenities))).sort();
+
   // Update URL Search Params to persist filter states
-  const applyFilters = (search: string, region: string, type: string) => {
+  const applyFilters = (search: string, region: string, type: string, county: string, amenity: string) => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (region) params.set('region', region);
     if (type) params.set('type', type);
+    if (county) params.set('county', county);
+    if (amenity) params.set('amenity', amenity);
     router.push(`/breweries?${params.toString()}`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchQuery(val);
-    applyFilters(val, selectedRegion, selectedType);
+    applyFilters(val, selectedRegion, selectedType, selectedCounty, selectedAmenity);
   };
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as MarylandRegion | '';
     setSelectedRegion(val);
-    applyFilters(searchQuery, val, selectedType);
+    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity);
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BreweryType | '';
     setSelectedType(val);
-    applyFilters(searchQuery, selectedRegion, val);
+    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity);
+  };
+
+  const handleCountyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedCounty(val);
+    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity);
+  };
+
+  const handleAmenityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedAmenity(val);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val);
   };
 
   const resetFilters = () => {
     setSearchQuery('');
     setSelectedRegion('');
     setSelectedType('');
+    setSelectedCounty('');
+    setSelectedAmenity('');
     router.push('/breweries');
   };
 
@@ -67,11 +91,14 @@ function BreweriesDirectoryContent() {
     const matchesSearch =
       brewery.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       brewery.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brewery.description.toLowerCase().includes(searchQuery.toLowerCase());
+      brewery.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      brewery.beerStyles.some(style => style.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesRegion = selectedRegion ? brewery.region === selectedRegion : true;
     const matchesType = selectedType ? brewery.type === selectedType : true;
+    const matchesCounty = selectedCounty ? brewery.county === selectedCounty : true;
+    const matchesAmenity = selectedAmenity ? brewery.amenities.includes(selectedAmenity) : true;
 
-    return matchesSearch && matchesRegion && matchesType;
+    return matchesSearch && matchesRegion && matchesType && matchesCounty && matchesAmenity;
   });
 
   return (
@@ -80,11 +107,11 @@ function BreweriesDirectoryContent() {
       <div className="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* Search Input */}
-          <div className="relative md:col-span-5">
+          <div className="relative md:col-span-4">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search breweries by name, city, or keyword..."
+              placeholder="Search by name, style, city..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
@@ -92,11 +119,11 @@ function BreweriesDirectoryContent() {
           </div>
 
           {/* Region Select */}
-          <div className="relative md:col-span-3">
+          <div className="relative md:col-span-2">
             <select
               value={selectedRegion}
               onChange={handleRegionChange}
-              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
               <option value="">All Regions</option>
               {regions.map((region) => (
@@ -108,14 +135,31 @@ function BreweriesDirectoryContent() {
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
+          {/* County Select */}
+          <div className="relative md:col-span-2">
+            <select
+              value={selectedCounty}
+              onChange={handleCountyChange}
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+            >
+              <option value="">All Counties</option>
+              {counties.map((county) => (
+                <option key={county} value={county}>
+                  {county} County
+                </option>
+              ))}
+            </select>
+            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          </div>
+
           {/* Brewery Type Select */}
-          <div className="relative md:col-span-3">
+          <div className="relative md:col-span-2">
             <select
               value={selectedType}
               onChange={handleTypeChange}
-              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
-              <option value="">All Brewery Types</option>
+              <option value="">All Types</option>
               {breweryTypes.map((type) => (
                 <option key={type} value={type}>
                   {type}
@@ -123,6 +167,23 @@ function BreweriesDirectoryContent() {
               ))}
             </select>
             <BeerIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          </div>
+
+          {/* Amenity Filter */}
+          <div className="relative md:col-span-1.5 md:col-span-1">
+            <select
+              value={selectedAmenity}
+              onChange={handleAmenityChange}
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+            >
+              <option value="">Amenities</option>
+              {amenities.map((amenity) => (
+                <option key={amenity} value={amenity}>
+                  {amenity}
+                </option>
+              ))}
+            </select>
+            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
           {/* Reset Button */}
@@ -142,7 +203,7 @@ function BreweriesDirectoryContent() {
           <div>
             Showing <span className="font-semibold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {mockBreweries.length} breweries
           </div>
-          {(searchQuery || selectedRegion || selectedType) && (
+          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity) && (
             <span className="text-amber-600 dark:text-amber-400 font-medium">Filters are currently active</span>
           )}
         </div>
