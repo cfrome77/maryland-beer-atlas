@@ -1,12 +1,12 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { BookOpen, Calendar, User, ArrowRight, Compass } from 'lucide-react';
-import { mockGuides } from '@/lib/data/mock-data';
+import { contentService } from '@/lib/services/content.service';
 
-export default function TravelGuidesDirectoryPage() {
+export default async function TravelGuidesDirectoryPage() {
+  const guides = await contentService.guides.getAll();
+
   return (
     <div className="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -23,7 +23,7 @@ export default function TravelGuidesDirectoryPage() {
 
         {/* Guides Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {mockGuides.map((guide) => (
+          {guides.map((guide) => (
             <div
               key={guide.slug}
               className="group rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"

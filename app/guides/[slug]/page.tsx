@@ -1,19 +1,17 @@
-'use client';
-
-import React, { use } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Calendar, User, BookOpen, Star, Info, MapPin } from 'lucide-react';
-import { mockGuides } from '@/lib/data/mock-data';
+import { ArrowLeft, Calendar, User, BookOpen, Star, MapPin } from 'lucide-react';
+import { contentService } from '@/lib/services/content.service';
 
 interface GuideDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default function GuideDetailPage({ params }: GuideDetailPageProps) {
-  const { slug } = use(params);
-  const guide = mockGuides.find((g) => g.slug === slug);
+export default async function GuideDetailPage({ params }: GuideDetailPageProps) {
+  const { slug } = await params;
+  const guide = await contentService.guides.getBySlug(slug);
 
   if (!guide) {
     notFound();

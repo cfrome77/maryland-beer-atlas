@@ -1,19 +1,17 @@
-'use client';
-
 import React, { use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Compass, Clock, MapPin, Award, Star, ExternalLink, Beer as BeerIcon } from 'lucide-react';
-import { mockTrails } from '@/lib/data/mock-data';
+import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon } from 'lucide-react';
+import { contentService } from '@/lib/services/content.service';
 
 interface TrailDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function TrailDetailPage({ params }: TrailDetailPageProps) {
-  const { id } = use(params);
-  const trail = mockTrails.find((t) => t.id === id);
+export default async function TrailDetailPage({ params }: TrailDetailPageProps) {
+  const { id } = await params;
+  const trail = await contentService.trails.getById(id);
 
   if (!trail) {
     notFound();
@@ -91,7 +89,7 @@ export default function TrailDetailPage({ params }: TrailDetailPageProps) {
                 {trail.breweries.map((brewery, index) => (
                   <div key={brewery.id} className="relative pl-10 md:pl-16">
                     {/* Circle Node on Timeline */}
-                    <div className="absolute left-1.5 md:left-3 top-2.5 w-5 h-5 md:w-7 md:h-7 rounded-full bg-amber-500 text-zinc-950 font-bold text-xs md:text-sm flex items-center justify-center border-4 border-zinc-50 dark:border-zinc-900 shadow-md ring-2 ring-amber-500/20 z-10">
+                    <div className="absolute left-1.5 md:left-3 top-2.5 w-5 h-5 md:w-7 md:h-7 rounded-full bg-amber-500 text-zinc-950 font-bold text-xs md:text-sm flex items-center justify-center border-4 border-zinc-100 dark:border-zinc-900 shadow-md ring-2 ring-amber-500/20 z-10">
                       {index + 1}
                     </div>
 

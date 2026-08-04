@@ -1,13 +1,20 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Beer, Map, Compass, BookOpen, ArrowRight, Star, MapPin } from 'lucide-react';
-import { mockBreweries, mockTrails, mockGuides } from '@/lib/data/mock-data';
+import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { BreweryCard } from '@/components/ui/brewery-card';
 
-export default function Home() {
-  const featuredBreweries = mockBreweries.filter(b => b.featured);
+export default async function Home() {
+  const featuredBreweries = await contentService.breweries.getFeatured();
+  const allBreweries = await contentService.breweries.getAll();
+  const allTrails = await contentService.trails.getAll();
+  const allGuides = await contentService.guides.getAll();
+
   const regions = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
+
+  const featuredTrail = allTrails[0];
+  const latestGuide = allGuides[0];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -188,7 +195,7 @@ export default function Home() {
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             {regions.map((region) => {
-              const count = mockBreweries.filter(b => b.region === region).length;
+              const count = allBreweries.filter(b => b.region === region).length;
               return (
                 <Link
                   key={region}
@@ -213,72 +220,76 @@ export default function Home() {
         <PageContainer size="default" className="py-0 md:py-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Trail Promo Card */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 overflow-hidden flex flex-col justify-between">
-              <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
-                <Image
-                  src={mockTrails[0].image}
-                  alt={mockTrails[0].name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-zinc-950">
-                    Featured Trail
-                  </span>
+            {featuredTrail && (
+              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 overflow-hidden flex flex-col justify-between">
+                <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
+                  <Image
+                    src={featuredTrail.image}
+                    alt={featuredTrail.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-zinc-950">
+                      Featured Trail
+                    </span>
+                  </div>
+                </div>
+                <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{featuredTrail.distance} • {featuredTrail.duration}</span>
+                    <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{featuredTrail.name}</h3>
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-3 font-normal">
+                      {featuredTrail.description}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/trails/${featuredTrail.id}`}
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-white font-bold text-sm transition-colors border border-zinc-800 cursor-pointer"
+                  >
+                    Explore Trail Itinerary
+                    <ArrowRight className="w-4 h-4 text-amber-500" />
+                  </Link>
                 </div>
               </div>
-              <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
-                <div className="space-y-3">
-                  <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{mockTrails[0].distance} • {mockTrails[0].duration}</span>
-                  <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{mockTrails[0].name}</h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-3 font-normal">
-                    {mockTrails[0].description}
-                  </p>
-                </div>
-                <Link
-                  href={`/trails/${mockTrails[0].id}`}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-white font-bold text-sm transition-colors border border-zinc-800 cursor-pointer"
-                >
-                  Explore Trail Itinerary
-                  <ArrowRight className="w-4 h-4 text-amber-500" />
-                </Link>
-              </div>
-            </div>
+            )}
 
             {/* Guide Promo Card */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 overflow-hidden flex flex-col justify-between">
-              <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
-                <Image
-                  src={mockGuides[0].image}
-                  alt={mockGuides[0].title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-zinc-950">
-                    Latest Travel Guide
-                  </span>
+            {latestGuide && (
+              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 overflow-hidden flex flex-col justify-between">
+                <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
+                  <Image
+                    src={latestGuide.image}
+                    alt={latestGuide.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-zinc-950">
+                      Latest Travel Guide
+                    </span>
+                  </div>
+                </div>
+                <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">By {latestGuide.author} • {latestGuide.publishDate}</span>
+                    <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{latestGuide.title}</h3>
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-3 font-normal">
+                      {latestGuide.description}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/guides/${latestGuide.slug}`}
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-white font-bold text-sm transition-colors border border-zinc-800 cursor-pointer"
+                  >
+                    Read Travel Guide
+                    <ArrowRight className="w-4 h-4 text-amber-500" />
+                  </Link>
                 </div>
               </div>
-              <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
-                <div className="space-y-3">
-                  <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">By {mockGuides[0].author} • {mockGuides[0].publishDate}</span>
-                  <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{mockGuides[0].title}</h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-3 font-normal">
-                    {mockGuides[0].description}
-                  </p>
-                </div>
-                <Link
-                  href={`/guides/${mockGuides[0].slug}`}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-white font-bold text-sm transition-colors border border-zinc-800 cursor-pointer"
-                >
-                  Read Travel Guide
-                  <ArrowRight className="w-4 h-4 text-amber-500" />
-                </Link>
-              </div>
-            </div>
+            )}
           </div>
         </PageContainer>
       </section>

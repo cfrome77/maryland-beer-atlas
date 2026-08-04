@@ -1,19 +1,17 @@
-'use client';
-
 import React, { use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin, Phone, Globe, Clock, Beer as BeerIcon, ShieldAlert, Award, Star, Calendar } from 'lucide-react';
-import { mockBreweries } from '@/lib/data/mock-data';
+import { ArrowLeft, MapPin, Phone, Globe, Clock, Beer as BeerIcon, Calendar } from 'lucide-react';
+import { contentService } from '@/lib/services/content.service';
 
 interface BreweryDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
-  const { slug } = use(params);
-  const brewery = mockBreweries.find((b) => b.slug === slug);
+export default async function BreweryDetailPage({ params }: BreweryDetailPageProps) {
+  const { slug } = await params;
+  const brewery = await contentService.breweries.getBySlug(slug);
 
   if (!brewery) {
     notFound();
