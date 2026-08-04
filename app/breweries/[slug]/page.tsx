@@ -1,8 +1,8 @@
-import React, { use } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin, Phone, Globe, Clock, Beer as BeerIcon, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 
 interface BreweryDetailPageProps {
@@ -136,9 +136,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     <BeerIcon className="w-6 h-6 fill-current" />
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Looking for what's on tap?</h2>
+                    <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Looking for what&apos;s on tap?</h2>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                      Tap lists change frequently. Check {brewery.name}'s official resources for their up-to-the-minute draft, can, and bottle offerings!
+                      Tap lists change frequently. Check {brewery.name}&apos;s official resources for their up-to-the-minute draft, can, and bottle offerings!
                     </p>
                   </div>
                 </div>
