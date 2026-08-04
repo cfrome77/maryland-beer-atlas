@@ -252,7 +252,7 @@ export default function InteractiveMapPage() {
                 {/* Button Action bar at bottom */}
                 <div className="p-6 border-t border-zinc-100 dark:border-zinc-850 bg-zinc-50/50 dark:bg-zinc-950/50 flex gap-2 shrink-0">
                   <Link
-                    href={`/breweries/${selectedBrewery.id}`}
+                    href={`/breweries/${selectedBrewery.slug}`}
                     className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-xs transition-colors"
                   >
                     View Taproom Profile

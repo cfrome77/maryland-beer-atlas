@@ -4,16 +4,16 @@ import React, { use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin, Phone, Globe, Clock, Beer as BeerIcon, ShieldAlert, Award, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Globe, Clock, Beer as BeerIcon, ShieldAlert, Award, Star, Calendar } from 'lucide-react';
 import { mockBreweries } from '@/lib/data/mock-data';
 
 interface BreweryDetailPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
-  const { id } = use(params);
-  const brewery = mockBreweries.find((b) => b.id === id);
+  const { slug } = use(params);
+  const brewery = mockBreweries.find((b) => b.slug === slug);
 
   if (!brewery) {
     notFound();
@@ -52,12 +52,15 @@ export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white backdrop-blur-sm border border-white/20">
                     {brewery.region} Region
                   </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 backdrop-blur-sm border border-emerald-500/30">
+                    {brewery.county} County
+                  </span>
                 </div>
                 <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
                   {brewery.name}
                 </h1>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <a
                   href={brewery.website}
                   target="_blank"
@@ -67,6 +70,47 @@ export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
                   <Globe className="w-4 h-4" />
                   Website
                 </a>
+                {brewery.socialLinks.instagram && (
+                  <a
+                    href={brewery.socialLinks.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white border border-zinc-700/50 transition-colors backdrop-blur-sm"
+                    aria-label="Instagram"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </a>
+                )}
+                {brewery.socialLinks.facebook && (
+                  <a
+                    href={brewery.socialLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white border border-zinc-700/50 transition-colors backdrop-blur-sm"
+                    aria-label="Facebook"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                    </svg>
+                  </a>
+                )}
+                {brewery.socialLinks.twitter && (
+                  <a
+                    href={brewery.socialLinks.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white border border-zinc-700/50 transition-colors backdrop-blur-sm"
+                    aria-label="Twitter"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                    </svg>
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -75,7 +119,13 @@ export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
             {/* Main content */}
             <div className="lg:col-span-8 space-y-8">
               <div className="space-y-3">
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">About the Brewery</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">About the Brewery</h2>
+                  <div className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Last Verified: {brewery.lastVerified}</span>
+                  </div>
+                </div>
                 <p className="text-zinc-600 dark:text-zinc-400 text-base leading-relaxed">
                   {brewery.description}
                 </p>
@@ -110,6 +160,21 @@ export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
                         </p>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Beer Styles */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Specialty Beer Styles</h2>
+                <div className="flex flex-wrap gap-2">
+                  {brewery.beerStyles.map((style, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1.5 rounded-lg text-sm bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 font-semibold"
+                    >
+                      {style}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -158,6 +223,10 @@ export default function BreweryDetailPage({ params }: BreweryDetailPageProps) {
                   <div>
                     <span className="block font-semibold text-zinc-800 dark:text-zinc-300">Address</span>
                     <span>{brewery.address}, {brewery.city}, MD {brewery.zipCode}</span>
+                  </div>
+                  <div>
+                    <span className="block font-semibold text-zinc-800 dark:text-zinc-300">County</span>
+                    <span>{brewery.county} County</span>
                   </div>
                   <div>
                     <span className="block font-semibold text-zinc-800 dark:text-zinc-300">Phone</span>

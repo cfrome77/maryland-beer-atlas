@@ -136,7 +136,7 @@ export default function TrailDetailPage({ params }: TrailDetailPageProps) {
                             Sample Beer: <span className="font-bold text-zinc-800 dark:text-zinc-200">{brewery.beers[0].name} ({brewery.beers[0].style})</span>
                           </div>
                           <Link
-                            href={`/breweries/${brewery.id}`}
+                            href={`/breweries/${brewery.slug}`}
                             className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1 self-start"
                           >
                             Explore Stop Detail &rarr;
