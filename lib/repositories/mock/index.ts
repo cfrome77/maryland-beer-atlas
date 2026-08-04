@@ -31,6 +31,11 @@ export class MockTrailRepository implements ITrailRepository {
     const trail = mockTrails.find((t) => t.id === id);
     return trail ? { ...trail } : null;
   }
+
+  async getBySlug(slug: string): Promise<BeerTrail | null> {
+    const trail = mockTrails.find((t) => t.slug === slug);
+    return trail ? { ...trail } : null;
+  }
 }
 
 export class MockGuideRepository implements IGuideRepository {

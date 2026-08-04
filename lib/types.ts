@@ -41,6 +41,7 @@ export interface Brewery {
 
 export interface BeerTrail {
   id: string;
+  slug: string;
   name: string;
   description: string;
   region: MarylandRegion;
@@ -49,6 +50,8 @@ export interface BeerTrail {
   breweries: Brewery[]; // Breweries on the trail
   image: string;
   highlight: string;
+  nearbyAttractions: string[];
+  difficulty: string; // e.g., "Easy", "Moderate", "Challenging"
 }
 
 export interface TravelGuide {

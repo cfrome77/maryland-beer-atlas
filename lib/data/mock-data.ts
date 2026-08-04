@@ -223,32 +223,67 @@ export const mockBreweries: Brewery[] = [
 
 export const mockTrails: BeerTrail[] = [
   {
-    id: 'charm-city-craft',
-    name: 'Baltimore Charm City Trail',
-    description: 'Explore the exciting, industrious beer scene of Baltimore. From the creative enclave of Hampden to the sprawling brewing collective in Halethorpe, this trail offers rich history, delicious local food vendors, and world-class craft beverages.',
+    id: 'frederick-beer-adventure',
+    slug: 'frederick-beer-adventure',
+    name: 'Frederick Beer Adventure',
+    description: 'Embark on an exciting journey through Frederick\'s historic streets and industrial hubs. Taste bold IPAs, visit massive production houses, and enjoy the beautiful mountain backdrop.',
     region: 'Central',
-    distance: '12 miles',
+    distance: '15 miles',
     duration: 'Full Day',
     image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
-    highlight: 'Experience the active Union Collective featuring artisanal local crafts, ice cream, climbing, and brilliant brews.',
+    highlight: 'Sip bold IPAs at Flying Dog\'s legendary Wedgewood tasting room and view original Steadman artwork.',
     breweries: [
-      mockBreweries.find(b => b.id === 'union-craft')!,
-      mockBreweries.find(b => b.id === 'heavy-seas')!
-    ]
+      mockBreweries.find(b => b.id === 'flying-dog')!,
+      mockBreweries.find(b => b.id === 'union-craft')!
+    ],
+    nearbyAttractions: [
+      'Historic Downtown Frederick',
+      'Carroll Creek Linear Park',
+      'Monocacy National Battlefield'
+    ],
+    difficulty: 'Easy'
   },
   {
-    id: 'capital-beltway-brews',
-    name: 'Capital Farm & Forest Trail',
-    description: 'Get out of the suburbs and breathe in the fresh air of Maryland\'s rural farm breweries. Montgomery and Prince George\'s counties offer rich pine forests, rustic tasting barns, and exceptional agricultural brews made directly from locally sourced crops.',
+    id: 'brewery-hiking-day',
+    slug: 'brewery-hiking-day',
+    name: 'Brewery + Hiking Day',
+    description: 'The ultimate active getaway. Combine scenic trails along the historic C&O Canal or Catoctin Mountain with crisp farm fresh lagers and hop-forward IPAs.',
     region: 'Capital',
-    distance: '24 miles',
-    duration: 'Weekend Trip',
+    distance: '28 miles',
+    duration: '1 Day (Active)',
     image: 'https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800',
-    highlight: 'Sip a crisp, fresh lager under a beautiful grove of pines at Montgomery County\'s premium farm brewery.',
+    highlight: 'Sip a crisp, farm-brewed Czech Pilsner under a serene pine grove after a satisfying hike.',
     breweries: [
       mockBreweries.find(b => b.id === 'elder-pine')!,
+      mockBreweries.find(b => b.id === 'cushwa')!
+    ],
+    nearbyAttractions: [
+      'C&O Canal National Historical Park',
+      'Sugarloaf Mountain',
+      'Catoctin Mountain Park'
+    ],
+    difficulty: 'Challenging'
+  },
+  {
+    id: 'chesapeake-bay-beer-weekend',
+    slug: 'chesapeake-bay-beer-weekend',
+    name: 'Chesapeake Bay Beer Weekend',
+    description: 'A relaxing weekend trip across the bay bridge. Pair sun, sand, and coastal views with legendary sour beers, coastal pale ales, and premium outdoor beer gardens.',
+    region: 'Eastern Shore',
+    distance: '45 miles',
+    duration: '2-3 Days (Weekend)',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800',
+    highlight: 'Enjoy a world-famous J.R.E.A.M. sour beer in the charming, historic streets of Berlin.',
+    breweries: [
+      mockBreweries.find(b => b.id === 'burley-oak')!,
       mockBreweries.find(b => b.id === 'calvert-brewing')!
-    ]
+    ],
+    nearbyAttractions: [
+      'Assateague Island National Seashore',
+      'Historic Berlin Historic District',
+      'Ocean City Boardwalk'
+    ],
+    difficulty: 'Moderate'
   }
 ];
 

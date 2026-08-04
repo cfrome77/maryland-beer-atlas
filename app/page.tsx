@@ -245,7 +245,7 @@ export default async function Home() {
                     </p>
                   </div>
                   <Link
-                    href={`/trails/${featuredTrail.id}`}
+                    href={`/trails/${featuredTrail.slug}`}
                     className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-white font-bold text-sm transition-colors border border-zinc-800 cursor-pointer"
                   >
                     Explore Trail Itinerary
