@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar, ShieldCheck, AlertTriangle, Users, Info } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 
 interface BreweryDetailPageProps {
@@ -53,6 +53,24 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 backdrop-blur-sm border border-emerald-500/30">
                     {brewery.county} County
                   </span>
+                  {brewery.verificationStatus === 'Verified' && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-emerald-500/30">
+                      <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                      Verified
+                    </span>
+                  )}
+                  {brewery.verificationStatus === 'Needs Review' && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-amber-500/30">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      Needs Review
+                    </span>
+                  )}
+                  {brewery.verificationStatus === 'Community Submitted' && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-indigo-500/30">
+                      <Users className="w-3.5 h-3.5 shrink-0" />
+                      Community Submitted
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
                   {brewery.name}
@@ -198,6 +216,62 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
             {/* Sidebar info */}
             <div className="lg:col-span-4 space-y-6">
+              {/* Data Freshness & Verification Info */}
+              <div className={`p-6 rounded-2xl border space-y-4 shadow-sm ${
+                brewery.verificationStatus === 'Verified'
+                  ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-300'
+                  : brewery.verificationStatus === 'Needs Review'
+                  ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20 text-amber-900 dark:text-amber-300'
+                  : 'bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20 text-indigo-900 dark:text-indigo-300'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  {brewery.verificationStatus === 'Verified' && (
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  )}
+                  {brewery.verificationStatus === 'Needs Review' && (
+                    <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  )}
+                  {brewery.verificationStatus === 'Community Submitted' && (
+                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  )}
+                  <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50">
+                    Data Verification
+                  </h3>
+                </div>
+
+                <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Status</span>
+                    <span className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] uppercase tracking-wider ${
+                      brewery.verificationStatus === 'Verified'
+                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                        : brewery.verificationStatus === 'Needs Review'
+                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                        : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
+                    }`}>
+                      {brewery.verificationStatus}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.lastVerified}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850 last:border-0">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
+                    <span className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium" title={brewery.verificationSource}>
+                      {brewery.verificationSource}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
+                  <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                  <span>
+                    Brewery hours change frequently. We track verification status and sources to communicate current data freshness.
+                  </span>
+                </p>
+              </div>
+
               {/* Hours of Operation */}
               <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 space-y-4">
                 <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
