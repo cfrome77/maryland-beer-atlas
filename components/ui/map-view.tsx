@@ -6,7 +6,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Brewery, BeerTrail } from '@/lib/types';
 import { createRoot } from 'react-dom/client';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 
 interface MapViewProps {
   breweries: Brewery[];

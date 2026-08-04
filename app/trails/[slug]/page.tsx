@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Calendar, Phone, Info } from 'lucide-react';
+import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { Brewery } from '@/lib/types';
 
