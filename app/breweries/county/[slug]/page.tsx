@@ -2,7 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { BreweryCard } from '@/components/ui/brewery-card';

@@ -112,6 +112,7 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
               type="text"
+              aria-label="Search by name, style, city"
               placeholder="Search by name, style, city..."
               value={searchQuery}
               onChange={handleSearchChange}
@@ -124,6 +125,7 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
             <select
               value={selectedRegion}
               onChange={handleRegionChange}
+              aria-label="Filter by region"
               className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
               <option value="">All Regions</option>
@@ -141,6 +143,7 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
             <select
               value={selectedCounty}
               onChange={handleCountyChange}
+              aria-label="Filter by county"
               className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
               <option value="">All Counties</option>
@@ -158,6 +161,7 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
             <select
               value={selectedType}
               onChange={handleTypeChange}
+              aria-label="Filter by brewery type"
               className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
               <option value="">All Types</option>
@@ -171,10 +175,11 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
           </div>
 
           {/* Amenity Filter */}
-          <div className="relative md:col-span-1.5 md:col-span-1">
+          <div className="relative md:col-span-1">
             <select
               value={selectedAmenity}
               onChange={handleAmenityChange}
+              aria-label="Filter by amenity"
               className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
               <option value="">Amenities</option>
@@ -192,6 +197,7 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
             <button
               onClick={resetFilters}
               title="Reset Filters"
+              aria-label="Reset all filters"
               className="w-full h-full py-3 md:py-0 inline-flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-800 cursor-pointer"
             >
               <RotateCcw className="w-5 h-5" />

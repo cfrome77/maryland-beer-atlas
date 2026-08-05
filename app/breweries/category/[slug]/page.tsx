@@ -12,7 +12,9 @@ interface CategoryPageProps {
 }
 
 // Map slug to category name, matching either type or amenity
-const CATEGORY_MAP: Record<string, { name: string; title: string; desc: string; filterFn: (b: any) => boolean }> = {
+import { Brewery } from '@/lib/types';
+
+const CATEGORY_MAP: Record<string, { name: string; title: string; desc: string; filterFn: (b: Brewery) => boolean }> = {
   'dog-friendly': {
     name: 'Dog Friendly',
     title: 'Dog Friendly Breweries in Maryland',

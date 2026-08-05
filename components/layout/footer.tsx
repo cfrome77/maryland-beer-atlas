@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Beer, Heart, Shield, Compass, MapPin } from 'lucide-react';
+import { Beer, Heart, MapPin } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
