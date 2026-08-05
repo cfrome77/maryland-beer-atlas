@@ -29,6 +29,65 @@ interface InteractiveMapContentProps {
   guides?: TravelGuide[];
 }
 
+interface QuickGuidesDropdownProps {
+  selectedValue: string;
+  onChange: (value: string) => void;
+  options: string[];
+}
+
+function QuickGuidesDropdown({ selectedValue, onChange, options }: QuickGuidesDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative flex-1 min-w-[140px] md:min-w-[170px] space-y-1.5">
+      <span className="block text-[10px] font-bold text-amber-500 uppercase tracking-wider">Popular Guides</span>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-left text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500"
+      >
+        <span className="truncate">{selectedValue || "Select Guide..."}</span>
+        <svg className={`w-3.5 h-3.5 text-amber-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 mt-1 w-full max-h-[220px] overflow-y-auto z-45 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2 space-y-0.5">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => {
+                onChange(option);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                selectedValue === option
+                  ? 'bg-amber-500 text-zinc-950 font-bold'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-medium'
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Mini custom multi-select dropdown component using pure React states for simplicity and precision.
 interface MultiSelectDropdownProps {
   label: string;
@@ -139,6 +198,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedQuickGuide, setSelectedQuickGuide] = useState<string>('');
 
   const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(breweries[0] || null);
   const [activeTrailId, setActiveTrailId] = useState<string | null>(null);
@@ -206,6 +266,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedTypes([]);
     setSelectedCounties([]);
     setSelectedAmenities([]);
+    setSelectedQuickGuide('');
     setActiveTrailId(null);
     setActiveGuideSlug(null);
     if (breweries.length > 0) {
@@ -290,7 +351,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId || activeGuideSlug) && (
+              {(selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || selectedQuickGuide || activeTrailId || activeGuideSlug) && (
                 <button
                   onClick={handleClearAllFilters}
                   className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -302,33 +363,104 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
             <div className="space-y-4">
               {/* Multi-Select Dropdowns grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <QuickGuidesDropdown
+                  selectedValue={selectedQuickGuide}
+                  onChange={(val) => {
+                    setSelectedQuickGuide(val);
+                    if (val === 'Frederick County') {
+                      setSelectedCounties(['Frederick']);
+                      setSelectedRegions([]);
+                      setSelectedTypes([]);
+                      setSelectedAmenities([]);
+                    } else if (val === 'Baltimore City') {
+                      setSelectedCounties(['Baltimore City']);
+                      setSelectedRegions([]);
+                      setSelectedTypes([]);
+                      setSelectedAmenities([]);
+                    } else if (val === 'Montgomery County') {
+                      setSelectedCounties(['Montgomery']);
+                      setSelectedRegions([]);
+                      setSelectedTypes([]);
+                      setSelectedAmenities([]);
+                    } else if (val === 'Baltimore County') {
+                      setSelectedCounties(['Baltimore County']);
+                      setSelectedRegions([]);
+                      setSelectedTypes([]);
+                      setSelectedAmenities([]);
+                    } else if (val === '🐕 Dog-Friendly Taprooms') {
+                      setSelectedAmenities(['Dog Friendly']);
+                      setSelectedRegions([]);
+                      setSelectedTypes([]);
+                      setSelectedCounties([]);
+                    } else if (val === 'Farm Breweries') {
+                      setSelectedTypes(['Farm Brewery']);
+                      setSelectedRegions([]);
+                      setSelectedCounties([]);
+                      setSelectedAmenities([]);
+                    } else if (val === 'Local Brewpubs') {
+                      setSelectedTypes(['Brewpub']);
+                      setSelectedRegions([]);
+                      setSelectedCounties([]);
+                      setSelectedAmenities([]);
+                    } else if (val === 'Microbreweries') {
+                      setSelectedTypes(['Microbrewery']);
+                      setSelectedRegions([]);
+                      setSelectedCounties([]);
+                      setSelectedAmenities([]);
+                    } else {
+                      setSelectedQuickGuide('');
+                    }
+                  }}
+                  options={[
+                    'Frederick County',
+                    'Baltimore City',
+                    'Montgomery County',
+                    'Baltimore County',
+                    '🐕 Dog-Friendly Taprooms',
+                    'Farm Breweries',
+                    'Local Brewpubs',
+                    'Microbreweries'
+                  ]}
+                />
                 <MultiSelectDropdown
                   label="Regions"
                   options={regions}
                   selectedValues={selectedRegions}
-                  onChange={setSelectedRegions}
+                  onChange={(vals) => {
+                    setSelectedRegions(vals);
+                    setSelectedQuickGuide('');
+                  }}
                   placeholder="All Regions"
                 />
                 <MultiSelectDropdown
                   label="Counties"
                   options={counties}
                   selectedValues={selectedCounties}
-                  onChange={setSelectedCounties}
+                  onChange={(vals) => {
+                    setSelectedCounties(vals);
+                    setSelectedQuickGuide('');
+                  }}
                   placeholder="All Counties"
                 />
                 <MultiSelectDropdown
                   label="Brewery Type"
                   options={types}
                   selectedValues={selectedTypes}
-                  onChange={setSelectedTypes}
+                  onChange={(vals) => {
+                    setSelectedTypes(vals);
+                    setSelectedQuickGuide('');
+                  }}
                   placeholder="All Types"
                 />
                 <MultiSelectDropdown
                   label="Amenities"
                   options={amenities}
                   selectedValues={selectedAmenities}
-                  onChange={setSelectedAmenities}
+                  onChange={(vals) => {
+                    setSelectedAmenities(vals);
+                    setSelectedQuickGuide('');
+                  }}
                   placeholder="All Amenities"
                 />
               </div>

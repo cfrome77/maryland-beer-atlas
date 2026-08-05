@@ -27,12 +27,14 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const initialSearch = searchParams?.get('search') || '';
   const initialCounty = searchParams?.get('county') || '';
   const initialAmenity = searchParams?.get('amenity') || '';
+  const initialQuickGuide = searchParams?.get('quickGuide') || '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedRegion, setSelectedRegion] = useState<MarylandRegion | ''>(initialRegion);
   const [selectedType, setSelectedType] = useState<BreweryType | ''>(initialType);
   const [selectedCounty, setSelectedCounty] = useState<string>(initialCounty);
   const [selectedAmenity, setSelectedAmenity] = useState<string>(initialAmenity);
+  const [selectedQuickGuide, setSelectedQuickGuide] = useState<string>(initialQuickGuide);
 
   // Region, Type, County and Amenity lists
   const regions: MarylandRegion[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
@@ -43,44 +45,107 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const amenities = Array.from(new Set(breweries.flatMap(b => b.amenities))).sort();
 
   // Update URL Search Params to persist filter states
-  const applyFilters = (search: string, region: string, type: string, county: string, amenity: string) => {
+  const applyFilters = (search: string, region: string, type: string, county: string, amenity: string, quickGuide: string = '') => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (region) params.set('region', region);
     if (type) params.set('type', type);
     if (county) params.set('county', county);
     if (amenity) params.set('amenity', amenity);
+    if (quickGuide) params.set('quickGuide', quickGuide);
     router.push(`/breweries?${params.toString()}`);
+  };
+
+  const handleQuickGuideChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedQuickGuide(val);
+    if (val === 'Frederick County') {
+      setSelectedCounty('Frederick');
+      setSelectedRegion('');
+      setSelectedType('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', '', 'Frederick', '', val);
+    } else if (val === 'Baltimore City') {
+      setSelectedCounty('Baltimore City');
+      setSelectedRegion('');
+      setSelectedType('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', '', 'Baltimore City', '', val);
+    } else if (val === 'Montgomery County') {
+      setSelectedCounty('Montgomery');
+      setSelectedRegion('');
+      setSelectedType('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', '', 'Montgomery', '', val);
+    } else if (val === 'Baltimore County') {
+      setSelectedCounty('Baltimore County');
+      setSelectedRegion('');
+      setSelectedType('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', '', 'Baltimore County', '', val);
+    } else if (val === '🐕 Dog-Friendly Taprooms') {
+      setSelectedAmenity('Dog Friendly');
+      setSelectedRegion('');
+      setSelectedType('');
+      setSelectedCounty('');
+      applyFilters(searchQuery, '', '', '', 'Dog Friendly', val);
+    } else if (val === 'Farm Breweries') {
+      setSelectedType('Farm Brewery');
+      setSelectedRegion('');
+      setSelectedCounty('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', 'Farm Brewery', '', '', val);
+    } else if (val === 'Local Brewpubs') {
+      setSelectedType('Brewpub');
+      setSelectedRegion('');
+      setSelectedCounty('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', 'Brewpub', '', '', val);
+    } else if (val === 'Microbreweries') {
+      setSelectedType('Microbrewery');
+      setSelectedRegion('');
+      setSelectedCounty('');
+      setSelectedAmenity('');
+      applyFilters(searchQuery, '', 'Microbrewery', '', '', val);
+    } else {
+      setSelectedQuickGuide('');
+      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, '');
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchQuery(val);
-    applyFilters(val, selectedRegion, selectedType, selectedCounty, selectedAmenity);
+    setSelectedQuickGuide('');
+    applyFilters(val, selectedRegion, selectedType, selectedCounty, selectedAmenity, '');
   };
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as MarylandRegion | '';
     setSelectedRegion(val);
-    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity);
+    setSelectedQuickGuide('');
+    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, '');
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BreweryType | '';
     setSelectedType(val);
-    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity);
+    setSelectedQuickGuide('');
+    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, '');
   };
 
   const handleCountyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedCounty(val);
-    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity);
+    setSelectedQuickGuide('');
+    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, '');
   };
 
   const handleAmenityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedAmenity(val);
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val);
+    setSelectedQuickGuide('');
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, '');
   };
 
   const resetFilters = () => {
@@ -89,6 +154,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     setSelectedType('');
     setSelectedCounty('');
     setSelectedAmenity('');
+    setSelectedQuickGuide('');
     router.push('/breweries');
   };
 
@@ -113,7 +179,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       <div className="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* Search Input */}
-          <div className="relative md:col-span-4">
+          <div className="relative md:col-span-3">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
               type="text"
@@ -123,6 +189,27 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               onChange={handleSearchChange}
               className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
             />
+          </div>
+
+          {/* Popular Guides Preset Select */}
+          <div className="relative md:col-span-2">
+            <select
+              value={selectedQuickGuide}
+              onChange={handleQuickGuideChange}
+              aria-label="Popular guides and presets"
+              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 appearance-none cursor-pointer"
+            >
+              <option value="" className="text-zinc-800 dark:text-zinc-200">Select Popular Guide...</option>
+              <option value="Frederick County" className="text-zinc-800 dark:text-zinc-200">Frederick County</option>
+              <option value="Baltimore City" className="text-zinc-800 dark:text-zinc-200">Baltimore City</option>
+              <option value="Montgomery County" className="text-zinc-800 dark:text-zinc-200">Montgomery County</option>
+              <option value="Baltimore County" className="text-zinc-800 dark:text-zinc-200">Baltimore County</option>
+              <option value="🐕 Dog-Friendly Taprooms" className="text-zinc-800 dark:text-zinc-200">🐕 Dog-Friendly Taprooms</option>
+              <option value="Farm Breweries" className="text-zinc-800 dark:text-zinc-200">Farm Breweries</option>
+              <option value="Local Brewpubs" className="text-zinc-800 dark:text-zinc-200">Local Brewpubs</option>
+              <option value="Microbreweries" className="text-zinc-800 dark:text-zinc-200">Microbreweries</option>
+            </select>
+            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
           </div>
 
           {/* Region Select */}
@@ -162,7 +249,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           </div>
 
           {/* Brewery Type Select */}
-          <div className="relative md:col-span-2">
+          <div className="relative md:col-span-1">
             <select
               value={selectedType}
               onChange={handleTypeChange}
@@ -203,7 +290,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               onClick={resetFilters}
               title="Reset Filters"
               aria-label="Reset all filters"
-              className="w-full h-full py-3 md:py-0 inline-flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-800 cursor-pointer"
+              className="w-full h-full py-3 md:py-0 inline-flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-880 cursor-pointer"
             >
               <RotateCcw className="w-5 h-5" />
             </button>
@@ -215,7 +302,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           <div>
             Showing <span className="font-semibold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
           </div>
-          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity) && (
+          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedQuickGuide) && (
             <span className="text-amber-600 dark:text-amber-400 font-medium">Filters are currently active</span>
           )}
         </div>

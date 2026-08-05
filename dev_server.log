@@ -5,15 +5,35 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 560ms
-✓ Running next.config.ts took 50ms
+✓ Ready in 1228ms
+✓ Running next.config.ts took 263ms
 
-○ Compiling /map ...
- GET /map 200 in 5.1s (next.js: 4.6s, application-code: 572ms)
- GET /map 200 in 403ms (next.js: 15ms, application-code: 388ms)
+ HEAD /map 200 in 920ms (next.js: 403ms, application-code: 517ms)
+ GET /map 200 in 126ms (next.js: 6ms, application-code: 120ms)
 [browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
 Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /map 200 in 137ms (next.js: 11ms, application-code: 126ms)
+ GET /map 200 in 146ms (next.js: 7ms, application-code: 139ms)
+ GET /map 200 in 115ms (next.js: 5ms, application-code: 110ms)
 [browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
 Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /map 200 in 124ms (next.js: 4ms, application-code: 120ms)
+ GET /map 200 in 116ms (next.js: 3ms, application-code: 113ms)
+ GET /map 200 in 108ms (next.js: 5ms, application-code: 104ms)
+[browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /map 200 in 98ms (next.js: 5ms, application-code: 93ms)
+ GET /map 200 in 103ms (next.js: 4ms, application-code: 100ms)
+[browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /map 200 in 108ms (next.js: 5ms, application-code: 103ms)
+ GET /map 200 in 124ms (next.js: 6ms, application-code: 117ms)
+[browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /map 200 in 134ms (next.js: 5ms, application-code: 130ms)
+ GET /map 200 in 111ms (next.js: 7ms, application-code: 104ms)
+[browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /map 200 in 102ms (next.js: 7ms, application-code: 96ms)
+ GET /map 200 in 98ms (next.js: 7ms, application-code: 92ms)
+[browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /map 200 in 93ms (next.js: 3ms, application-code: 89ms)

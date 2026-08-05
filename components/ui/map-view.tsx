@@ -133,10 +133,6 @@ export default function MapView({
       // We apply hover animations only on the inner elements to avoid conflicting with MapLibre's internal CSS transforms
       el.innerHTML = `
         <div class="relative flex items-center justify-center transition-all duration-300 ease-out hover:scale-120 hover:-translate-y-1 group">
-          <!-- Pulsing glow ring -->
-          <div class="absolute w-10 h-10 rounded-full opacity-25 animate-ping" style="background-color: ${color};"></div>
-          <div class="absolute w-10 h-10 rounded-full opacity-20 transition-all duration-300 group-hover:opacity-40" style="background-color: ${color}; filter: blur(4px);"></div>
-
           <!-- Modern premium marker shape (drop pin) -->
           <div class="relative w-9 h-11 flex items-center justify-center drop-shadow-md">
             <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
