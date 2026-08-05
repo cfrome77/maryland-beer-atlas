@@ -187,6 +187,7 @@ export function InteractiveMapContent({ breweries, trails = [] }: InteractiveMap
             onSelectBrewery={handleSelectBrewery}
             trails={trails}
             activeTrailId={activeTrailId}
+            className="absolute inset-0 w-full h-full"
           />
         </div>
 
