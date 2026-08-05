@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
 import { Brewery, BeerTrail } from '@/lib/types';
 import { createRoot } from 'react-dom/client';
 import { ArrowRight } from 'lucide-react';
@@ -34,8 +33,34 @@ export default function MapView({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Use OpenFreeMap Liberty style as default (free, no key required, theme-integrated)
-    const mapStyle = 'https://tiles.openfreemap.org/styles/liberty';
+    // Use high-performance, high-DPI CARTO Voyager raster style as default.
+    // This loads streets, buildings, landmarks, and roads beautifully for all users and headless browsers,
+    // completely avoiding WebGL hardware-acceleration stalls, canvas blanking, or font failures.
+    const mapStyle = {
+      version: 8 as const,
+      sources: {
+        'carto-voyager': {
+          type: 'raster' as const,
+          tiles: [
+            'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+            'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+            'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+            'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors, © CARTO',
+        }
+      },
+      layers: [
+        {
+          id: 'carto-voyager-layer',
+          type: 'raster' as const,
+          source: 'carto-voyager',
+          minzoom: 0,
+          maxzoom: 20,
+        }
+      ],
+    };
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
@@ -50,8 +75,23 @@ export default function MapView({
     // Add navigation controls (zoom, compass)
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
 
+    // Explicitly trigger a resize on load and style load, and after a short timeout to ensure container has settled
+    map.on('load', () => {
+      map.resize();
+    });
+    map.on('style.load', () => {
+      map.resize();
+    });
+
+    const resizeTimer = setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.resize();
+      }
+    }, 200);
+
     // Clean up on unmount
     return () => {
+      clearTimeout(resizeTimer);
       map.remove();
       mapRef.current = null;
     };
@@ -259,9 +299,11 @@ export default function MapView({
     return () => removeRoute();
   }, [activeTrailId, trails]);
 
+  const positionClass = className.includes('absolute') || className.includes('fixed') ? '' : 'relative';
+
   return (
-    <div className={`relative w-full h-full rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl ${className}`}>
-      <div ref={mapContainerRef} className="w-full h-full min-h-[400px]" />
+    <div className={`${positionClass} w-full h-full min-h-[450px] rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl ${className}`}>
+      <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
       {/* Mini Legends card on the map */}
       <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg text-[10px] space-y-1.5 z-10 pointer-events-auto">
