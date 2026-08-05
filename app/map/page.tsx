@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 export default async function InteractiveMapPage() {
   const breweries = await contentService.breweries.getAll();
+  const guides = await contentService.guides.getAll();
 
   return (
     <div className="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
@@ -31,7 +32,7 @@ export default async function InteractiveMapPage() {
         </div>
 
         {/* Interactive Map Component Content */}
-        <InteractiveMapContent breweries={breweries} />
+        <InteractiveMapContent breweries={breweries} guides={guides} />
       </div>
     </div>
   );

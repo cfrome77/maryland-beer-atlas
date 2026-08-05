@@ -7,12 +7,17 @@ import { Brewery } from '@/lib/types';
 import { BreweryType, MarylandRegion } from '@/lib/types';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { TravelGuide } from '@/lib/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Compass, BookOpen, Star, ArrowRight } from 'lucide-react';
 
 interface BreweriesDirectoryContentProps {
   breweries: Brewery[];
+  guides?: TravelGuide[];
 }
 
-function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps) {
+function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -232,14 +237,125 @@ function BreweriesDirectoryContent({ breweries }: BreweriesDirectoryContentProps
           icon="beer"
         />
       )}
+
+      {/* Connected Curated Travel Guides & Popular Local Regions Showcase */}
+      {guides.length > 0 && (
+        <div className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-850 space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Inspirational Trips</span>
+              <h3 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-emerald-600 dark:text-emerald-500" />
+                Featured Guides & Collections
+              </h3>
+              <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                Pair great craft beer with local tourist highlights, active outdoor adventures, and coastal weekend itineraries.
+              </p>
+            </div>
+            <Link
+              href="/guides"
+              className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1.5 shrink-0"
+            >
+              Explore All Guides
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {guides.map((guide) => (
+              <div
+                key={guide.slug}
+                className="group p-5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-2xl hover:shadow-md transition-all flex flex-col justify-between gap-4"
+              >
+                <div className="flex gap-4 items-start">
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
+                    <Image
+                      src={guide.image}
+                      alt={guide.title}
+                      fill
+                      sizes="96px"
+                      className="object-cover group-hover:scale-102 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="space-y-1.5 min-w-0">
+                    <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">{guide.region} Region</span>
+                    <h4 className="font-extrabold text-sm md:text-base text-zinc-900 dark:text-zinc-50 group-hover:text-amber-500 transition-colors line-clamp-1 leading-snug">
+                      {guide.title}
+                    </h4>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs line-clamp-2 leading-relaxed">
+                      {guide.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 pt-3.5 border-t border-zinc-100 dark:border-zinc-900 text-xs mt-auto">
+                  <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1">
+                    <Compass className="w-3.5 h-3.5 text-amber-500" />
+                    Includes {guide.recommendedStops.length} recommended {guide.recommendedStops.length === 1 ? 'stop' : 'stops'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/map?guide=${guide.slug}`}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition-colors"
+                    >
+                      View on Map
+                    </Link>
+                    <Link
+                      href={`/guides/${guide.slug}`}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-zinc-950 transition-colors inline-flex items-center gap-0.5"
+                    >
+                      Read Guide <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick crawlable subcategories / popular counties SEO shortcuts block */}
+          <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="space-y-2">
+              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Popular Counties</span>
+              <ul className="space-y-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                <li><Link href="/breweries/county/frederick" className="hover:text-amber-500 transition-colors">Frederick County</Link></li>
+                <li><Link href="/breweries/county/baltimore-city" className="hover:text-amber-500 transition-colors">Baltimore City</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">More Counties</span>
+              <ul className="space-y-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                <li><Link href="/breweries/county/montgomery" className="hover:text-amber-500 transition-colors">Montgomery County</Link></li>
+                <li><Link href="/breweries/county/baltimore-county" className="hover:text-amber-500 transition-colors">Baltimore County</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Dog-Friendly</span>
+              <ul className="space-y-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                <li>
+                  <Link href="/breweries/category/dog-friendly" className="hover:underline flex items-center gap-1">
+                    🐕 Dog-Friendly Taprooms
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Brewery Types</span>
+              <ul className="space-y-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                <li><Link href="/breweries/category/farm-brewery" className="hover:text-amber-500 transition-colors">Farm Breweries</Link></li>
+                <li><Link href="/breweries/category/brewpub" className="hover:text-amber-500 transition-colors">Local Brewpubs</Link></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
-export function BreweriesDirectoryContainer({ breweries }: BreweriesDirectoryContentProps) {
+export function BreweriesDirectoryContainer({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
   return (
     <Suspense fallback={<div>Loading breweries directory...</div>}>
-      <BreweriesDirectoryContent breweries={breweries} />
+      <BreweriesDirectoryContent breweries={breweries} guides={guides} />
     </Suspense>
   );
 }
