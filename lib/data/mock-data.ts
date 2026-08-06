@@ -7,6 +7,9 @@ export const mockBreweries: Brewery[] = [
     name: 'Flying Dog Brewery',
     type: 'Production',
     region: 'Central',
+    status: 'Open',
+    statusUpdatedAt: '2025-05-10',
+    statusNotes: 'Normal taproom operating hours.',
     address: '4607 Wedgewood Blvd',
     city: 'Frederick',
     county: 'Frederick',
@@ -28,11 +31,29 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 10:00 PM' },
       { day: 'Sunday', hours: '12:00 PM - 8:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '12:00', closes: '20:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true },
+      { day: 'Wednesday', isClosed: true }
+    ],
+    holidayExceptions: [
+      { date: '2025-12-25', isClosed: true, notes: 'Christmas Day closure' }
+    ],
     beerStyles: ['Belgian IPA', 'Imperial IPA', 'IPA', 'Pale Ale', 'Stout'],
     amenities: ['Tasting Room', 'Brewery Tours', 'Outdoor Seating', 'Food Trucks', 'Merch Shop'],
     lastVerified: '2025-05-10',
     verificationSource: 'Official Website & Socials',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com', checkedAt: '2025-05-10', confidence: 'High' },
+      hours: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com/visit', checkedAt: '2025-05-10', confidence: 'High' },
+      address: { verified: true, sourceType: 'Official Website', checkedAt: '2025-05-10', confidence: 'High' },
+      amenities: { verified: true, sourceType: 'Social Media', sourceUrl: 'https://instagram.com/flyingdogbrewery', checkedAt: '2025-05-09', confidence: 'Medium' }
+    }
   },
   {
     id: 'monocacy',
@@ -40,6 +61,9 @@ export const mockBreweries: Brewery[] = [
     name: 'Monocacy Brewing Company',
     type: 'Microbrewery',
     region: 'Central',
+    status: 'Open',
+    statusUpdatedAt: '2025-06-15',
+    statusNotes: 'Taproom is open to visitors and outdoor patio seating is available.',
     address: '1783 N Market St',
     city: 'Frederick',
     county: 'Frederick',
@@ -60,11 +84,25 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 9:00 PM' },
       { day: 'Sunday', hours: '12:00 PM - 6:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '16:00', closes: '20:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '15:00', closes: '21:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '21:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '12:00', closes: '18:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true },
+      { day: 'Wednesday', isClosed: true }
+    ],
+    holidayExceptions: [],
     beerStyles: ['Pilsner', 'Hazy IPA', 'Red Ale', 'Stout'],
     amenities: ['Tasting Room', 'Outdoor Seating', 'Kid Friendly', 'Dog Friendly'],
     lastVerified: '2025-06-15',
     verificationSource: 'Official Website',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://monocacybrewing.com', checkedAt: '2025-06-15', confidence: 'High' },
+      hours: { verified: true, sourceType: 'Official Website', checkedAt: '2025-06-15', confidence: 'High' }
+    }
   },
   {
     id: 'elder-pine',
@@ -72,6 +110,8 @@ export const mockBreweries: Brewery[] = [
     name: 'Elder Pine Brewing & Blending',
     type: 'Farm Brewery',
     region: 'Capital',
+    status: 'Open',
+    statusUpdatedAt: '2025-06-01',
     address: '4200 Sundown Rd',
     city: 'Gaithersburg',
     county: 'Montgomery',
@@ -93,11 +133,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '11:00 AM - 10:00 PM' },
       { day: 'Sunday', hours: '11:00 AM - 8:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '15:00', closes: '21:00' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '15:00', closes: '21:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '11:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '11:00', closes: '20:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true }
+    ],
     beerStyles: ['Double IPA', 'Czech Pilsner', 'Fruited Sour', 'Lager', 'Hazy IPA', 'Wild Ale'],
     amenities: ['Dog Friendly', 'Outdoor Pine Grove', 'Food Trucks', 'Kid Friendly', 'Cans To-Go'],
     lastVerified: '2025-06-01',
     verificationSource: 'Brewery Management',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2025-06-01', confidence: 'High', notes: 'Verified via representative email.' }
+    }
   },
   {
     id: 'streetcar82',
@@ -105,6 +157,8 @@ export const mockBreweries: Brewery[] = [
     name: 'Streetcar 82 Brewing Co.',
     type: 'Microbrewery',
     region: 'Capital',
+    status: 'Open',
+    statusUpdatedAt: '2025-06-20',
     address: '4824 Rhode Island Ave',
     city: 'Hyattsville',
     county: "Prince George's",
@@ -126,11 +180,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 10:00 PM' },
       { day: 'Sunday', hours: '12:00 PM - 7:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '12:00', closes: '19:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true }
+    ],
     beerStyles: ['Belgian Witbier', 'Saison', 'IPA', 'Dry Stout'],
     amenities: ['Outdoor Seating', 'Deaf-Friendly / ASL', 'Kid Friendly', 'Dog Friendly', 'Food Trucks'],
     lastVerified: '2025-06-20',
     verificationSource: 'Official Website',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.streetcar82brewing.com', checkedAt: '2025-06-20', confidence: 'High' }
+    }
   },
   {
     id: 'franklins',
@@ -138,6 +204,8 @@ export const mockBreweries: Brewery[] = [
     name: "Franklin's Brewery",
     type: 'Brewpub',
     region: 'Capital',
+    status: 'Open',
+    statusUpdatedAt: '2025-06-21',
     address: '5123 Baltimore Ave',
     city: 'Hyattsville',
     county: "Prince George's",
@@ -161,11 +229,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '11:00 AM - 10:30 PM' },
       { day: 'Sunday', hours: '11:00 AM - 9:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Monday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
+      { day: 'Tuesday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '11:00', closes: '22:30' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '11:00', closes: '22:30' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '11:00', closes: '21:00' }] }
+    ],
     beerStyles: ['IPA', 'Stout', 'Lager', 'Porter', 'Sour'],
     amenities: ['Full Food Menu', 'General Store / Toy Shop', 'Kid Friendly', 'Tasting Flight', 'Togo Cans'],
     lastVerified: '2025-06-21',
     verificationSource: 'Brewery Management',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2025-06-21', confidence: 'High' }
+    }
   },
   {
     id: 'heavy-seas',
@@ -173,6 +253,8 @@ export const mockBreweries: Brewery[] = [
     name: 'Heavy Seas Beer',
     type: 'Production',
     region: 'Central',
+    status: 'Open',
+    statusUpdatedAt: '2025-04-18',
     address: '4615 Hollins Ferry Rd',
     city: 'Halethorpe',
     county: 'Baltimore County',
@@ -193,11 +275,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 10:00 PM' },
       { day: 'Sunday', hours: '12:00 PM - 6:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Friday', isClosed: false, periods: [{ opens: '15:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '12:00', closes: '18:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true },
+      { day: 'Wednesday', isClosed: true },
+      { day: 'Thursday', isClosed: true }
+    ],
     beerStyles: ['American IPA', 'Double IPA', 'Imperial Stout', 'English Pale Ale'],
     amenities: ['Tasting Room', 'Merchandise', 'Outdoor Seating', 'Weekly Events'],
     lastVerified: '2025-04-18',
     verificationSource: 'Community Report',
-    verificationStatus: 'Community Submitted'
+    verificationStatus: 'Community Submitted',
+    verification: {
+      general: { verified: true, sourceType: 'Community Report', checkedAt: '2025-04-18', confidence: 'Low' }
+    }
   },
   {
     id: 'union-craft',
@@ -205,6 +299,8 @@ export const mockBreweries: Brewery[] = [
     name: 'Union Craft Brewing',
     type: 'Production',
     region: 'Central',
+    status: 'Open',
+    statusUpdatedAt: '2025-05-22',
     address: '1700 W 41st St',
     city: 'Baltimore',
     county: 'Baltimore City',
@@ -226,11 +322,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 10:00 PM' },
       { day: 'Sunday', hours: '12:00 PM - 8:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '12:00', closes: '20:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true }
+    ],
     beerStyles: ['Pale Ale', 'IPA', 'Altbier', 'Lager', 'Gose'],
     amenities: ['Large Beer Hall', 'Outdoor Plaza', 'Kid Friendly', 'Shared Collective Spaces', 'Food Vendors'],
     lastVerified: '2025-05-22',
     verificationSource: 'Official Website & Socials',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.unioncraftbrewing.com', checkedAt: '2025-05-22', confidence: 'High' }
+    }
   },
   {
     id: 'peabody',
@@ -238,6 +346,8 @@ export const mockBreweries: Brewery[] = [
     name: 'Peabody Heights Brewery',
     type: 'Production',
     region: 'Central',
+    status: 'Open',
+    statusUpdatedAt: '2025-06-18',
     address: '401 E 30th St',
     city: 'Baltimore',
     county: 'Baltimore City',
@@ -259,11 +369,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 11:00 PM' },
       { day: 'Sunday', hours: '12:00 PM - 8:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '12:00', closes: '23:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '23:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '12:00', closes: '20:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true }
+    ],
     beerStyles: ['IPA', 'Lager', 'Sour', 'Stout', 'Pilsner'],
     amenities: ['Tasting Room', 'Spacious Beer Garden', 'Kid Friendly', 'Arcade Games', 'Historic Memorabilia'],
     lastVerified: '2025-06-18',
     verificationSource: 'Official Website',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://peabodyheightsbrewery.com', checkedAt: '2025-06-18', confidence: 'High' }
+    }
   },
   {
     id: 'cushwa',
@@ -271,6 +393,9 @@ export const mockBreweries: Brewery[] = [
     name: 'Cushwa Brewing Company',
     type: 'Microbrewery',
     region: 'Western',
+    status: 'Seasonal',
+    statusUpdatedAt: '2025-06-03',
+    statusNotes: 'Hours change during peak summer and winter seasons. Check socials for announcements.',
     address: '10212 Governor Lane Blvd',
     city: 'Williamsport',
     county: 'Washington',
@@ -293,11 +418,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '11:00 AM - 10:00 PM' },
       { day: 'Sunday', hours: '11:00 AM - 8:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Tuesday', isClosed: false, periods: [{ opens: '15:00', closes: '21:00' }] },
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '15:00', closes: '21:00' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '11:00', closes: '22:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '11:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '11:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '11:00', closes: '20:00' }] },
+      { day: 'Monday', isClosed: true }
+    ],
     beerStyles: ['Hazy IPA', 'Pilsner', 'Fruited Sour', 'Stout', 'Lager'],
     amenities: ['Pizza Kitchen', 'C&O Canal Proximity', 'Outdoor Seating', 'Tasting Room'],
     lastVerified: '2025-06-03',
     verificationSource: 'Outdated Info Alert',
-    verificationStatus: 'Needs Review'
+    verificationStatus: 'Needs Review',
+    verification: {
+      general: { verified: false, sourceType: 'Community Report', checkedAt: '2025-06-03', confidence: 'Medium', notes: 'Community members flagged hours changed.' }
+    }
   },
   {
     id: 'burley-oak',
@@ -305,6 +442,8 @@ export const mockBreweries: Brewery[] = [
     name: 'Burley Oak Brewing Company',
     type: 'Microbrewery',
     region: 'Eastern Shore',
+    status: 'Open',
+    statusUpdatedAt: '2025-05-15',
     address: '10016 Old Ocean City Blvd',
     city: 'Berlin',
     county: 'Worcester',
@@ -328,11 +467,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '11:00 AM - Midnight' },
       { day: 'Sunday', hours: '11:00 AM - 10:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Monday', isClosed: false, periods: [{ opens: '11:00', closes: '23:00' }] },
+      { day: 'Tuesday', isClosed: false, periods: [{ opens: '11:00', closes: '23:00' }] },
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '11:00', closes: '23:00' }] },
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '11:00', closes: '23:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '11:00', closes: '23:59' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '11:00', closes: '23:59' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '11:00', closes: '22:00' }] }
+    ],
     beerStyles: ['American Pilsner', 'Fruited Sour', 'IPA', 'Lager', 'Stout'],
     amenities: ['Live Music', 'Rustic Taproom', 'Outdoor Patio', 'Sustainable Focus', 'Local Taproom Specials'],
     lastVerified: '2025-05-15',
     verificationSource: 'Brewery Representative',
-    verificationStatus: 'Verified'
+    verificationStatus: 'Verified',
+    verification: {
+      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2025-05-15', confidence: 'High' }
+    }
   },
   {
     id: 'calvert-brewing',
@@ -340,6 +491,9 @@ export const mockBreweries: Brewery[] = [
     name: 'Calvert Brewing Company',
     type: 'Production',
     region: 'Southern',
+    status: 'Opening soon',
+    statusUpdatedAt: '2025-04-30',
+    statusNotes: 'Undergoing taproom renovations. Grand reopening next month!',
     address: '15850 Commerce Ct',
     city: 'Upper Marlboro',
     county: "Prince George's",
@@ -360,11 +514,23 @@ export const mockBreweries: Brewery[] = [
       { day: 'Saturday', hours: '12:00 PM - 10:00 PM' },
       { day: 'Sunday', hours: '1:00 PM - 7:00 PM' },
     ],
+    structuredHours: [
+      { day: 'Thursday', isClosed: false, periods: [{ opens: '16:00', closes: '21:00' }] },
+      { day: 'Friday', isClosed: false, periods: [{ opens: '15:00', closes: '22:00' }] },
+      { day: 'Saturday', isClosed: false, periods: [{ opens: '12:00', closes: '22:00' }] },
+      { day: 'Sunday', isClosed: false, periods: [{ opens: '13:00', closes: '19:00' }] },
+      { day: 'Monday', isClosed: true },
+      { day: 'Tuesday', isClosed: true },
+      { day: 'Wednesday', isClosed: true }
+    ],
     beerStyles: ['IPA', 'Amber Ale', 'Spiced Ale', 'Lager', 'Stout'],
     amenities: ['Spacious Taproom', 'Food Trucks', 'Trivia Nights', 'Huge Outdoor Seating Area'],
     lastVerified: '2025-04-30',
     verificationSource: 'Community Submission Forum',
-    verificationStatus: 'Community Submitted'
+    verificationStatus: 'Community Submitted',
+    verification: {
+      general: { verified: true, sourceType: 'Community Report', checkedAt: '2025-04-30', confidence: 'Medium' }
+    }
   }
 ];
 

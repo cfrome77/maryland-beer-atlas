@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar, ShieldCheck, AlertTriangle, Users, Info } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar, ShieldCheck, AlertTriangle, Users, Info, Sparkles } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 
 interface BreweryDetailPageProps {
@@ -71,8 +71,6 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
       "longitude": brewery.coordinates.lng
     },
     "openingHoursSpecification": brewery.hours.map(item => {
-      // Basic translation of text like "4:00 PM - 9:00 PM" into ISO format if possible,
-      // but schema.org accepts open-format string descriptions, or simpler representations.
       return {
         "@type": "OpeningHoursSpecification",
         "dayOfWeek": item.day,
@@ -121,6 +119,15 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                 <div className="flex flex-wrap gap-2">
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-zinc-950 shadow-sm">
                     {brewery.type}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
+                    brewery.status === 'Open'
+                      ? 'bg-emerald-500 text-white'
+                      : brewery.status === 'Temporarily closed' || brewery.status === 'Closed'
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-amber-500 text-zinc-950'
+                  }`}>
+                    Status: {brewery.status}
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white backdrop-blur-sm border border-white/20">
                     {brewery.region} Region
@@ -209,6 +216,22 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
           <div className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Main content */}
             <div className="lg:col-span-8 space-y-8">
+              {/* Brewery Status Warning Banner */}
+              {brewery.status !== 'Open' && (
+                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Special Operating Notice</span>
+                  </div>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {brewery.statusNotes || `This location is currently marked as ${brewery.status.toLowerCase()}.`}
+                  </p>
+                  {brewery.statusUpdatedAt && (
+                    <span className="block text-[10px] text-zinc-500">Notice last updated: {brewery.statusUpdatedAt}</span>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">About the Brewery</h2>
@@ -280,7 +303,7 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   {brewery.amenities.map((amenity, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1.5 rounded-lg text-sm bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium"
+                      className="px-3 py-1.5 rounded-lg text-sm bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 text-zinc-700 dark:text-zinc-300 font-medium"
                     >
                       {amenity}
                     </span>
@@ -331,13 +354,53 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.lastVerified}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850 last:border-0">
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
                     <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
                     <span className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium" title={brewery.verificationSource}>
                       {brewery.verificationSource}
                     </span>
                   </div>
                 </div>
+
+                {/* Separate Field Verifications */}
+                {brewery.verification && (
+                  <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+                    <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Field-Level Verification</span>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1.5" title={`Hours verified via ${brewery.verification.hours?.sourceType || 'N/A'}`}>
+                        <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${brewery.verification.hours?.verified ? 'text-emerald-500' : 'text-zinc-400'}`} />
+                        <span className="text-zinc-600 dark:text-zinc-400">Hours</span>
+                      </div>
+                      <div className="flex items-center gap-1.5" title={`Address verified via ${brewery.verification.address?.sourceType || 'N/A'}`}>
+                        <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${brewery.verification.address?.verified ? 'text-emerald-500' : 'text-zinc-400'}`} />
+                        <span className="text-zinc-600 dark:text-zinc-400">Address</span>
+                      </div>
+                      <div className="flex items-center gap-1.5" title={`Amenities verified via ${brewery.verification.amenities?.sourceType || 'N/A'}`}>
+                        <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${brewery.verification.amenities?.verified ? 'text-emerald-500' : 'text-zinc-400'}`} />
+                        <span className="text-zinc-600 dark:text-zinc-400">Amenities</span>
+                      </div>
+                      <div className="flex items-center gap-1.5" title="General info verified">
+                        <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                        <span className="text-zinc-600 dark:text-zinc-400">General</span>
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 pt-1.5 space-y-1 bg-zinc-500/5 p-2 rounded-lg border border-zinc-200/50 dark:border-zinc-800/50 mt-1">
+                      <div className="flex justify-between">
+                        <span>Confidence Level:</span>
+                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">{brewery.verification.general.confidence}</span>
+                      </div>
+                      {brewery.verification.general.sourceUrl && (
+                        <div className="flex justify-between">
+                          <span>Verification Source:</span>
+                          <a href={brewery.verification.general.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline truncate max-w-[120px]">
+                            Official Link
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
                   <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
@@ -353,14 +416,62 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   <Clock className="w-5 h-5 text-amber-500" />
                   Hours of Operation
                 </h3>
-                <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {brewery.hours.map((item, idx) => (
-                    <div key={idx} className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850 last:border-0">
-                      <span className="font-medium text-zinc-800 dark:text-zinc-300">{item.day}</span>
-                      <span>{item.hours}</span>
-                    </div>
-                  ))}
-                </div>
+
+                {brewery.structuredHours && brewery.structuredHours.length > 0 ? (
+                  <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    {brewery.structuredHours.map((item, idx) => {
+                      const formatTime = (t: string) => {
+                        const [h, m] = t.split(':');
+                        const hour = parseInt(h);
+                        const ampm = hour >= 12 ? 'PM' : 'AM';
+                        const formattedHour = hour % 12 || 12;
+                        return `${formattedHour}:${m} ${ampm}`;
+                      };
+
+                      return (
+                        <div key={idx} className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850 last:border-0">
+                          <span className="font-medium text-zinc-800 dark:text-zinc-300">{item.day}</span>
+                          <span className="text-right">
+                            {item.isClosed ? (
+                              <span className="text-rose-600 dark:text-rose-400 font-semibold">Closed</span>
+                            ) : (
+                              item.periods?.map((p, pIdx) => (
+                                <span key={pIdx} className="block font-medium text-zinc-900 dark:text-zinc-100">
+                                  {formatTime(p.opens)} - {formatTime(p.closes)}
+                                </span>
+                              ))
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+
+                    {/* Holiday exceptions if any */}
+                    {brewery.holidayExceptions && brewery.holidayExceptions.length > 0 && (
+                      <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                        <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Upcoming Holiday Hours</span>
+                        {brewery.holidayExceptions.map((ex, exIdx) => (
+                          <div key={exIdx} className="text-xs text-zinc-500 dark:text-zinc-400 flex justify-between py-0.5">
+                            <span>{ex.date} {ex.notes && `(${ex.notes})`}</span>
+                            <span className="font-semibold text-rose-600 dark:text-rose-400">
+                              {ex.isClosed ? 'Closed' : 'Special Hours'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Fallback to legacy string hours
+                  <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    {brewery.hours.map((item, idx) => (
+                      <div key={idx} className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850 last:border-0">
+                        <span className="font-medium text-zinc-800 dark:text-zinc-300">{item.day}</span>
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">{item.hours}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Contact and Location */}

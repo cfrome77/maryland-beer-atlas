@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Filter, RotateCcw, Beer as BeerIcon } from 'lucide-react';
 import { Brewery } from '@/lib/types';
@@ -10,12 +10,31 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Compass, BookOpen, Star, ArrowRight } from 'lucide-react';
+import { Compass, BookOpen, ArrowRight } from 'lucide-react';
 
 interface BreweriesDirectoryContentProps {
   breweries: Brewery[];
   guides?: TravelGuide[];
 }
+
+interface FilterPreset {
+  label: string;
+  county?: string;
+  region?: MarylandRegion | '';
+  type?: BreweryType | '';
+  amenity?: string;
+}
+
+const FILTER_PRESETS: Record<string, FilterPreset> = {
+  'Frederick County': { label: 'Frederick County', county: 'Frederick' },
+  'Baltimore City': { label: 'Baltimore City', county: 'Baltimore City' },
+  'Montgomery County': { label: 'Montgomery County', county: 'Montgomery' },
+  'Baltimore County': { label: 'Baltimore County', county: 'Baltimore County' },
+  '🐕 Dog-Friendly Taprooms': { label: '🐕 Dog-Friendly Taprooms', amenity: 'Dog Friendly' },
+  'Farm Breweries': { label: 'Farm Breweries', type: 'Farm Brewery' },
+  'Local Brewpubs': { label: 'Local Brewpubs', type: 'Brewpub' },
+  'Microbreweries': { label: 'Microbreweries', type: 'Microbrewery' },
+};
 
 function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
@@ -44,8 +63,70 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const counties = Array.from(new Set(breweries.map(b => b.county))).sort();
   const amenities = Array.from(new Set(breweries.flatMap(b => b.amenities))).sort();
 
+  // Keep track of the parameters currently reflected in the URL with explicit TypeScript types
+  const prevParamsRef = useRef<{
+    search: string;
+    region: MarylandRegion | '';
+    type: BreweryType | '';
+    county: string;
+    amenity: string;
+    quickGuide: string;
+  }>({
+    search: initialSearch,
+    region: initialRegion,
+    type: initialType,
+    county: initialCounty,
+    amenity: initialAmenity,
+    quickGuide: initialQuickGuide,
+  });
+
+  // Sync state with URL search params when they change (e.g., back/forward buttons)
+  useEffect(() => {
+    const currentSearch = searchParams?.get('search') || '';
+    const currentRegion = searchParams?.get('region') || '';
+    const currentType = searchParams?.get('type') || '';
+    const currentCounty = searchParams?.get('county') || '';
+    const currentAmenity = searchParams?.get('amenity') || '';
+    const currentQuickGuide = searchParams?.get('quickGuide') || '';
+
+    const prev = prevParamsRef.current;
+    const hasChanged =
+      currentSearch !== prev.search ||
+      currentRegion !== prev.region ||
+      currentType !== prev.type ||
+      currentCounty !== prev.county ||
+      currentAmenity !== prev.amenity ||
+      currentQuickGuide !== prev.quickGuide;
+
+    if (hasChanged) {
+      setSearchQuery(currentSearch);
+      setSelectedRegion(currentRegion as MarylandRegion | '');
+      setSelectedType(currentType as BreweryType | '');
+      setSelectedCounty(currentCounty);
+      setSelectedAmenity(currentAmenity);
+      setSelectedQuickGuide(currentQuickGuide);
+
+      prevParamsRef.current = {
+        search: currentSearch,
+        region: currentRegion as MarylandRegion | '',
+        type: currentType as BreweryType | '',
+        county: currentCounty,
+        amenity: currentAmenity,
+        quickGuide: currentQuickGuide,
+      };
+    }
+  }, [searchParams]);
+
   // Update URL Search Params to persist filter states
-  const applyFilters = (search: string, region: string, type: string, county: string, amenity: string, quickGuide: string = '') => {
+  const applyFilters = (
+    search: string,
+    region: string,
+    type: string,
+    county: string,
+    amenity: string,
+    quickGuide: string = '',
+    replace: boolean = false
+  ) => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (region) params.set('region', region);
@@ -53,60 +134,45 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     if (county) params.set('county', county);
     if (amenity) params.set('amenity', amenity);
     if (quickGuide) params.set('quickGuide', quickGuide);
-    router.push(`/breweries?${params.toString()}`);
+
+    const url = `/breweries?${params.toString()}`;
+    if (replace) {
+      router.replace(url);
+    } else {
+      router.push(url);
+    }
   };
+
+  // Debounced Search Query Sync
+  useEffect(() => {
+    const currentSearch = searchParams?.get('search') || '';
+    if (searchQuery === currentSearch) return;
+
+    const timer = setTimeout(() => {
+      setSelectedQuickGuide('');
+      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, '', true);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleQuickGuideChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedQuickGuide(val);
-    if (val === 'Frederick County') {
-      setSelectedCounty('Frederick');
-      setSelectedRegion('');
-      setSelectedType('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', '', 'Frederick', '', val);
-    } else if (val === 'Baltimore City') {
-      setSelectedCounty('Baltimore City');
-      setSelectedRegion('');
-      setSelectedType('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', '', 'Baltimore City', '', val);
-    } else if (val === 'Montgomery County') {
-      setSelectedCounty('Montgomery');
-      setSelectedRegion('');
-      setSelectedType('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', '', 'Montgomery', '', val);
-    } else if (val === 'Baltimore County') {
-      setSelectedCounty('Baltimore County');
-      setSelectedRegion('');
-      setSelectedType('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', '', 'Baltimore County', '', val);
-    } else if (val === '🐕 Dog-Friendly Taprooms') {
-      setSelectedAmenity('Dog Friendly');
-      setSelectedRegion('');
-      setSelectedType('');
-      setSelectedCounty('');
-      applyFilters(searchQuery, '', '', '', 'Dog Friendly', val);
-    } else if (val === 'Farm Breweries') {
-      setSelectedType('Farm Brewery');
-      setSelectedRegion('');
-      setSelectedCounty('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', 'Farm Brewery', '', '', val);
-    } else if (val === 'Local Brewpubs') {
-      setSelectedType('Brewpub');
-      setSelectedRegion('');
-      setSelectedCounty('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', 'Brewpub', '', '', val);
-    } else if (val === 'Microbreweries') {
-      setSelectedType('Microbrewery');
-      setSelectedRegion('');
-      setSelectedCounty('');
-      setSelectedAmenity('');
-      applyFilters(searchQuery, '', 'Microbrewery', '', '', val);
+
+    const preset = FILTER_PRESETS[val];
+    if (preset) {
+      const targetCounty = preset.county || '';
+      const targetRegion = preset.region || '';
+      const targetType = preset.type || '';
+      const targetAmenity = preset.amenity || '';
+
+      setSelectedCounty(targetCounty);
+      setSelectedRegion(targetRegion);
+      setSelectedType(targetType);
+      setSelectedAmenity(targetAmenity);
+
+      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, val);
     } else {
       setSelectedQuickGuide('');
       applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, '');
@@ -114,10 +180,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSearchQuery(val);
-    setSelectedQuickGuide('');
-    applyFilters(val, selectedRegion, selectedType, selectedCounty, selectedAmenity, '');
+    setSearchQuery(e.target.value);
   };
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -188,7 +251,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               placeholder="Search by name, style, city..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -201,14 +264,11 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
             >
               <option value="" className="text-zinc-800 dark:text-zinc-200">Select Popular Guide or Filter Preset...</option>
-              <option value="Frederick County" className="text-zinc-800 dark:text-zinc-200">Frederick County</option>
-              <option value="Baltimore City" className="text-zinc-800 dark:text-zinc-200">Baltimore City</option>
-              <option value="Montgomery County" className="text-zinc-800 dark:text-zinc-200">Montgomery County</option>
-              <option value="Baltimore County" className="text-zinc-800 dark:text-zinc-200">Baltimore County</option>
-              <option value="🐕 Dog-Friendly Taprooms" className="text-zinc-800 dark:text-zinc-200">🐕 Dog-Friendly Taprooms</option>
-              <option value="Farm Breweries" className="text-zinc-800 dark:text-zinc-200">Farm Breweries</option>
-              <option value="Local Brewpubs" className="text-zinc-800 dark:text-zinc-200">Local Brewpubs</option>
-              <option value="Microbreweries" className="text-zinc-800 dark:text-zinc-200">Microbreweries</option>
+              {Object.keys(FILTER_PRESETS).map((key) => (
+                <option key={key} value={key} className="text-zinc-800 dark:text-zinc-200">
+                  {key}
+                </option>
+              ))}
             </select>
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
           </div>
