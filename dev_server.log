@@ -5,12 +5,9 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 538ms
-✓ Running next.config.ts took 45ms
+✓ Ready in 521ms
+✓ Running next.config.ts took 44ms
 
-○ Compiling /breweries ...
- GET /breweries 200 in 5.3s (next.js: 4.8s, application-code: 532ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries?search=burley 200 in 51ms (next.js: 11ms, application-code: 40ms)
- GET /breweries/burley-oak-brewing-company 200 in 2.4s (next.js: 2.3s, application-code: 103ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+○ Compiling /map ...
+ GET /map 200 in 5.3s (next.js: 4.5s, application-code: 726ms)
+ GET /map 200 in 115ms (next.js: 5ms, application-code: 110ms)

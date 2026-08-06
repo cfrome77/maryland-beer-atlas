@@ -203,7 +203,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
-  const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(breweries[0] || null);
+  const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(null);
   const [activeTrailId, setActiveTrailId] = useState<string | null>(null);
 
   // Lists of options dynamically pulled/hardcoded
@@ -243,22 +243,12 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedCounties([]);
     setSelectedAmenities([]);
     setActiveTrailId(null);
-    if (breweries.length > 0) {
-      setSelectedBrewery(breweries[0]);
-    }
+    setSelectedBrewery(null);
   };
 
   // Sync selected brewery when visible items change
   useEffect(() => {
-    if (visibleBreweries.length > 0) {
-      // Keep selected if still visible, otherwise default to first visible
-      if (!selectedBrewery || !visibleBreweries.some(b => b.id === selectedBrewery.id)) {
-        const timer = setTimeout(() => {
-          setSelectedBrewery(visibleBreweries[0]);
-        }, 0);
-        return () => clearTimeout(timer);
-      }
-    } else {
+    if (selectedBrewery && !visibleBreweries.some(b => b.id === selectedBrewery.id)) {
       const timer = setTimeout(() => {
         setSelectedBrewery(null);
       }, 0);
