@@ -29,65 +29,6 @@ interface InteractiveMapContentProps {
   guides?: TravelGuide[];
 }
 
-interface QuickGuidesDropdownProps {
-  selectedValue: string;
-  onChange: (value: string) => void;
-  options: string[];
-}
-
-function QuickGuidesDropdown({ selectedValue, onChange, options }: QuickGuidesDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div ref={containerRef} className="relative flex-1 min-w-[140px] md:min-w-[170px] space-y-1.5">
-      <span className="block text-[10px] font-bold text-amber-500 uppercase tracking-wider">Popular Guides</span>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-left text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500"
-      >
-        <span className="truncate">{selectedValue || "Select Guide..."}</span>
-        <svg className={`w-3.5 h-3.5 text-amber-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute left-0 mt-1 w-full max-h-[220px] overflow-y-auto z-45 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2 space-y-0.5">
-          {options.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => {
-                onChange(option);
-                setIsOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
-                selectedValue === option
-                  ? 'bg-amber-500 text-zinc-950 font-bold'
-                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-medium'
-              }`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Mini custom multi-select dropdown component using pure React states for simplicity and precision.
 interface MultiSelectDropdownProps {
   label: string;
@@ -180,7 +121,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => handleToggleOption(option)}
-                  className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-800 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 focus:outline-none"
+                  className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-880 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 focus:outline-none"
                 />
                 <span className="truncate">{option}</span>
               </label>
@@ -198,28 +139,9 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [selectedQuickGuide, setSelectedQuickGuide] = useState<string>('');
 
   const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(breweries[0] || null);
   const [activeTrailId, setActiveTrailId] = useState<string | null>(null);
-
-  // Use search parameter "guide" if present to initialize activeGuideSlug
-  const [activeGuideSlug, setActiveGuideSlug] = useState<string | null>(null);
-
-  // Initialize and sync guide from URL on first mount (client-side only)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const queryParams = new URLSearchParams(window.location.search);
-      const guideParam = queryParams.get('guide');
-      if (guideParam) {
-        setActiveGuideSlug(guideParam);
-        const guide = guides.find(g => g.slug === guideParam);
-        if (guide && guide.recommendedStops && guide.recommendedStops.length > 0) {
-          setSelectedBrewery(guide.recommendedStops[0]);
-        }
-      }
-    }
-  }, [guides]);
 
   // Lists of options dynamically pulled/hardcoded
   const regions: string[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
@@ -230,15 +152,6 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   // Filter breweries based on regions, types, counties, and amenities selection
   const visibleBreweries = useMemo(() => {
     return breweries.filter((b) => {
-      // If a guide is active, restrict visibility strictly to its recommended stops
-      if (activeGuideSlug) {
-        const guide = guides.find((g) => g.slug === activeGuideSlug);
-        if (guide) {
-          const inGuide = guide.recommendedStops.some((rs) => rs.id === b.id);
-          if (!inGuide) return false;
-        }
-      }
-
       const regionMatch = selectedRegions.length === 0 || selectedRegions.includes(b.region);
       const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(b.type);
       const countyMatch = selectedCounties.length === 0 || selectedCounties.includes(b.county);
@@ -255,7 +168,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
       return regionMatch && typeMatch && countyMatch && amenityMatch;
     });
-  }, [breweries, selectedRegions, selectedTypes, selectedCounties, selectedAmenities, activeTrailId, activeGuideSlug, trails, guides]);
+  }, [breweries, selectedRegions, selectedTypes, selectedCounties, selectedAmenities, activeTrailId, trails]);
 
   const handleSelectBrewery = (brewery: Brewery) => {
     setSelectedBrewery(brewery);
@@ -266,9 +179,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedTypes([]);
     setSelectedCounties([]);
     setSelectedAmenities([]);
-    setSelectedQuickGuide('');
     setActiveTrailId(null);
-    setActiveGuideSlug(null);
     if (breweries.length > 0) {
       setSelectedBrewery(breweries[0]);
     }
@@ -286,31 +197,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     }
   }, [visibleBreweries, selectedBrewery]);
 
-  // Sync guide selection if search parameter changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const handleLocationChange = () => {
-        const queryParams = new URLSearchParams(window.location.search);
-        const guideParam = queryParams.get('guide');
-        if (guideParam !== activeGuideSlug) {
-          setActiveGuideSlug(guideParam);
-          if (guideParam) {
-            const guide = guides.find(g => g.slug === guideParam);
-            if (guide && guide.recommendedStops && guide.recommendedStops.length > 0) {
-              setSelectedBrewery(guide.recommendedStops[0]);
-            }
-          }
-        }
-      };
-
-      // Listen to popstate and trigger on mount
-      window.addEventListener('popstate', handleLocationChange);
-      return () => window.removeEventListener('popstate', handleLocationChange);
-    }
-  }, [activeGuideSlug, guides]);
-
   const handleTrailToggle = (trailId: string) => {
-    setActiveGuideSlug(null); // Clear active guide when trail is selected
     if (activeTrailId === trailId) {
       setActiveTrailId(null);
     } else {
@@ -319,20 +206,6 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
       const trail = trails.find((t) => t.id === trailId);
       if (trail && trail.breweries && trail.breweries.length > 0) {
         setSelectedBrewery(trail.breweries[0]);
-      }
-    }
-  };
-
-  const handleGuideToggle = (slug: string) => {
-    setActiveTrailId(null); // Clear active trail when guide is selected
-    if (activeGuideSlug === slug) {
-      setActiveGuideSlug(null);
-    } else {
-      setActiveGuideSlug(slug);
-      // Auto-select the first brewery recommended in the guide
-      const guide = guides.find((g) => g.slug === slug);
-      if (guide && guide.recommendedStops && guide.recommendedStops.length > 0) {
-        setSelectedBrewery(guide.recommendedStops[0]);
       }
     }
   };
@@ -351,7 +224,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || selectedQuickGuide || activeTrailId || activeGuideSlug) && (
+              {(selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId) && (
                 <button
                   onClick={handleClearAllFilters}
                   className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -362,74 +235,14 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
             </div>
 
             <div className="space-y-4">
-              {/* Multi-Select Dropdowns grid */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <QuickGuidesDropdown
-                  selectedValue={selectedQuickGuide}
-                  onChange={(val) => {
-                    setSelectedQuickGuide(val);
-                    if (val === 'Frederick County') {
-                      setSelectedCounties(['Frederick']);
-                      setSelectedRegions([]);
-                      setSelectedTypes([]);
-                      setSelectedAmenities([]);
-                    } else if (val === 'Baltimore City') {
-                      setSelectedCounties(['Baltimore City']);
-                      setSelectedRegions([]);
-                      setSelectedTypes([]);
-                      setSelectedAmenities([]);
-                    } else if (val === 'Montgomery County') {
-                      setSelectedCounties(['Montgomery']);
-                      setSelectedRegions([]);
-                      setSelectedTypes([]);
-                      setSelectedAmenities([]);
-                    } else if (val === 'Baltimore County') {
-                      setSelectedCounties(['Baltimore County']);
-                      setSelectedRegions([]);
-                      setSelectedTypes([]);
-                      setSelectedAmenities([]);
-                    } else if (val === '🐕 Dog-Friendly Taprooms') {
-                      setSelectedAmenities(['Dog Friendly']);
-                      setSelectedRegions([]);
-                      setSelectedTypes([]);
-                      setSelectedCounties([]);
-                    } else if (val === 'Farm Breweries') {
-                      setSelectedTypes(['Farm Brewery']);
-                      setSelectedRegions([]);
-                      setSelectedCounties([]);
-                      setSelectedAmenities([]);
-                    } else if (val === 'Local Brewpubs') {
-                      setSelectedTypes(['Brewpub']);
-                      setSelectedRegions([]);
-                      setSelectedCounties([]);
-                      setSelectedAmenities([]);
-                    } else if (val === 'Microbreweries') {
-                      setSelectedTypes(['Microbrewery']);
-                      setSelectedRegions([]);
-                      setSelectedCounties([]);
-                      setSelectedAmenities([]);
-                    } else {
-                      setSelectedQuickGuide('');
-                    }
-                  }}
-                  options={[
-                    'Frederick County',
-                    'Baltimore City',
-                    'Montgomery County',
-                    'Baltimore County',
-                    '🐕 Dog-Friendly Taprooms',
-                    'Farm Breweries',
-                    'Local Brewpubs',
-                    'Microbreweries'
-                  ]}
-                />
+              {/* Multi-Select Dropdowns grid - adjusted to 4 columns to fit card perfectly */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <MultiSelectDropdown
                   label="Regions"
                   options={regions}
                   selectedValues={selectedRegions}
                   onChange={(vals) => {
                     setSelectedRegions(vals);
-                    setSelectedQuickGuide('');
                   }}
                   placeholder="All Regions"
                 />
@@ -439,7 +252,6 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                   selectedValues={selectedCounties}
                   onChange={(vals) => {
                     setSelectedCounties(vals);
-                    setSelectedQuickGuide('');
                   }}
                   placeholder="All Counties"
                 />
@@ -449,7 +261,6 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                   selectedValues={selectedTypes}
                   onChange={(vals) => {
                     setSelectedTypes(vals);
-                    setSelectedQuickGuide('');
                   }}
                   placeholder="All Types"
                 />
@@ -459,58 +270,33 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                   selectedValues={selectedAmenities}
                   onChange={(vals) => {
                     setSelectedAmenities(vals);
-                    setSelectedQuickGuide('');
                   }}
                   placeholder="All Amenities"
                 />
               </div>
 
-              {/* Optional Trail Routes & Curated Travel Guide Layers toggler */}
-              {(trails.length > 0 || guides.length > 0) && (
+              {/* Optional Trail Routes Layer toggler */}
+              {trails.length > 0 && (
                 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-850 space-y-3">
-                  {trails.length > 0 && (
-                    <div>
-                      <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Active Beer Trail Layer</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {trails.map((trail) => (
-                          <button
-                            key={trail.id}
-                            onClick={() => handleTrailToggle(trail.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                              activeTrailId === trail.id
-                                ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
-                                : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
-                            }`}
-                          >
-                            <Eye className="w-3.5 h-3.5 shrink-0" />
-                            {trail.name}
-                          </button>
-                        ))}
-                      </div>
+                  <div>
+                    <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Active Beer Trail Layer</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {trails.map((trail) => (
+                        <button
+                          key={trail.id}
+                          onClick={() => handleTrailToggle(trail.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                            activeTrailId === trail.id
+                              ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
+                              : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
+                          }`}
+                        >
+                          <Eye className="w-3.5 h-3.5 shrink-0" />
+                          {trail.name}
+                        </button>
+                      ))}
                     </div>
-                  )}
-
-                  {guides.length > 0 && (
-                    <div>
-                      <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Curated Local Travel Guide Layer</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {guides.map((guide) => (
-                          <button
-                            key={guide.slug}
-                            onClick={() => handleGuideToggle(guide.slug)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                              activeGuideSlug === guide.slug
-                                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/10'
-                                : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
-                            }`}
-                          >
-                            <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                            {guide.title}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
@@ -677,15 +463,10 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {guides.map((guide) => {
-              const isGuideActive = activeGuideSlug === guide.slug;
               return (
                 <div
                   key={guide.slug}
-                  className={`group p-5 rounded-2xl border transition-all flex flex-col justify-between gap-4 ${
-                    isGuideActive
-                      ? 'bg-emerald-500/5 border-emerald-500 shadow-md'
-                      : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-850 hover:shadow-sm'
-                  }`}
+                  className="group p-5 rounded-2xl border transition-all flex flex-col justify-between gap-4 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-850 hover:shadow-sm"
                 >
                   <div className="flex gap-4 items-start">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
@@ -714,17 +495,6 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                       {guide.recommendedStops.length} Must-Visit Stops
                     </span>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleGuideToggle(guide.slug)}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                          isGuideActive
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
-                        }`}
-                      >
-                        {isGuideActive ? 'Stop Filtering Map' : 'View Stops on Map'}
-                      </button>
                       <Link
                         href={`/guides/${guide.slug}`}
                         className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-zinc-950 transition-colors"
