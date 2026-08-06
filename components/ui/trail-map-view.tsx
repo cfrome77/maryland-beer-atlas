@@ -25,7 +25,8 @@ interface TrailMapViewProps {
 }
 
 export function TrailMapView({ breweries, trail }: TrailMapViewProps) {
-  const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(breweries[0] || null);
+  // Start with null so the map uses fitBounds to display the entire connected trail on page load
+  const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(null);
 
   return (
     <div className="w-full h-[400px] md:h-[450px]">
