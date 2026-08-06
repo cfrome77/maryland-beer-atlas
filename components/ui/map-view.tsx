@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { Brewery, BeerTrail } from '@/lib/types';
-import { createRoot } from 'react-dom/client';
-import { ArrowRight } from 'lucide-react';
+import { createRoot, Root } from 'react-dom/client';
+import { ArrowRight, AlertTriangle } from 'lucide-react';
 
 interface MapViewProps {
   breweries: Brewery[];
@@ -26,11 +26,24 @@ export default function MapView({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
+  const popupRootsRef = useRef<{ [id: string]: Root }>({});
+
+  const [webglSupported] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(window.WebGL2RenderingContext && (canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2')));
+    } catch (e) {
+      return false;
+    }
+  });
+  const [initError, setInitError] = useState<string | null>(null);
 
   const defaultZoom = 7.5;
 
   // Initialize Map
   useEffect(() => {
+    if (!webglSupported) return;
     if (!mapContainerRef.current) return;
 
     // Use high-performance, high-DPI CARTO Voyager raster style as default.
@@ -62,13 +75,20 @@ export default function MapView({
       ],
     };
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: mapStyle,
-      center: [-76.6413, 39.0458],
-      zoom: defaultZoom,
-      attributionControl: { compact: true },
-    });
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: mapContainerRef.current,
+        style: mapStyle,
+        center: [-76.6413, 39.0458],
+        zoom: defaultZoom,
+        attributionControl: { compact: true },
+      });
+    } catch (err: any) {
+      console.error('Error initializing maplibre map instance:', err);
+      setInitError(err?.message || 'Failed to initialize 3D GPU graphics.');
+      return;
+    }
 
     mapRef.current = map;
 
@@ -92,10 +112,16 @@ export default function MapView({
     // Clean up on unmount
     return () => {
       clearTimeout(resizeTimer);
-      map.remove();
+      if (map) {
+        try {
+          map.remove();
+        } catch (e) {
+          console.error('Error removing map instance:', e);
+        }
+      }
       mapRef.current = null;
     };
-  }, [defaultZoom]);
+  }, [defaultZoom, webglSupported]);
 
   // Sync Markers
   useEffect(() => {
@@ -105,6 +131,16 @@ export default function MapView({
     // Remove existing markers
     Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
+
+    // Unmount existing popup React roots to prevent memory leaks
+    Object.values(popupRootsRef.current).forEach((root) => {
+      try {
+        root.unmount();
+      } catch (e) {
+        // Safe to ignore
+      }
+    });
+    popupRootsRef.current = {};
 
     // Helper for coloring based on brewery type
     const getColorForType = (type: string) => {
@@ -189,6 +225,7 @@ export default function MapView({
           </div>
         </div>
       );
+      popupRootsRef.current[brewery.id] = root;
 
       const popup = new maplibregl.Popup({ offset: 15, closeButton: true })
         .setDOMContent(popupContent);
@@ -207,6 +244,16 @@ export default function MapView({
       markersRef.current[brewery.id] = marker;
     });
 
+    return () => {
+      Object.values(popupRootsRef.current).forEach((root) => {
+        try {
+          root.unmount();
+        } catch (e) {
+          // Safe to ignore
+        }
+      });
+      popupRootsRef.current = {};
+    };
   }, [breweries, onSelectBrewery]);
 
   // Handle selectedBrewery prop updates (Fly to selected brewery and open its popup)
@@ -312,6 +359,35 @@ export default function MapView({
   }, [activeTrailId, trails]);
 
   const positionClass = className.includes('absolute') || className.includes('fixed') ? '' : 'relative';
+
+  if (!webglSupported || initError) {
+    return (
+      <div className={`${positionClass} w-full h-full min-h-[450px] rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 text-zinc-300 p-6 flex flex-col items-center justify-center text-center shadow-xl ${className}`}>
+        <div className="max-w-md space-y-4">
+          <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto text-amber-500">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-bold text-white">WebGL2 is Disabled or Unsupported</h3>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              This interactive map requires WebGL2 hardware graphics acceleration to render the high-performance CARTO maps and brewery geographic markers beautifully.
+            </p>
+          </div>
+          <div className="p-4 bg-zinc-900 rounded-2xl border border-zinc-800 text-left text-[11px] space-y-2 text-zinc-400">
+            <span className="font-extrabold text-white text-[12px] block">How to resolve:</span>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Enable <strong className="text-zinc-200">Hardware Acceleration</strong> in your browser settings.</li>
+              <li>Ensure your graphics drivers are up to date.</li>
+              <li>If you are using strict privacy extensions or a VM, ensure WebGL is not blocked.</li>
+            </ul>
+          </div>
+          <p className="text-[10px] text-zinc-600">
+            Error Details: {initError || 'Browser WebGL2 context is unavailable.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${positionClass} w-full h-full min-h-[450px] rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl ${className}`}>
