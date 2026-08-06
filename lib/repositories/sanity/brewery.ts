@@ -9,6 +9,9 @@ export class SanityBreweryRepository implements IBreweryRepository {
     name,
     type,
     region,
+    status,
+    statusUpdatedAt,
+    statusNotes,
     address,
     city,
     county,
@@ -20,12 +23,15 @@ export class SanityBreweryRepository implements IBreweryRepository {
     description,
     "image": image.asset->url,
     hours,
+    structuredHours,
+    holidayExceptions,
     beerStyles,
     amenities,
     featured,
     lastVerified,
     verificationSource,
-    verificationStatus
+    verificationStatus,
+    verification
   `;
 
   async getAll(): Promise<Brewery[]> {

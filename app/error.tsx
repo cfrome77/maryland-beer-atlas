@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { PageContainer } from '@/components/layout/page-container';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,12 +36,12 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
           >
             Try Again
           </Button>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-bold transition-colors border border-zinc-300 dark:border-zinc-700"
           >
             Go Home
-          </a>
+          </Link>
         </div>
       </PageContainer>
     </div>

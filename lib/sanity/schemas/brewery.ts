@@ -36,6 +36,37 @@ export const brewerySchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'status',
+      title: 'Operating Status',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Open', value: 'Open' },
+          { title: 'Temporarily Closed', value: 'Temporarily closed' },
+          { title: 'Seasonal', value: 'Seasonal' },
+          { title: 'Opening Soon', value: 'Opening soon' },
+          { title: 'Relocating', value: 'Relocating' },
+          { title: 'Closed', value: 'Closed' },
+          { title: 'Contract-only', value: 'Contract-only' },
+        ],
+      },
+      initialValue: 'Open',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'statusUpdatedAt',
+      title: 'Status Updated At',
+      type: 'date',
+      options: {
+        dateFormat: 'YYYY-MM-DD',
+      },
+    },
+    {
+      name: 'statusNotes',
+      title: 'Status Notes',
+      type: 'text',
+    },
+    {
       name: 'region',
       title: 'Maryland Region',
       type: 'string',
@@ -121,7 +152,7 @@ export const brewerySchema = {
     },
     {
       name: 'hours',
-      title: 'Operating Hours',
+      title: 'Operating Hours (Legacy Display String)',
       type: 'array',
       of: [
         {
@@ -129,6 +160,76 @@ export const brewerySchema = {
           fields: [
             { name: 'day', title: 'Day', type: 'string', validation: (Rule: any) => Rule.required() },
             { name: 'hours', title: 'Hours', type: 'string', validation: (Rule: any) => Rule.required() },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'structuredHours',
+      title: 'Structured Operating Hours',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'day',
+              title: 'Day',
+              type: 'string',
+              options: {
+                list: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+              },
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'isClosed',
+              title: 'Is Closed',
+              type: 'boolean',
+              initialValue: false,
+            },
+            {
+              name: 'periods',
+              title: 'Opening Periods',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    { name: 'opens', title: 'Opens At (HH:MM)', type: 'string' },
+                    { name: 'closes', title: 'Closes At (HH:MM)', type: 'string' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'holidayExceptions',
+      title: 'Holiday and Special Date Exceptions',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'date', title: 'Date (YYYY-MM-DD)', type: 'date', validation: (Rule: any) => Rule.required() },
+            { name: 'isClosed', title: 'Is Closed', type: 'boolean', initialValue: true },
+            {
+              name: 'periods',
+              title: 'Alternative Hours',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    { name: 'opens', title: 'Opens At (HH:MM)', type: 'string' },
+                    { name: 'closes', title: 'Closes At (HH:MM)', type: 'string' },
+                  ],
+                },
+              ],
+            },
+            { name: 'notes', title: 'Notes / Holiday Name', type: 'string' },
           ],
         },
       ],
@@ -178,6 +279,65 @@ export const brewerySchema = {
         ],
       },
       validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'verification',
+      title: 'Detailed Field Verifications',
+      type: 'object',
+      fields: [
+        {
+          name: 'general',
+          title: 'General Profile Verification',
+          type: 'object',
+          fields: [
+            { name: 'verified', type: 'boolean', initialValue: false },
+            { name: 'sourceType', type: 'string' },
+            { name: 'sourceUrl', type: 'url' },
+            { name: 'checkedAt', type: 'date' },
+            { name: 'confidence', type: 'string' },
+            { name: 'notes', type: 'string' },
+          ],
+        },
+        {
+          name: 'hours',
+          title: 'Hours Verification',
+          type: 'object',
+          fields: [
+            { name: 'verified', type: 'boolean', initialValue: false },
+            { name: 'sourceType', type: 'string' },
+            { name: 'sourceUrl', type: 'url' },
+            { name: 'checkedAt', type: 'date' },
+            { name: 'confidence', type: 'string' },
+            { name: 'notes', type: 'string' },
+          ],
+        },
+        {
+          name: 'address',
+          title: 'Address Verification',
+          type: 'object',
+          fields: [
+            { name: 'verified', type: 'boolean', initialValue: false },
+            { name: 'sourceType', type: 'string' },
+            { name: 'sourceUrl', type: 'url' },
+            { name: 'checkedAt', type: 'date' },
+            { name: 'confidence', type: 'string' },
+            { name: 'notes', type: 'string' },
+          ],
+        },
+        {
+          name: 'amenities',
+          title: 'Amenities Verification',
+          type: 'object',
+          fields: [
+            { name: 'verified', type: 'boolean', initialValue: false },
+            { name: 'sourceType', type: 'string' },
+            { name: 'sourceUrl', type: 'url' },
+            { name: 'checkedAt', type: 'date' },
+            { name: 'confidence', type: 'string' },
+            { name: 'notes', type: 'string' },
+          ],
+        },
+      ],
     },
   ],
 };

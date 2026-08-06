@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
     push: mockPush,
   }),
   useSearchParams: () => ({
-    get: vi.fn((key) => null),
+    get: vi.fn(() => null),
   }),
 }));
 
@@ -22,6 +22,7 @@ const mockBreweries: Brewery[] = [
     name: 'Brewery One',
     type: 'Microbrewery',
     region: 'Central',
+    status: 'Open',
     address: '123 Main St',
     city: 'Baltimore',
     county: 'Baltimore City',
@@ -46,6 +47,7 @@ const mockBreweries: Brewery[] = [
     name: 'Brewery Two',
     type: 'Brewpub',
     region: 'Western',
+    status: 'Open',
     address: '456 West St',
     city: 'Frederick',
     county: 'Frederick',

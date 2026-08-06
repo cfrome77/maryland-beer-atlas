@@ -4,8 +4,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, BookOpen, Star, Sparkles, Compass } from 'lucide-react';
-import { MarylandRegion, Brewery, BeerTrail, BreweryType, TravelGuide } from '@/lib/types';
+import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass } from 'lucide-react';
+import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
 
 // Dynamically import the MapView component to disable SSR since MapLibre uses browser APIs (window, self, etc.)
 const MapView = dynamic(
@@ -41,6 +41,11 @@ interface MultiSelectDropdownProps {
 function MultiSelectDropdown({ label, options, selectedValues, onChange, placeholder }: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Unique ID for ARIA mapping
+  const id = React.useId();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -66,13 +71,49 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
     onChange([]);
   };
 
+  // Keyboard accessibility and focus management
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    }
+  };
+
+  const handleOptionKeyDown = (e: React.KeyboardEvent, option: string, index: number) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      handleToggleOption(option);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % options.length;
+      optionRefs.current[nextIndex]?.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + options.length) % options.length;
+      optionRefs.current[prevIndex]?.focus();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    }
+  };
+
   return (
-    <div ref={containerRef} className="relative flex-1 min-w-[140px] md:min-w-[170px] space-y-1.5">
+    <div
+      ref={containerRef}
+      onKeyDown={handleKeyDown}
+      className="relative flex-1 min-w-[140px] md:min-w-[170px] space-y-1.5"
+    >
       <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{label}</span>
       <button
+        ref={buttonRef}
         type="button"
+        id={`${id}-button`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={`${id}-listbox`}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-left text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-left text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500"
       >
         <span className="truncate">
           {selectedValues.length === 0 ? (
@@ -90,7 +131,16 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
           {selectedValues.length > 0 && (
             <span
               onClick={handleClear}
-              className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.stopPropagation();
+                  onChange([]);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Clear selected ${label}`}
+              className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none"
               title="Clear selection"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -105,13 +155,25 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 w-full max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1">
-          {options.map((option) => {
+        <div
+          id={`${id}-listbox`}
+          role="listbox"
+          aria-label={label}
+          aria-multiselectable="true"
+          className="absolute left-0 mt-1 w-full max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1"
+        >
+          {options.map((option, idx) => {
             const isChecked = selectedValues.includes(option);
             return (
-              <label
+              <div
                 key={option}
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs cursor-pointer select-none transition-colors ${
+                ref={el => { optionRefs.current[idx] = el; }}
+                role="option"
+                aria-selected={isChecked}
+                tabIndex={0}
+                onKeyDown={(e) => handleOptionKeyDown(e, option, idx)}
+                onClick={() => handleToggleOption(option)}
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs cursor-pointer select-none transition-colors outline-none focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-amber-500 ${
                   isChecked
                     ? 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 font-medium'
@@ -120,11 +182,12 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
                 <input
                   type="checkbox"
                   checked={isChecked}
-                  onChange={() => handleToggleOption(option)}
-                  className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-880 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 focus:outline-none"
+                  onChange={() => {}} // Controlled through the parent div's handlers
+                  tabIndex={-1} // Avoid double tab stops
+                  className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-880 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 focus:outline-none pointer-events-none"
                 />
                 <span className="truncate">{option}</span>
-              </label>
+              </div>
             );
           })}
         </div>
@@ -190,10 +253,16 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     if (visibleBreweries.length > 0) {
       // Keep selected if still visible, otherwise default to first visible
       if (!selectedBrewery || !visibleBreweries.some(b => b.id === selectedBrewery.id)) {
-        setSelectedBrewery(visibleBreweries[0]);
+        const timer = setTimeout(() => {
+          setSelectedBrewery(visibleBreweries[0]);
+        }, 0);
+        return () => clearTimeout(timer);
       }
     } else {
-      setSelectedBrewery(null);
+      const timer = setTimeout(() => {
+        setSelectedBrewery(null);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [visibleBreweries, selectedBrewery]);
 
@@ -288,7 +357,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                             activeTrailId === trail.id
                               ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
-                              : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
+                              : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
                           }`}
                         >
                           <Eye className="w-3.5 h-3.5 shrink-0" />
