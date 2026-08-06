@@ -177,9 +177,10 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     <>
       {/* Filter Controls Box */}
       <div className="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        {/* Row 1: Search & Popular Guides preset select */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Search Input */}
-          <div className="relative md:col-span-3">
+          <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
               type="text"
@@ -192,14 +193,14 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           </div>
 
           {/* Popular Guides Preset Select */}
-          <div className="relative md:col-span-2">
+          <div className="relative">
             <select
               value={selectedQuickGuide}
               onChange={handleQuickGuideChange}
               aria-label="Popular guides and presets"
-              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
             >
-              <option value="" className="text-zinc-800 dark:text-zinc-200">Select Popular Guide...</option>
+              <option value="" className="text-zinc-800 dark:text-zinc-200">Select Popular Guide or Filter Preset...</option>
               <option value="Frederick County" className="text-zinc-800 dark:text-zinc-200">Frederick County</option>
               <option value="Baltimore City" className="text-zinc-800 dark:text-zinc-200">Baltimore City</option>
               <option value="Montgomery County" className="text-zinc-800 dark:text-zinc-200">Montgomery County</option>
@@ -211,9 +212,12 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             </select>
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
           </div>
+        </div>
 
+        {/* Row 2: Standard Filtering dropdowns & Reset button */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Region Select */}
-          <div className="relative md:col-span-2">
+          <div className="relative">
             <select
               value={selectedRegion}
               onChange={handleRegionChange}
@@ -231,12 +235,12 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           </div>
 
           {/* County Select */}
-          <div className="relative md:col-span-2">
+          <div className="relative">
             <select
               value={selectedCounty}
               onChange={handleCountyChange}
               aria-label="Filter by county"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
               <option value="">All Counties</option>
               {counties.map((county) => (
@@ -249,14 +253,14 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           </div>
 
           {/* Brewery Type Select */}
-          <div className="relative md:col-span-1">
+          <div className="relative">
             <select
               value={selectedType}
               onChange={handleTypeChange}
               aria-label="Filter by brewery type"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
-              <option value="">All Types</option>
+              <option value="">All Brewery Types</option>
               {breweryTypes.map((type) => (
                 <option key={type} value={type}>
                   {type}
@@ -267,14 +271,14 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           </div>
 
           {/* Amenity Filter */}
-          <div className="relative md:col-span-1">
+          <div className="relative">
             <select
               value={selectedAmenity}
               onChange={handleAmenityChange}
               aria-label="Filter by amenity"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
             >
-              <option value="">Amenities</option>
+              <option value="">All Amenities</option>
               {amenities.map((amenity) => (
                 <option key={amenity} value={amenity}>
                   {amenity}
@@ -285,14 +289,15 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           </div>
 
           {/* Reset Button */}
-          <div className="md:col-span-1">
+          <div>
             <button
               onClick={resetFilters}
               title="Reset Filters"
               aria-label="Reset all filters"
-              className="w-full h-full py-3 md:py-0 inline-flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-880 cursor-pointer"
+              className="w-full py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-800 font-bold text-xs cursor-pointer"
             >
-              <RotateCcw className="w-5 h-5" />
+              <RotateCcw className="w-4 h-4" />
+              Reset Filters
             </button>
           </div>
         </div>
