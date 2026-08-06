@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 
 export default async function BreweriesDirectoryPage() {
   const breweries = await contentService.breweries.getAll();
+  const guides = await contentService.guides.getAll();
 
   const breadcrumbs = [
     { label: 'Directory', href: '/breweries' },
@@ -35,7 +36,7 @@ export default async function BreweriesDirectoryPage() {
 
       {/* PageContainer structure */}
       <PageContainer size="default">
-        <BreweriesDirectoryContainer breweries={breweries} />
+        <BreweriesDirectoryContainer breweries={breweries} guides={guides} />
       </PageContainer>
     </div>
   );

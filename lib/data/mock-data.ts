@@ -35,6 +35,38 @@ export const mockBreweries: Brewery[] = [
     verificationStatus: 'Verified'
   },
   {
+    id: 'monocacy',
+    slug: 'monocacy-brewing-company',
+    name: 'Monocacy Brewing Company',
+    type: 'Microbrewery',
+    region: 'Central',
+    address: '1783 N Market St',
+    city: 'Frederick',
+    county: 'Frederick',
+    zipCode: '21701',
+    phone: '240-457-4232',
+    website: 'https://monocacybrewing.com',
+    socialLinks: {
+      instagram: 'https://instagram.com/monocacybrewing',
+      facebook: 'https://facebook.com/monocacybrewing'
+    },
+    coordinates: { lat: 39.4292, lng: -77.4045 },
+    description: 'Tucked away in Frederick\'s historic district, Monocacy Brewing prides itself on producing high-quality craft beers with local Maryland ingredients, creating a true sense of place and community.',
+    image: 'https://images.unsplash.com/photo-1566633806327-68e152aaf26d?auto=format&fit=crop&q=80&w=800',
+    featured: true,
+    hours: [
+      { day: 'Thursday', hours: '4:00 PM - 8:00 PM' },
+      { day: 'Friday', hours: '3:00 PM - 9:00 PM' },
+      { day: 'Saturday', hours: '12:00 PM - 9:00 PM' },
+      { day: 'Sunday', hours: '12:00 PM - 6:00 PM' },
+    ],
+    beerStyles: ['Pilsner', 'Hazy IPA', 'Red Ale', 'Stout'],
+    amenities: ['Tasting Room', 'Outdoor Seating', 'Kid Friendly', 'Dog Friendly'],
+    lastVerified: '2025-06-15',
+    verificationSource: 'Official Website',
+    verificationStatus: 'Verified'
+  },
+  {
     id: 'elder-pine',
     slug: 'elder-pine-brewing-and-blending',
     name: 'Elder Pine Brewing & Blending',
@@ -64,6 +96,74 @@ export const mockBreweries: Brewery[] = [
     beerStyles: ['Double IPA', 'Czech Pilsner', 'Fruited Sour', 'Lager', 'Hazy IPA', 'Wild Ale'],
     amenities: ['Dog Friendly', 'Outdoor Pine Grove', 'Food Trucks', 'Kid Friendly', 'Cans To-Go'],
     lastVerified: '2025-06-01',
+    verificationSource: 'Brewery Management',
+    verificationStatus: 'Verified'
+  },
+  {
+    id: 'streetcar82',
+    slug: 'streetcar-82-brewing-co',
+    name: 'Streetcar 82 Brewing Co.',
+    type: 'Microbrewery',
+    region: 'Capital',
+    address: '4824 Rhode Island Ave',
+    city: 'Hyattsville',
+    county: "Prince George's",
+    zipCode: '20781',
+    phone: '240-770-6644',
+    website: 'https://www.streetcar82brewing.com',
+    socialLinks: {
+      instagram: 'https://instagram.com/streetcar82brewing',
+      facebook: 'https://facebook.com/streetcar82'
+    },
+    coordinates: { lat: 38.9482, lng: -76.9405 },
+    description: 'A neighborhood microbrewery situated in historic Hyattsville. Streetcar 82 is proudly Deaf-owned and operated, offering a beautiful community-focused taproom and classic Belgian and American beer styles.',
+    image: 'https://images.unsplash.com/photo-1518176258769-f227c798150e?auto=format&fit=crop&q=80&w=800',
+    featured: true,
+    hours: [
+      { day: 'Wednesday', hours: '4:00 PM - 9:00 PM' },
+      { day: 'Thursday', hours: '4:00 PM - 9:00 PM' },
+      { day: 'Friday', hours: '12:00 PM - 10:00 PM' },
+      { day: 'Saturday', hours: '12:00 PM - 10:00 PM' },
+      { day: 'Sunday', hours: '12:00 PM - 7:00 PM' },
+    ],
+    beerStyles: ['Belgian Witbier', 'Saison', 'IPA', 'Dry Stout'],
+    amenities: ['Outdoor Seating', 'Deaf-Friendly / ASL', 'Kid Friendly', 'Dog Friendly', 'Food Trucks'],
+    lastVerified: '2025-06-20',
+    verificationSource: 'Official Website',
+    verificationStatus: 'Verified'
+  },
+  {
+    id: 'franklins',
+    slug: 'franklins-brewery',
+    name: "Franklin's Brewery",
+    type: 'Brewpub',
+    region: 'Capital',
+    address: '5123 Baltimore Ave',
+    city: 'Hyattsville',
+    county: "Prince George's",
+    zipCode: '20781',
+    phone: '301-927-2740',
+    website: 'https://franklinsbrewery.com',
+    socialLinks: {
+      instagram: 'https://instagram.com/franklinsbrewery',
+      facebook: 'https://facebook.com/franklinsbrewpub'
+    },
+    coordinates: { lat: 38.9525, lng: -76.9398 },
+    description: "Franklin's is Prince George's County's first microbrewery and the only brewery/toy store/general store in the world! Serving up award-winning hand-crafted beers and local food in an incredibly fun, eclectic space.",
+    image: 'https://images.unsplash.com/photo-1532634922-8fe0b757fb13?auto=format&fit=crop&q=80&w=800',
+    featured: false,
+    hours: [
+      { day: 'Monday', hours: '11:00 AM - 9:30 PM' },
+      { day: 'Tuesday', hours: '11:00 AM - 9:30 PM' },
+      { day: 'Wednesday', hours: '11:00 AM - 9:30 PM' },
+      { day: 'Thursday', hours: '11:00 AM - 9:30 PM' },
+      { day: 'Friday', hours: '11:00 AM - 10:30 PM' },
+      { day: 'Saturday', hours: '11:00 AM - 10:30 PM' },
+      { day: 'Sunday', hours: '11:00 AM - 9:00 PM' },
+    ],
+    beerStyles: ['IPA', 'Stout', 'Lager', 'Porter', 'Sour'],
+    amenities: ['Full Food Menu', 'General Store / Toy Shop', 'Kid Friendly', 'Tasting Flight', 'Togo Cans'],
+    lastVerified: '2025-06-21',
     verificationSource: 'Brewery Management',
     verificationStatus: 'Verified'
   },
@@ -130,6 +230,39 @@ export const mockBreweries: Brewery[] = [
     amenities: ['Large Beer Hall', 'Outdoor Plaza', 'Kid Friendly', 'Shared Collective Spaces', 'Food Vendors'],
     lastVerified: '2025-05-22',
     verificationSource: 'Official Website & Socials',
+    verificationStatus: 'Verified'
+  },
+  {
+    id: 'peabody',
+    slug: 'peabody-heights-brewery',
+    name: 'Peabody Heights Brewery',
+    type: 'Production',
+    region: 'Central',
+    address: '401 E 30th St',
+    city: 'Baltimore',
+    county: 'Baltimore City',
+    zipCode: '21218',
+    phone: '410-467-7837',
+    website: 'https://peabodyheightsbrewery.com',
+    socialLinks: {
+      instagram: 'https://instagram.com/peabodyheightsbrewery',
+      facebook: 'https://facebook.com/peabodyheightsbrewery'
+    },
+    coordinates: { lat: 39.3248, lng: -76.6111 },
+    description: 'Located on the historic site of Old Oriole Park in Baltimore\'s Charles Village/Abell neighborhood, Peabody Heights is a co-op style production brewery producing delicious, community-minded craft beers and retro-themed sours.',
+    image: 'https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?auto=format&fit=crop&q=80&w=800',
+    featured: true,
+    hours: [
+      { day: 'Wednesday', hours: '4:00 PM - 9:00 PM' },
+      { day: 'Thursday', hours: '4:00 PM - 9:00 PM' },
+      { day: 'Friday', hours: '12:00 PM - 11:00 PM' },
+      { day: 'Saturday', hours: '12:00 PM - 11:00 PM' },
+      { day: 'Sunday', hours: '12:00 PM - 8:00 PM' },
+    ],
+    beerStyles: ['IPA', 'Lager', 'Sour', 'Stout', 'Pilsner'],
+    amenities: ['Tasting Room', 'Spacious Beer Garden', 'Kid Friendly', 'Arcade Games', 'Historic Memorabilia'],
+    lastVerified: '2025-06-18',
+    verificationSource: 'Official Website',
     verificationStatus: 'Verified'
   },
   {
@@ -239,16 +372,16 @@ export const mockTrails: BeerTrail[] = [
   {
     id: 'frederick-beer-adventure',
     slug: 'frederick-beer-adventure',
-    name: 'Frederick Beer Adventure',
-    description: 'Embark on an exciting journey through Frederick\'s historic streets and industrial hubs. Taste bold IPAs, visit massive production houses, and enjoy the beautiful mountain backdrop.',
+    name: 'Frederick City Beer Trail',
+    description: 'Embark on an exciting journey through Frederick\'s historic streets and industrial hubs. These outstanding breweries are situated just minutes apart in Frederick, making for a seamless, ultra-local craft adventure with a gorgeous mountain backdrop.',
     region: 'Central',
-    distance: '15 miles',
-    duration: 'Full Day',
+    distance: '4.5 miles',
+    duration: 'Half Day',
     image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
-    highlight: 'Sip bold IPAs at Flying Dog\'s legendary Wedgewood tasting room and view original Steadman artwork.',
+    highlight: 'Sip bold IPAs at Flying Dog\'s legendary tasting room and experience Monocacy\'s historic warehouse brewery tour.',
     breweries: [
       mockBreweries.find(b => b.id === 'flying-dog')!,
-      mockBreweries.find(b => b.id === 'union-craft')!
+      mockBreweries.find(b => b.id === 'monocacy')!
     ],
     nearbyAttractions: [
       'Historic Downtown Frederick',
@@ -258,46 +391,46 @@ export const mockTrails: BeerTrail[] = [
     difficulty: 'Easy'
   },
   {
-    id: 'brewery-hiking-day',
-    slug: 'brewery-hiking-day',
-    name: 'Brewery + Hiking Day',
-    description: 'The ultimate active getaway. Combine scenic trails along the historic C&O Canal or Catoctin Mountain with crisp farm fresh lagers and hop-forward IPAs.',
+    id: 'hyattsville-beer-trail',
+    slug: 'hyattsville-beer-trail',
+    name: 'Hyattsville & Route 1 Corridor Trail',
+    description: 'A neighborhood craft beer trail in Prince George\'s county, connecting close-knit community taprooms just a block or two apart along the historic Route 1 corridor. Extremely bike and pedestrian-friendly.',
     region: 'Capital',
-    distance: '28 miles',
-    duration: '1 Day (Active)',
+    distance: '1.2 miles',
+    duration: '3-4 Hours',
     image: 'https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800',
-    highlight: 'Sip a crisp, farm-brewed Czech Pilsner under a serene pine grove after a satisfying hike.',
+    highlight: 'Walk between Prince George\'s first microbrewery and a vibrant Deaf-owned neighbourhood taproom.',
     breweries: [
-      mockBreweries.find(b => b.id === 'elder-pine')!,
-      mockBreweries.find(b => b.id === 'cushwa')!
+      mockBreweries.find(b => b.id === 'streetcar82')!,
+      mockBreweries.find(b => b.id === 'franklins')!
     ],
     nearbyAttractions: [
-      'C&O Canal National Historical Park',
-      'Sugarloaf Mountain',
-      'Catoctin Mountain Park'
+      'Hyattsville Arts District',
+      'Anacostia River Trail',
+      'University of Maryland Campus'
     ],
-    difficulty: 'Challenging'
+    difficulty: 'Easy'
   },
   {
-    id: 'chesapeake-bay-beer-weekend',
-    slug: 'chesapeake-bay-beer-weekend',
-    name: 'Chesapeake Bay Beer Weekend',
-    description: 'A relaxing weekend trip across the bay bridge. Pair sun, sand, and coastal views with legendary sour beers, coastal pale ales, and premium outdoor beer gardens.',
-    region: 'Eastern Shore',
-    distance: '45 miles',
-    duration: '2-3 Days (Weekend)',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800',
-    highlight: 'Enjoy a world-famous J.R.E.A.M. sour beer in the charming, historic streets of Berlin.',
+    id: 'baltimore-craft-loop',
+    slug: 'baltimore-craft-loop',
+    name: 'Baltimore Craft Brewery Loop',
+    description: 'Pair Baltimore\'s industrial history with world-class local brewing. These outstanding urban craft breweries are located in the heart of Baltimore City, just a short Uber or bike ride apart.',
+    region: 'Central',
+    distance: '2.1 miles',
+    duration: '4-5 Hours',
+    image: 'https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?auto=format&fit=crop&q=80&w=800',
+    highlight: 'Enjoy fresh Duckpin Pale Ale in the Union Collective and retro sours on the historic Old Oriole Park site at Peabody Heights.',
     breweries: [
-      mockBreweries.find(b => b.id === 'burley-oak')!,
-      mockBreweries.find(b => b.id === 'calvert-brewing')!
+      mockBreweries.find(b => b.id === 'union-craft')!,
+      mockBreweries.find(b => b.id === 'peabody')!
     ],
     nearbyAttractions: [
-      'Assateague Island National Seashore',
-      'Historic Berlin Historic District',
-      'Ocean City Boardwalk'
+      'The Union Collective',
+      'Charles Village Historic District',
+      'Johns Hopkins University Campus'
     ],
-    difficulty: 'Moderate'
+    difficulty: 'Easy'
   }
 ];
 
@@ -339,7 +472,7 @@ export const mockGuides: TravelGuide[] = [
     image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800',
     recommendedStops: [
       mockBreweries.find(b => b.id === 'flying-dog')!,
-      mockBreweries.find(b => b.id === 'cushwa')!
+      mockBreweries.find(b => b.id === 'monocacy')!
     ],
     tips: [
       'Bring your hiking shoes—Frederick is flanked by beautiful state parks like Catoctin Mountain and Sugarloaf, perfect for pre-beer adventures.',
@@ -351,8 +484,8 @@ export const mockGuides: TravelGuide[] = [
       <h3>The Giants of Frederick</h3>
       <p>Flying Dog Brewery stands as an imposing, beloved anchor of this community. Step into their Wedgewood tasting room to see walls decorated with original Ralph Steadman paintings, and experience their highly experimental small-batch behaviors alongside classic offerings like Raging Bitch IPA.</p>
 
-      <h3>Heading West to Cushwa</h3>
-      <p>A short drive west takes you into Williamsport, where Cushwa Brewing operates. Cushwa sits near the C&O Canal national historical park, making it the perfect final destination after a day of cycling or walking along the Potomac River. Their incredibly hazy IPAs are widely regarded as some of the finest in the state.</p>
+      <h3>Heading West to Monocacy</h3>
+      <p>A short drive takes you to Monocacy Brewing. Monocacy is situated inside a beautifully converted historic warehouse building, producing crisp beers using locally grown Maryland hops and malts.</p>
     `
   }
 ];

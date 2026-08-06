@@ -127,16 +127,28 @@ export default function MapView({
 
       // Create a custom marker element
       const el = document.createElement('div');
-      el.className = 'cursor-pointer transform transition-transform hover:scale-115';
+      el.className = 'cursor-pointer';
 
       // Marker HTML template using SVG for crisp mapping dots
+      // We apply hover animations only on the inner elements to avoid conflicting with MapLibre's internal CSS transforms
       el.innerHTML = `
-        <div class="relative flex items-center justify-center">
-          <div class="absolute w-8 h-8 rounded-full opacity-35 animate-ping" style="background-color: ${color};"></div>
-          <div class="relative w-8 h-8 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-bold text-xs" style="background-color: ${color};">
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z"/>
+        <div class="relative flex items-center justify-center transition-all duration-300 ease-out hover:scale-120 hover:-translate-y-1 group">
+          <!-- Modern premium marker shape (drop pin) -->
+          <div class="relative w-9 h-11 flex items-center justify-center drop-shadow-md">
+            <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${color}" stroke="#ffffff" stroke-width="2"/>
             </svg>
+
+            <!-- Crisp Inner White Circle containing a modern beer mug icon -->
+            <div class="relative z-10 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-inner">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 11h1a3 3 0 0 1 0 6h-1"/>
+                <path d="M9 12v6"/>
+                <path d="M13 12v6"/>
+                <path d="M6 8h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/>
+                <path d="M18 5H6"/>
+              </svg>
+            </div>
           </div>
         </div>
       `;

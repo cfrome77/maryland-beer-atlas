@@ -13,7 +13,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
 
           {/* Brand Info */}
-          <div className="md:col-span-5 space-y-5">
+          <div className="md:col-span-7 space-y-5">
             <Link
               href="/"
               className="flex items-center space-x-2.5 text-zinc-50 group focus-visible:outline-2 focus-visible:outline-amber-500 rounded-lg w-fit"
@@ -26,7 +26,7 @@ export function Footer() {
                 Maryland <span className="text-amber-500">Beer Atlas</span>
               </span>
             </Link>
-            <p className="text-sm text-zinc-400 max-w-md leading-relaxed font-normal">
+            <p className="text-sm text-zinc-400 max-w-xl leading-relaxed font-normal">
               Establishing the ultimate curated guide to Maryland&apos;s vibrant craft beer community. Explore beautiful farm breweries, historic taprooms, and dynamic beer trails across our great state.
             </p>
             <div className="flex items-center gap-2 text-xs text-zinc-500">
@@ -36,7 +36,7 @@ export function Footer() {
           </div>
 
           {/* Directory Links */}
-          <div className="md:col-span-3 space-y-4">
+          <div className="md:col-span-5 space-y-4">
             <h3 className="text-xs font-bold text-zinc-50 uppercase tracking-widest border-l-2 border-amber-500 pl-2.5">
               Explore Maryland
             </h3>
@@ -62,60 +62,6 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
-
-          {/* Counties & Categories SEO links */}
-          <div className="md:col-span-4 space-y-4">
-            <h3 className="text-xs font-bold text-zinc-50 uppercase tracking-widest border-l-2 border-amber-500 pl-2.5">
-              Popular Local Guides
-            </h3>
-            <ul className="grid grid-cols-2 gap-x-2 gap-y-2.5 text-xs font-medium text-zinc-400">
-              <li>
-                <Link href="/breweries/county/frederick" className="hover:text-amber-400 transition-colors">
-                  Frederick County
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/county/baltimore-city" className="hover:text-amber-400 transition-colors">
-                  Baltimore City
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/county/montgomery" className="hover:text-amber-400 transition-colors">
-                  Montgomery County
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/county/baltimore-county" className="hover:text-amber-400 transition-colors">
-                  Baltimore County
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/category/dog-friendly" className="hover:text-amber-400 transition-colors font-semibold text-amber-500">
-                  🐕 Dog-Friendly Taprooms
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/category/farm-brewery" className="hover:text-amber-400 transition-colors">
-                  Farm Breweries
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/category/brewpub" className="hover:text-amber-400 transition-colors">
-                  Local Brewpubs
-                </Link>
-              </li>
-              <li>
-                <Link href="/breweries/category/microbrewery" className="hover:text-amber-400 transition-colors">
-                  Microbreweries
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal / Social Placeholder */}
-          <div className="md:col-span-12 lg:md:col-span-5 space-y-4 hidden md:block">
-            {/* Kept minimal or removed to keep grid nice under 12-cols constraint */}
           </div>
         </div>
 

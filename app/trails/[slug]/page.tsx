@@ -3,9 +3,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon } from 'lucide-react';
+import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { Brewery } from '@/lib/types';
+import { TrailMapView } from '@/components/ui/trail-map-view';
 
 interface TrailDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -250,6 +251,18 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* Interactive Route Map with Connecting Line */}
+            <div className="space-y-4 pb-8 border-b border-zinc-100 dark:border-zinc-850">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+                <MapIcon className="w-5 h-5 text-amber-500" />
+                Interactive Trail Map
+              </h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                View stops along the trail itinerary connected in geographic sequence. Select pins to preview stop details.
+              </p>
+              <TrailMapView breweries={trail.breweries} trail={trail} />
             </div>
 
             {/* Brewery Itinerary Timeline */}
