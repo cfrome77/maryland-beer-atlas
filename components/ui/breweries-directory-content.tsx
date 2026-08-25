@@ -80,6 +80,12 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     quickGuide: initialQuickGuide,
   });
 
+  // Keep a ref to current filter values for debounced search sync
+  const filterStateRef = useRef({ selectedRegion, selectedType, selectedCounty, selectedAmenity });
+  useEffect(() => {
+    filterStateRef.current = { selectedRegion, selectedType, selectedCounty, selectedAmenity };
+  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity]);
+
   // Sync state with URL search params when they change (e.g., back/forward buttons)
   useEffect(() => {
     const currentSearch = searchParams?.get('search') || '';
@@ -150,11 +156,19 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
 
     const timer = setTimeout(() => {
       setSelectedQuickGuide('');
-      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, '', true);
+      const { selectedRegion: r, selectedType: t, selectedCounty: c, selectedAmenity: a } = filterStateRef.current;
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      if (r) params.set('region', r);
+      if (t) params.set('type', t);
+      if (c) params.set('county', c);
+      if (a) params.set('amenity', a);
+
+      router.replace(`/breweries?${params.toString()}`);
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, searchParams, router]);
 
   const handleQuickGuideChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;

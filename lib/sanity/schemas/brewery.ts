@@ -4,17 +4,27 @@ export const brewerySchema = {
   name: 'brewery',
   title: 'Brewery',
   type: 'document',
+  groups: [
+    { name: 'identity', title: 'Brewery Identity' },
+    { name: 'location', title: 'Location & Contact' },
+    { name: 'operations', title: 'Operations & Hours' },
+    { name: 'verification', title: 'Data Verification & Provenance' },
+    { name: 'editorial', title: 'Editorial & Marketing Content' },
+  ],
   fields: [
+    // Identity Group
     {
       name: 'name',
       title: 'Brewery Name',
       type: 'string',
+      group: 'identity',
       validation: (Rule: any) => Rule.required(),
     },
     {
       name: 'slug',
       title: 'Slug',
       type: 'slug',
+      group: 'identity',
       options: {
         source: 'name',
         maxLength: 96,
@@ -25,6 +35,7 @@ export const brewerySchema = {
       name: 'type',
       title: 'Brewery Type',
       type: 'string',
+      group: 'identity',
       options: {
         list: [
           { title: 'Microbrewery', value: 'Microbrewery' },
@@ -36,9 +47,99 @@ export const brewerySchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'region',
+      title: 'Maryland Region',
+      type: 'string',
+      group: 'identity',
+      options: {
+        list: [
+          { title: 'Capital', value: 'Capital' },
+          { title: 'Central', value: 'Central' },
+          { title: 'Eastern Shore', value: 'Eastern Shore' },
+          { title: 'Southern', value: 'Southern' },
+          { title: 'Western', value: 'Western' },
+        ],
+      },
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'featured',
+      title: 'Featured Brewery',
+      type: 'boolean',
+      group: 'identity',
+      initialValue: false,
+    },
+
+    // Location Group
+    {
+      name: 'address',
+      title: 'Street Address',
+      type: 'string',
+      group: 'location',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'city',
+      title: 'City',
+      type: 'string',
+      group: 'location',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'county',
+      title: 'County',
+      type: 'string',
+      group: 'location',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'zipCode',
+      title: 'Zip Code',
+      type: 'string',
+      group: 'location',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'phone',
+      title: 'Phone Number',
+      type: 'string',
+      group: 'location',
+    },
+    {
+      name: 'website',
+      title: 'Website URL',
+      type: 'url',
+      group: 'location',
+    },
+    {
+      name: 'socialLinks',
+      title: 'Social Media Links',
+      type: 'object',
+      group: 'location',
+      fields: [
+        { name: 'facebook', title: 'Facebook URL', type: 'url' },
+        { name: 'instagram', title: 'Instagram URL', type: 'url' },
+        { name: 'twitter', title: 'Twitter URL', type: 'url' },
+      ],
+    },
+    {
+      name: 'coordinates',
+      title: 'Geographic Coordinates',
+      type: 'object',
+      group: 'location',
+      fields: [
+        { name: 'lat', title: 'Latitude', type: 'number', validation: (Rule: any) => Rule.required() },
+        { name: 'lng', title: 'Longitude', type: 'number', validation: (Rule: any) => Rule.required() },
+      ],
+      validation: (Rule: any) => Rule.required(),
+    },
+
+    // Operations Group
+    {
       name: 'status',
       title: 'Operating Status',
       type: 'string',
+      group: 'operations',
       options: {
         list: [
           { title: 'Open', value: 'Open' },
@@ -57,6 +158,7 @@ export const brewerySchema = {
       name: 'statusUpdatedAt',
       title: 'Status Updated At',
       type: 'date',
+      group: 'operations',
       options: {
         dateFormat: 'YYYY-MM-DD',
       },
@@ -65,95 +167,13 @@ export const brewerySchema = {
       name: 'statusNotes',
       title: 'Status Notes',
       type: 'text',
-    },
-    {
-      name: 'region',
-      title: 'Maryland Region',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Capital', value: 'Capital' },
-          { title: 'Central', value: 'Central' },
-          { title: 'Eastern Shore', value: 'Eastern Shore' },
-          { title: 'Southern', value: 'Southern' },
-          { title: 'Western', value: 'Western' },
-        ],
-      },
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'address',
-      title: 'Street Address',
-      type: 'string',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'city',
-      title: 'City',
-      type: 'string',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'county',
-      title: 'County',
-      type: 'string',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'zipCode',
-      title: 'Zip Code',
-      type: 'string',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'phone',
-      title: 'Phone Number',
-      type: 'string',
-    },
-    {
-      name: 'website',
-      title: 'Website URL',
-      type: 'url',
-    },
-    {
-      name: 'socialLinks',
-      title: 'Social Media Links',
-      type: 'object',
-      fields: [
-        { name: 'facebook', title: 'Facebook URL', type: 'url' },
-        { name: 'instagram', title: 'Instagram URL', type: 'url' },
-        { name: 'twitter', title: 'Twitter URL', type: 'url' },
-      ],
-    },
-    {
-      name: 'coordinates',
-      title: 'Geographic Coordinates',
-      type: 'object',
-      fields: [
-        { name: 'lat', title: 'Latitude', type: 'number', validation: (Rule: any) => Rule.required() },
-        { name: 'lng', title: 'Longitude', type: 'number', validation: (Rule: any) => Rule.required() },
-      ],
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'description',
-      title: 'Description',
-      type: 'text',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'image',
-      title: 'Brewery Image',
-      type: 'image',
-      options: {
-        hotspot: true,
-      },
-      validation: (Rule: any) => Rule.required(),
+      group: 'operations',
     },
     {
       name: 'hours',
       title: 'Operating Hours (Legacy Display String)',
       type: 'array',
+      group: 'operations',
       of: [
         {
           type: 'object',
@@ -168,6 +188,7 @@ export const brewerySchema = {
       name: 'structuredHours',
       title: 'Structured Operating Hours',
       type: 'array',
+      group: 'operations',
       of: [
         {
           type: 'object',
@@ -209,6 +230,7 @@ export const brewerySchema = {
       name: 'holidayExceptions',
       title: 'Holiday and Special Date Exceptions',
       type: 'array',
+      group: 'operations',
       of: [
         {
           type: 'object',
@@ -238,24 +260,23 @@ export const brewerySchema = {
       name: 'beerStyles',
       title: 'Specialty Beer Styles',
       type: 'array',
+      group: 'operations',
       of: [{ type: 'string' }],
     },
     {
       name: 'amenities',
       title: 'Taproom Amenities',
       type: 'array',
+      group: 'operations',
       of: [{ type: 'string' }],
     },
-    {
-      name: 'featured',
-      title: 'Featured Brewery',
-      type: 'boolean',
-      initialValue: false,
-    },
+
+    // Verification Group
     {
       name: 'lastVerified',
       title: 'Last Verified Date',
       type: 'date',
+      group: 'verification',
       options: {
         dateFormat: 'YYYY-MM-DD',
       },
@@ -265,12 +286,14 @@ export const brewerySchema = {
       name: 'verificationSource',
       title: 'Verification Source',
       type: 'string',
+      group: 'verification',
       validation: (Rule: any) => Rule.required(),
     },
     {
       name: 'verificationStatus',
       title: 'Verification Status',
       type: 'string',
+      group: 'verification',
       options: {
         list: [
           { title: 'Verified', value: 'Verified' },
@@ -284,6 +307,7 @@ export const brewerySchema = {
       name: 'verification',
       title: 'Detailed Field Verifications',
       type: 'object',
+      group: 'verification',
       fields: [
         {
           name: 'general',
@@ -338,6 +362,25 @@ export const brewerySchema = {
           ],
         },
       ],
+    },
+
+    // Editorial Group
+    {
+      name: 'description',
+      title: 'Description',
+      type: 'text',
+      group: 'editorial',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'image',
+      title: 'Brewery Image',
+      type: 'image',
+      group: 'editorial',
+      options: {
+        hotspot: true,
+      },
+      validation: (Rule: any) => Rule.required(),
     },
   ],
 };

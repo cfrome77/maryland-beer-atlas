@@ -1,3 +1,21 @@
+/**
+ * Maryland Beer Atlas - Domain Models & Data Boundaries Architecture
+ *
+ * Data Boundary Separation:
+ * 1. Canonical Brewery Domain Facts (System of Record):
+ *    - Identity: id, slug, name, type, region
+ *    - Location & Contact: address, city, county, zipCode, phone, website, socialLinks, coordinates
+ *    - Operational Facts: status, statusUpdatedAt, statusNotes, hours, structuredHours, holidayExceptions, beerStyles, amenities, featured
+ *
+ * 2. Data Verification & Freshness Metadata:
+ *    - Summary Metadata: lastVerified, verificationSource, verificationStatus
+ *    - Field-Level Provenance: verification (general, hours, address, amenities verification details with source URLs, dates, and confidence)
+ *
+ * 3. Editorial & Marketing Content (Headless Sanity CMS):
+ *    - Editorial Descriptions & Media: description, image
+ *    - Travel Guides & Beer Trails: TravelGuide (articles, tips, recommendedStops), BeerTrail (curated itineraries, highlights, difficulty)
+ */
+
 export type MarylandRegion = 'Capital' | 'Central' | 'Eastern Shore' | 'Southern' | 'Western';
 
 export type BreweryType = 'Microbrewery' | 'Brewpub' | 'Production' | 'Farm Brewery';
@@ -51,15 +69,23 @@ export interface BreweryVerification {
   general: FieldVerification;
 }
 
+/**
+ * Canonical Brewery Domain Model
+ */
 export interface Brewery {
+  // Identity Facts
   id: string;
   slug: string;
   name: string;
   type: BreweryType;
   region: MarylandRegion;
+
+  // Operational Status & Details
   status: BreweryOperatingStatus;
   statusUpdatedAt?: string;
   statusNotes?: string;
+
+  // Location & Contact Facts
   address: string;
   city: string;
   county: string;
@@ -72,20 +98,31 @@ export interface Brewery {
     twitter?: string;
   };
   coordinates: Coordinates;
-  description: string;
-  image: string;
+
+  // Operating Hours
   hours: OperatingHours[];
   structuredHours?: DailyHours[];
   holidayExceptions?: HolidayException[];
+
+  // Features & Offerings
   beerStyles: string[];
   amenities: string[];
   featured: boolean;
+
+  // Verification & Provenance Metadata
   lastVerified: string;
   verificationSource: string;
   verificationStatus: 'Verified' | 'Needs Review' | 'Community Submitted';
   verification?: BreweryVerification;
+
+  // Editorial Content (Managed via Headless Sanity CMS)
+  description: string;
+  image: string;
 }
 
+/**
+ * Editorial Beer Trail Model
+ */
 export interface BeerTrail {
   id: string;
   slug: string;
@@ -101,6 +138,9 @@ export interface BeerTrail {
   difficulty: string; // e.g., "Easy", "Moderate", "Challenging"
 }
 
+/**
+ * Editorial Travel Guide Article Model
+ */
 export interface TravelGuide {
   slug: string;
   title: string;
