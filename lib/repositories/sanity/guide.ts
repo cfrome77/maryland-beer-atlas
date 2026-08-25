@@ -1,6 +1,7 @@
 import { TravelGuide } from '../../types';
 import { IGuideRepository } from '../interfaces';
 import { sanityClient } from '../../sanity/client';
+import { validateTravelGuide, validateTravelGuideList } from '../../validations/schemas';
 
 export class SanityGuideRepository implements IGuideRepository {
   private breweryProjection = `
@@ -9,6 +10,9 @@ export class SanityGuideRepository implements IGuideRepository {
     name,
     type,
     region,
+    status,
+    statusUpdatedAt,
+    statusNotes,
     address,
     city,
     county,
@@ -20,12 +24,15 @@ export class SanityGuideRepository implements IGuideRepository {
     description,
     "image": image.asset->url,
     hours,
+    structuredHours,
+    holidayExceptions,
     beerStyles,
     amenities,
     featured,
     lastVerified,
     verificationSource,
-    verificationStatus
+    verificationStatus,
+    verification
   `;
 
   private baseProjection = `
@@ -44,17 +51,17 @@ export class SanityGuideRepository implements IGuideRepository {
   `;
 
   async getAll(): Promise<TravelGuide[]> {
-    const results = await sanityClient.fetch<TravelGuide[]>(
+    const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "guide"] { ${this.baseProjection} }`
     );
-    return results || [];
+    return results && results.length > 0 ? validateTravelGuideList(results) : [];
   }
 
   async getBySlug(slug: string): Promise<TravelGuide | null> {
-    const results = await sanityClient.fetch<TravelGuide[]>(
+    const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "guide" && slug.current == $slug] { ${this.baseProjection} }`,
       { slug }
     );
-    return results[0] || null;
+    return results && results[0] ? validateTravelGuide(results[0]) : null;
   }
 }
