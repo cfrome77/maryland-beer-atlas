@@ -33,7 +33,7 @@ export default function MapView({
     try {
       const canvas = document.createElement('canvas');
       return !!(window.WebGL2RenderingContext && (canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2')));
-    } catch (e) {
+    } catch {
       return false;
     }
   });
@@ -84,9 +84,13 @@ export default function MapView({
         zoom: defaultZoom,
         attributionControl: { compact: true },
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error initializing maplibre map instance:', err);
-      setInitError(err?.message || 'Failed to initialize 3D GPU graphics.');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize 3D GPU graphics.';
+      // Trigger error state on next event loop tick to avoid react setState in render effect warning
+      setTimeout(() => {
+        setInitError(errorMessage);
+      }, 0);
       return;
     }
 
@@ -136,7 +140,7 @@ export default function MapView({
     Object.values(popupRootsRef.current).forEach((root) => {
       try {
         root.unmount();
-      } catch (e) {
+      } catch {
         // Safe to ignore
       }
     });
@@ -248,7 +252,7 @@ export default function MapView({
       Object.values(popupRootsRef.current).forEach((root) => {
         try {
           root.unmount();
-        } catch (e) {
+        } catch {
           // Safe to ignore
         }
       });
