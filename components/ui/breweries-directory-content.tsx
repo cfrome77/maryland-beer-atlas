@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Filter, RotateCcw, Beer as BeerIcon } from 'lucide-react';
-import { Brewery } from '@/lib/types';
-import { BreweryType, MarylandRegion } from '@/lib/types';
+import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity } from 'lucide-react';
+import { Brewery, BreweryType, MarylandRegion, OperationalCategory } from '@/lib/types';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
+import { filterBreweries } from '@/lib/utils/filter-breweries';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Compass, BookOpen, ArrowRight } from 'lucide-react';
@@ -23,6 +23,7 @@ interface FilterPreset {
   region?: MarylandRegion | '';
   type?: BreweryType | '';
   amenity?: string;
+  status?: string;
 }
 
 const FILTER_PRESETS: Record<string, FilterPreset> = {
@@ -34,18 +35,28 @@ const FILTER_PRESETS: Record<string, FilterPreset> = {
   'Farm Breweries': { label: 'Farm Breweries', type: 'Farm Brewery' },
   'Local Brewpubs': { label: 'Local Brewpubs', type: 'Brewpub' },
   'Microbreweries': { label: 'Microbreweries', type: 'Microbrewery' },
+  'Open Taprooms': { label: 'Open Taprooms', status: 'open' },
 };
+
+const OPERATIONAL_STATUS_OPTIONS: { label: string; value: OperationalCategory | '' }[] = [
+  { label: 'All Operational Statuses', value: '' },
+  { label: 'Currently Open', value: 'open' },
+  { label: 'Temporarily Closed', value: 'temporarily_closed' },
+  { label: 'Permanently Closed', value: 'permanently_closed' },
+  { label: 'Hours Unavailable', value: 'hours_unavailable' },
+];
 
 function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Selected filters from search params
-  const initialRegion = searchParams?.get('region') as MarylandRegion || '';
-  const initialType = searchParams?.get('type') as BreweryType || '';
+  const initialRegion = (searchParams?.get('region') as MarylandRegion) || '';
+  const initialType = (searchParams?.get('type') as BreweryType) || '';
   const initialSearch = searchParams?.get('search') || '';
   const initialCounty = searchParams?.get('county') || '';
   const initialAmenity = searchParams?.get('amenity') || '';
+  const initialStatus = searchParams?.get('status') || '';
   const initialQuickGuide = searchParams?.get('quickGuide') || '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
@@ -53,6 +64,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const [selectedType, setSelectedType] = useState<BreweryType | ''>(initialType);
   const [selectedCounty, setSelectedCounty] = useState<string>(initialCounty);
   const [selectedAmenity, setSelectedAmenity] = useState<string>(initialAmenity);
+  const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus);
   const [selectedQuickGuide, setSelectedQuickGuide] = useState<string>(initialQuickGuide);
 
   // Region, Type, County and Amenity lists
@@ -60,16 +72,17 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const breweryTypes: BreweryType[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];
 
   // Dynamically extract unique counties and amenities from the provided dataset
-  const counties = Array.from(new Set(breweries.map(b => b.county))).sort();
-  const amenities = Array.from(new Set(breweries.flatMap(b => b.amenities))).sort();
+  const counties = Array.from(new Set(breweries.map((b) => b.county))).sort();
+  const amenities = Array.from(new Set(breweries.flatMap((b) => b.amenities))).sort();
 
-  // Keep track of the parameters currently reflected in the URL with explicit TypeScript types
+  // Keep track of the parameters currently reflected in the URL
   const prevParamsRef = useRef<{
     search: string;
     region: MarylandRegion | '';
     type: BreweryType | '';
     county: string;
     amenity: string;
+    status: string;
     quickGuide: string;
   }>({
     search: initialSearch,
@@ -77,14 +90,27 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     type: initialType,
     county: initialCounty,
     amenity: initialAmenity,
+    status: initialStatus,
     quickGuide: initialQuickGuide,
   });
 
   // Keep a ref to current filter values for debounced search sync
-  const filterStateRef = useRef({ selectedRegion, selectedType, selectedCounty, selectedAmenity });
+  const filterStateRef = useRef({
+    selectedRegion,
+    selectedType,
+    selectedCounty,
+    selectedAmenity,
+    selectedStatus,
+  });
   useEffect(() => {
-    filterStateRef.current = { selectedRegion, selectedType, selectedCounty, selectedAmenity };
-  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity]);
+    filterStateRef.current = {
+      selectedRegion,
+      selectedType,
+      selectedCounty,
+      selectedAmenity,
+      selectedStatus,
+    };
+  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus]);
 
   // Sync state with URL search params when they change (e.g., back/forward buttons)
   useEffect(() => {
@@ -93,6 +119,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     const currentType = searchParams?.get('type') || '';
     const currentCounty = searchParams?.get('county') || '';
     const currentAmenity = searchParams?.get('amenity') || '';
+    const currentStatus = searchParams?.get('status') || '';
     const currentQuickGuide = searchParams?.get('quickGuide') || '';
 
     const prev = prevParamsRef.current;
@@ -102,6 +129,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       currentType !== prev.type ||
       currentCounty !== prev.county ||
       currentAmenity !== prev.amenity ||
+      currentStatus !== prev.status ||
       currentQuickGuide !== prev.quickGuide;
 
     if (hasChanged) {
@@ -110,6 +138,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       setSelectedType(currentType as BreweryType | '');
       setSelectedCounty(currentCounty);
       setSelectedAmenity(currentAmenity);
+      setSelectedStatus(currentStatus);
       setSelectedQuickGuide(currentQuickGuide);
 
       prevParamsRef.current = {
@@ -118,6 +147,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         type: currentType as BreweryType | '',
         county: currentCounty,
         amenity: currentAmenity,
+        status: currentStatus,
         quickGuide: currentQuickGuide,
       };
     }
@@ -130,6 +160,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     type: string,
     county: string,
     amenity: string,
+    status: string,
     quickGuide: string = '',
     replace: boolean = false
   ) => {
@@ -139,6 +170,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     if (type) params.set('type', type);
     if (county) params.set('county', county);
     if (amenity) params.set('amenity', amenity);
+    if (status) params.set('status', status);
     if (quickGuide) params.set('quickGuide', quickGuide);
 
     const url = `/breweries?${params.toString()}`;
@@ -156,13 +188,20 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
 
     const timer = setTimeout(() => {
       setSelectedQuickGuide('');
-      const { selectedRegion: r, selectedType: t, selectedCounty: c, selectedAmenity: a } = filterStateRef.current;
+      const {
+        selectedRegion: r,
+        selectedType: t,
+        selectedCounty: c,
+        selectedAmenity: a,
+        selectedStatus: s,
+      } = filterStateRef.current;
       const params = new URLSearchParams();
       if (searchQuery) params.set('search', searchQuery);
       if (r) params.set('region', r);
       if (t) params.set('type', t);
       if (c) params.set('county', c);
       if (a) params.set('amenity', a);
+      if (s) params.set('status', s);
 
       router.replace(`/breweries?${params.toString()}`);
     }, 400);
@@ -180,16 +219,18 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       const targetRegion = preset.region || '';
       const targetType = preset.type || '';
       const targetAmenity = preset.amenity || '';
+      const targetStatus = preset.status || '';
 
       setSelectedCounty(targetCounty);
       setSelectedRegion(targetRegion);
       setSelectedType(targetType);
       setSelectedAmenity(targetAmenity);
+      setSelectedStatus(targetStatus);
 
-      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, val);
+      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, val);
     } else {
       setSelectedQuickGuide('');
-      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, '');
+      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, '');
     }
   };
 
@@ -201,28 +242,35 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     const val = e.target.value as MarylandRegion | '';
     setSelectedRegion(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, '');
+    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, '');
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BreweryType | '';
     setSelectedType(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, '');
+    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, '');
   };
 
   const handleCountyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedCounty(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, '');
+    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, '');
   };
 
   const handleAmenityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedAmenity(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, '');
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, '');
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedStatus(val);
+    setSelectedQuickGuide('');
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, '');
   };
 
   const resetFilters = () => {
@@ -231,23 +279,19 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     setSelectedType('');
     setSelectedCounty('');
     setSelectedAmenity('');
+    setSelectedStatus('');
     setSelectedQuickGuide('');
     router.push('/breweries');
   };
 
-  // Filter logic
-  const filteredBreweries = breweries.filter((brewery) => {
-    const matchesSearch =
-      brewery.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brewery.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brewery.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brewery.beerStyles.some(style => style.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesRegion = selectedRegion ? brewery.region === selectedRegion : true;
-    const matchesType = selectedType ? brewery.type === selectedType : true;
-    const matchesCounty = selectedCounty ? brewery.county === selectedCounty : true;
-    const matchesAmenity = selectedAmenity ? brewery.amenities.includes(selectedAmenity) : true;
-
-    return matchesSearch && matchesRegion && matchesType && matchesCounty && matchesAmenity;
+  // Centralized filter logic execution
+  const filteredBreweries = filterBreweries(breweries, {
+    search: searchQuery,
+    region: selectedRegion,
+    type: selectedType,
+    county: selectedCounty,
+    amenity: selectedAmenity,
+    status: selectedStatus,
   });
 
   return (
@@ -277,7 +321,9 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               aria-label="Popular guides and presets"
               className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
             >
-              <option value="" className="text-zinc-800 dark:text-zinc-200">Select Popular Guide or Filter Preset...</option>
+              <option value="" className="text-zinc-800 dark:text-zinc-200">
+                Select Popular Guide or Filter Preset...
+              </option>
               {Object.keys(FILTER_PRESETS).map((key) => (
                 <option key={key} value={key} className="text-zinc-800 dark:text-zinc-200">
                   {key}
@@ -289,7 +335,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         </div>
 
         {/* Row 2: Standard Filtering dropdowns & Reset button */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* Region Select */}
           <div className="relative">
             <select
@@ -344,6 +390,23 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             <BeerIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
+          {/* Operational Status Select */}
+          <div className="relative">
+            <select
+              value={selectedStatus}
+              onChange={handleStatusChange}
+              aria-label="Filter by operational status"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+            >
+              {OPERATIONAL_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <Activity className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          </div>
+
           {/* Amenity Filter */}
           <div className="relative">
             <select
@@ -381,7 +444,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           <div>
             Showing <span className="font-semibold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
           </div>
-          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedQuickGuide) && (
+          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedStatus || selectedQuickGuide) && (
             <span className="text-amber-600 dark:text-amber-400 font-medium">Filters are currently active</span>
           )}
         </div>
