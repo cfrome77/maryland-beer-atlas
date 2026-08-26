@@ -5,20 +5,19 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 617ms
-✓ Running next.config.ts took 65ms
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
+✓ Ready in 565ms
+✓ Running next.config.ts took 48ms
 
 ○ Compiling / ...
- HEAD / 200 in 5.3s (next.js: 4.6s, application-code: 748ms)
- HEAD / 200 in 235ms (next.js: 8ms, application-code: 227ms)
- GET /breweries 200 in 2.1s (next.js: 1705ms, application-code: 381ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries 200 in 209ms (next.js: 11ms, application-code: 198ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries/burley-oak-brewing-company 200 in 2.6s (next.js: 2.4s, application-code: 255ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ HEAD / 200 in 5.3s (next.js: 4.6s, application-code: 700ms)
+ GET /breweries/flying-dog-brewery 200 in 3.5s (next.js: 2.7s, application-code: 818ms)
+ GET /breweries/flying-dog-brewery 200 in 229ms (next.js: 24ms, application-code: 204ms)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at BreweryDetailMap.useEffect (components/ui/brewery-detail-map.tsx:167:32)
+  165 |       if (popupRootRef.current) {
+  166 |         try {
+> 167 |           popupRootRef.current.unmount();
+      |                                ^
+  168 |         } catch {
+  169 |           // ignore
+  170 |         } (components/ui/brewery-detail-map.tsx:167:32)
