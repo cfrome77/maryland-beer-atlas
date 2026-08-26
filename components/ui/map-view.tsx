@@ -160,7 +160,17 @@ export default function MapView({
 
     // Add new markers
     breweries.forEach((brewery) => {
-      if (!brewery.coordinates || typeof brewery.coordinates.lng !== 'number' || typeof brewery.coordinates.lat !== 'number') {
+      if (
+        !brewery.coordinates ||
+        typeof brewery.coordinates.lng !== 'number' ||
+        typeof brewery.coordinates.lat !== 'number' ||
+        isNaN(brewery.coordinates.lng) ||
+        isNaN(brewery.coordinates.lat) ||
+        brewery.coordinates.lat < -90 ||
+        brewery.coordinates.lat > 90 ||
+        brewery.coordinates.lng < -180 ||
+        brewery.coordinates.lng > 180
+      ) {
         return;
       }
 
@@ -273,7 +283,17 @@ export default function MapView({
     if (!map || !selectedBrewery) return;
 
     const coords = selectedBrewery.coordinates;
-    if (!coords || typeof coords.lng !== 'number' || typeof coords.lat !== 'number') return;
+    if (
+      !coords ||
+      typeof coords.lng !== 'number' ||
+      typeof coords.lat !== 'number' ||
+      isNaN(coords.lng) ||
+      isNaN(coords.lat) ||
+      coords.lat < -90 ||
+      coords.lat > 90 ||
+      coords.lng < -180 ||
+      coords.lng > 180
+    ) return;
 
     // Fly to position
     map.flyTo({
@@ -315,7 +335,7 @@ export default function MapView({
     // Collect coordinates from trail breweries
     const coordinates = trail.breweries
       .map((b) => b.coordinates)
-      .filter((c) => c && typeof c.lng === 'number' && typeof c.lat === 'number')
+      .filter((c) => c && typeof c.lng === 'number' && typeof c.lat === 'number' && !isNaN(c.lng) && !isNaN(c.lat) && c.lat >= -90 && c.lat <= 90 && c.lng >= -180 && c.lng <= 180)
       .map((c) => [c.lng, c.lat]);
 
     if (coordinates.length < 2) return;

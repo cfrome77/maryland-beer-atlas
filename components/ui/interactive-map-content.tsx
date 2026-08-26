@@ -263,11 +263,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
       setActiveTrailId(null);
     } else {
       setActiveTrailId(trailId);
-      // Auto-select the first brewery in the trail
-      const trail = trails.find((t) => t.id === trailId);
-      if (trail && trail.breweries && trail.breweries.length > 0) {
-        setSelectedBrewery(trail.breweries[0]);
-      }
+      // Keep selectedBrewery null so the map uses fitBounds for full trail route overview
+      setSelectedBrewery(null);
     }
   };
 
@@ -471,9 +468,35 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
                 {/* Address and quick info */}
                 <div className="space-y-2.5 pt-4 border-t border-zinc-100 dark:border-zinc-850 text-xs text-zinc-600 dark:text-zinc-400">
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <span>{selectedBrewery.address}, {selectedBrewery.city}, MD {selectedBrewery.zipCode}</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <span>{selectedBrewery.address}, {selectedBrewery.city}, MD {selectedBrewery.zipCode}</span>
+                    </div>
+                    {(() => {
+                      const hasValidCoords =
+                        selectedBrewery.coordinates &&
+                        typeof selectedBrewery.coordinates.lat === 'number' &&
+                        typeof selectedBrewery.coordinates.lng === 'number' &&
+                        !isNaN(selectedBrewery.coordinates.lat) &&
+                        !isNaN(selectedBrewery.coordinates.lng);
+
+                      const googleDirectionsUrl = hasValidCoords
+                        ? `https://www.google.com/maps/search/?api=1&query=${selectedBrewery.coordinates.lat},${selectedBrewery.coordinates.lng}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedBrewery.name}, ${selectedBrewery.address}, ${selectedBrewery.city}, MD ${selectedBrewery.zipCode}`)}`;
+
+                      return (
+                        <a
+                          href={googleDirectionsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-[11px] shrink-0 transition-colors inline-flex items-center gap-1"
+                          title="Get Directions"
+                        >
+                          Directions &rarr;
+                        </a>
+                      );
+                    })()}
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-amber-500 shrink-0" />
