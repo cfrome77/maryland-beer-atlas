@@ -10,6 +10,8 @@ import {
   validateTravelGuideList,
   getDerivedBreweryFields,
   formatZodError,
+  normalizeAndValidateBrewery,
+  normalizeAndValidateBreweryList,
 } from '../schemas';
 import { mockBreweries, mockTrails, mockGuides } from '../../data/mock-data';
 import { MockBreweryRepository, MockTrailRepository, MockGuideRepository } from '../../repositories/mock';
@@ -102,6 +104,35 @@ describe('Zod Validation Layer', () => {
       const list = validateBreweryList(mockBreweries);
       expect(list.length).toBe(mockBreweries.length);
       expect(list[0].id).toBe(mockBreweries[0].id);
+    });
+  });
+
+  describe('Normalization Helpers', () => {
+    it('normalizes inconsistent or un-trimmed brewery data', () => {
+      const messyData = {
+        ...mockBreweries[0],
+        name: '   Flying Dog Brewery   ',
+        city: ' Frederick  ',
+        state: ' Maryland ',
+        zipCode: 21703, // numeric zip
+        verificationSource: 'Official Website',
+      };
+
+      const normalized = normalizeAndValidateBrewery(messyData);
+      expect(normalized.name).toBe('Flying Dog Brewery');
+      expect(normalized.city).toBe('Frederick');
+      expect(normalized.state).toBe('MD');
+      expect(normalized.zipCode).toBe('21703');
+      expect(normalized.sourceInfo).toBe('Official Website');
+    });
+
+    it('normalizes a list of unnormalized brewery items', () => {
+      const list = normalizeAndValidateBreweryList([
+        { ...mockBreweries[0], name: ' Flying Dog ' },
+        { ...mockBreweries[1], state: '' },
+      ]);
+      expect(list[0].name).toBe('Flying Dog');
+      expect(list[1].state).toBe('MD');
     });
   });
 

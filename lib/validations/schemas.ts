@@ -143,6 +143,7 @@ export const brewerySchema = z.object({
   address: z.string(),
   city: z.string(),
   county: z.string(),
+  state: z.string().default('MD'),
   zipCode: z.string(),
   phone: z.string(),
   website: z.string(),
@@ -164,6 +165,7 @@ export const brewerySchema = z.object({
   structuredHours: z.array(dailyHoursSchema).nullish(),
   holidayExceptions: z.array(holidayExceptionSchema).nullish(),
   verification: breweryVerificationSchema.nullish(),
+  sourceInfo: z.string().nullish(),
 });
 
 /**
@@ -217,7 +219,7 @@ export interface DerivedBreweryFields {
  */
 export function getDerivedBreweryFields(brewery: z.infer<typeof brewerySchema>): DerivedBreweryFields {
   return {
-    fullAddress: `${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}`,
+    fullAddress: `${brewery.address}, ${brewery.city}, ${brewery.state || 'MD'} ${brewery.zipCode}`,
     isVerified: brewery.verificationStatus === 'Verified',
     hasStructuredHours: Array.isArray(brewery.structuredHours) && brewery.structuredHours.length > 0,
   };
@@ -235,6 +237,95 @@ export const breweryWithDerivedSchema = brewerySchema.extend({
 // ==========================================
 // 5. Error Formatting & Runtime Helpers
 // ==========================================
+
+/**
+ * Normalizes raw or inconsistent brewery data into canonical Brewery format before validation.
+ * Trims whitespace, standardizes state, normalizes phone numbers, fills missing defaults.
+ */
+export function normalizeBreweryData(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') {
+    return raw;
+  }
+
+  const data = { ...(raw as Record<string, unknown>) };
+
+  if (typeof data.name === 'string') {
+    data.name = data.name.trim();
+  }
+
+  if (typeof data.address === 'string') {
+    data.address = data.address.trim();
+  }
+
+  if (typeof data.city === 'string') {
+    data.city = data.city.trim();
+  }
+
+  if (typeof data.county === 'string') {
+    data.county = data.county.trim();
+  }
+
+  if (!data.state || typeof data.state !== 'string' || !data.state.trim()) {
+    data.state = 'MD';
+  } else {
+    data.state = data.state.trim().toUpperCase();
+    if (data.state === 'MARYLAND') {
+      data.state = 'MD';
+    }
+  }
+
+  if (typeof data.zipCode === 'string') {
+    data.zipCode = data.zipCode.trim();
+  } else if (typeof data.zipCode === 'number') {
+    data.zipCode = String(data.zipCode).padStart(5, '0');
+  }
+
+  if (typeof data.phone === 'string') {
+    data.phone = data.phone.trim();
+  }
+
+  if (typeof data.website === 'string') {
+    data.website = data.website.trim();
+  }
+
+  if (typeof data.description === 'string') {
+    data.description = data.description.trim();
+  }
+
+  if (data.verificationSource && !data.sourceInfo) {
+    data.sourceInfo = String(data.verificationSource);
+  } else if (data.sourceInfo && !data.verificationSource) {
+    data.verificationSource = String(data.sourceInfo);
+  }
+
+  return data;
+}
+
+/**
+ * Normalizes and validates raw data as a Brewery domain object. Throws formatted Error on failure.
+ */
+export function normalizeAndValidateBrewery(data: unknown): z.infer<typeof brewerySchema> {
+  const normalized = normalizeBreweryData(data);
+  return validateBrewery(normalized);
+}
+
+/**
+ * Normalizes and validates an array of Brewery objects.
+ */
+export function normalizeAndValidateBreweryList(data: unknown[]): z.infer<typeof brewerySchema>[] {
+  if (!Array.isArray(data)) {
+    throw new Error('[Runtime Validation Error] Input for normalizeAndValidateBreweryList must be an array');
+  }
+  return data.map((item, idx) => {
+    const normalized = normalizeBreweryData(item);
+    const result = brewerySchema.safeParse(normalized);
+    if (!result.success) {
+      const name = (normalized && typeof normalized === 'object' && 'name' in normalized) ? (normalized as { name: unknown }).name : `Index ${idx}`;
+      throw new Error(formatZodError(result.error, `Brewery "${name}"`));
+    }
+    return result.data;
+  });
+}
 
 /**
  * Formats a Zod validation error into a useful, human-readable error message.

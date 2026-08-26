@@ -93,6 +93,14 @@ export const brewerySchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'state',
+      title: 'State Code',
+      type: 'string',
+      group: 'location',
+      initialValue: 'MD',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
       name: 'zipCode',
       title: 'Zip Code',
       type: 'string',

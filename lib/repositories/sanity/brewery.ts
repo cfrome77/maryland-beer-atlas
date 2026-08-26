@@ -1,7 +1,7 @@
 import { Brewery } from '../../types';
 import { IBreweryRepository } from '../interfaces';
 import { sanityClient } from '../../sanity/client';
-import { validateBrewery, validateBreweryList } from '../../validations/schemas';
+import { normalizeAndValidateBrewery, normalizeAndValidateBreweryList } from '../../validations/schemas';
 
 export class SanityBreweryRepository implements IBreweryRepository {
   private baseProjection = `
@@ -16,6 +16,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
     address,
     city,
     county,
+    "state": coalesce(state, "MD"),
     zipCode,
     phone,
     website,
@@ -32,14 +33,15 @@ export class SanityBreweryRepository implements IBreweryRepository {
     lastVerified,
     verificationSource,
     verificationStatus,
-    verification
+    verification,
+    sourceInfo
   `;
 
   async getAll(): Promise<Brewery[]> {
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery"] { ${this.baseProjection} }`
     );
-    return results && results.length > 0 ? validateBreweryList(results) : [];
+    return results && results.length > 0 ? normalizeAndValidateBreweryList(results) : [];
   }
 
   async getBySlug(slug: string): Promise<Brewery | null> {
@@ -47,7 +49,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
       `*[_type == "brewery" && slug.current == $slug] { ${this.baseProjection} }`,
       { slug }
     );
-    return results && results[0] ? validateBrewery(results[0]) : null;
+    return results && results[0] ? normalizeAndValidateBrewery(results[0]) : null;
   }
 
   async getById(id: string): Promise<Brewery | null> {
@@ -55,13 +57,13 @@ export class SanityBreweryRepository implements IBreweryRepository {
       `*[_type == "brewery" && _id == $id] { ${this.baseProjection} }`,
       { id }
     );
-    return results && results[0] ? validateBrewery(results[0]) : null;
+    return results && results[0] ? normalizeAndValidateBrewery(results[0]) : null;
   }
 
   async getFeatured(): Promise<Brewery[]> {
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery" && featured == true] { ${this.baseProjection} }`
     );
-    return results && results.length > 0 ? validateBreweryList(results) : [];
+    return results && results.length > 0 ? normalizeAndValidateBreweryList(results) : [];
   }
 }
