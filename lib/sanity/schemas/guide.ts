@@ -56,6 +56,25 @@ export const guideSchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'county',
+      title: 'County Reference',
+      type: 'reference',
+      description: 'Optional reference to the associated County document.',
+      to: [{ type: 'county' }],
+    },
+    {
+      name: 'categories',
+      title: 'Guide Categories / Topics',
+      type: 'array',
+      description: 'Optional references to category documents (e.g. Day Trips, Waterfront Breweries).',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'category' }],
+        },
+      ],
+    },
+    {
       name: 'content',
       title: 'Article Content (HTML or Text)',
       type: 'text',
@@ -74,6 +93,7 @@ export const guideSchema = {
       name: 'recommendedStops',
       title: 'Recommended Brewery Stops',
       type: 'array',
+      description: 'References to brewery editorial documents featured as stops in this guide.',
       of: [
         {
           type: 'reference',

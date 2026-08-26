@@ -16,10 +16,10 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(groupNames).toContain('relationships');
   });
 
-  it('should include required editorial fields', () => {
+  it('should include required identity and editorial fields', () => {
     const fieldNames = brewerySchema.fields.map((f) => f.name);
 
-    // Identity & linking
+    // Identity & stable linking
     expect(fieldNames).toContain('name');
     expect(fieldNames).toContain('slug');
     expect(fieldNames).toContain('breweryId');
@@ -35,8 +35,14 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).toContain('editorialRecommendations');
     expect(fieldNames).toContain('curatedContent');
 
-    // Related content
-    expect(fieldNames).toContain('relatedGuides');
+    // Editorial relationships
+    expect(fieldNames).toContain('categories');
+    expect(fieldNames).toContain('county');
+  });
+
+  it('should NOT duplicate static inverse relatedGuides array field to avoid bidirectional duplication', () => {
+    const fieldNames = brewerySchema.fields.map((f) => f.name);
+    expect(fieldNames).not.toContain('relatedGuides');
   });
 
   it('should NOT duplicate canonical location, operational hours, or verification fields', () => {
@@ -45,7 +51,6 @@ describe('Sanity Brewery Editorial Schema', () => {
     // Canonical location & contact
     expect(fieldNames).not.toContain('address');
     expect(fieldNames).not.toContain('city');
-    expect(fieldNames).not.toContain('county');
     expect(fieldNames).not.toContain('state');
     expect(fieldNames).not.toContain('zipCode');
     expect(fieldNames).not.toContain('phone');

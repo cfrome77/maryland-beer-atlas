@@ -43,6 +43,25 @@ export const trailSchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'county',
+      title: 'County Reference',
+      type: 'reference',
+      description: 'Optional reference to the primary County document for this trail.',
+      to: [{ type: 'county' }],
+    },
+    {
+      name: 'categories',
+      title: 'Trail Categories / Themes',
+      type: 'array',
+      description: 'Optional references to category documents (e.g. Scenic Drive, Urban Trail).',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'category' }],
+        },
+      ],
+    },
+    {
       name: 'distance',
       title: 'Distance',
       type: 'string',
@@ -60,6 +79,7 @@ export const trailSchema = {
       name: 'breweries',
       title: 'Breweries on the Trail',
       type: 'array',
+      description: 'References to brewery editorial documents included on this trail.',
       of: [
         {
           type: 'reference',
