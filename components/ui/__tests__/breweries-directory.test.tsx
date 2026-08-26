@@ -6,9 +6,12 @@ import { Brewery } from '@/lib/types';
 
 // Mock useRouter and useSearchParams
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
+    replace: mockReplace,
   }),
   useSearchParams: () => ({
     get: vi.fn(() => null),
@@ -35,6 +38,9 @@ const mockBreweries: Brewery[] = [
     description: 'A great Baltimore Microbrewery.',
     image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
     hours: [{ day: 'Monday', hours: '4 PM - 10 PM' }],
+    structuredHours: [
+      { day: 'Monday', isClosed: false, periods: [{ opens: '16:00', closes: '22:00' }] },
+    ],
     beerStyles: ['IPA', 'Stout'],
     amenities: ['Dog Friendly', 'Outdoor Seating'],
     featured: true,
@@ -48,7 +54,7 @@ const mockBreweries: Brewery[] = [
     name: 'Brewery Two',
     type: 'Brewpub',
     region: 'Western',
-    status: 'Open',
+    status: 'Temporarily closed',
     address: '456 West St',
     city: 'Frederick',
     county: 'Frederick',
@@ -61,13 +67,14 @@ const mockBreweries: Brewery[] = [
     description: 'Frederick premium Brewpub with kitchen.',
     image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
     hours: [{ day: 'Tuesday', hours: '12 PM - 10 PM' }],
+    structuredHours: [],
     beerStyles: ['Pilsner', 'Sauer'],
     amenities: ['Outdoor Seating'],
     featured: false,
     lastVerified: '2026-07-28',
     verificationSource: 'Community Submit',
     verificationStatus: 'Community Submitted',
-  }
+  },
 ];
 
 describe('BreweriesDirectoryContent', () => {
@@ -102,9 +109,65 @@ describe('BreweriesDirectoryContent', () => {
 
     expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
     expect(screen.getByText('Brewery Two')).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/breweries?region=Western');
   });
 
-  it('displays empty state if no brewery matches', () => {
+  it('filters breweries based on county selection', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const countySelect = screen.getByDisplayValue('All Counties');
+    fireEvent.change(countySelect, { target: { value: 'Frederick' } });
+
+    expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
+    expect(screen.getByText('Brewery Two')).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/breweries?county=Frederick');
+  });
+
+  it('filters breweries based on brewery type selection', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const typeSelect = screen.getByDisplayValue('All Brewery Types');
+    fireEvent.change(typeSelect, { target: { value: 'Brewpub' } });
+
+    expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
+    expect(screen.getByText('Brewery Two')).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/breweries?type=Brewpub');
+  });
+
+  it('filters breweries based on operational status selection', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const statusSelect = screen.getByDisplayValue('All Operational Statuses');
+    fireEvent.change(statusSelect, { target: { value: 'open' } });
+
+    expect(screen.getByText('Brewery One')).toBeInTheDocument();
+    expect(screen.queryByText('Brewery Two')).not.toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/breweries?status=open');
+  });
+
+  it('filters breweries based on amenity selection', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const amenitySelect = screen.getByDisplayValue('All Amenities');
+    fireEvent.change(amenitySelect, { target: { value: 'Dog Friendly' } });
+
+    expect(screen.getByText('Brewery One')).toBeInTheDocument();
+    expect(screen.queryByText('Brewery Two')).not.toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/breweries?amenity=Dog+Friendly');
+  });
+
+  it('applies quick guide preset filter', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const quickGuideSelect = screen.getByDisplayValue('Select Popular Guide or Filter Preset...');
+    fireEvent.change(quickGuideSelect, { target: { value: 'Frederick County' } });
+
+    expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
+    expect(screen.getByText('Brewery Two')).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/breweries?county=Frederick&quickGuide=Frederick+County');
+  });
+
+  it('displays empty state and resets filters when reset button clicked', () => {
     render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
 
     const searchInput = screen.getByPlaceholderText('Search by name, style, city...');
@@ -113,5 +176,10 @@ describe('BreweriesDirectoryContent', () => {
     expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
     expect(screen.queryByText('Brewery Two')).not.toBeInTheDocument();
     expect(screen.getByText('No Breweries Found')).toBeInTheDocument();
+
+    const resetButton = screen.getByRole('button', { name: 'Reset All Filters' });
+    fireEvent.click(resetButton);
+
+    expect(mockPush).toHaveBeenCalledWith('/breweries');
   });
 });
