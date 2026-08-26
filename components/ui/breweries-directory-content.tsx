@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity, ArrowUpDown } from 'lucide-react';
+import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity, ArrowUpDown, MapPin, Tag, Dog, Utensils, Factory, Trees } from 'lucide-react';
 import { Brewery, BreweryType, MarylandRegion, OperationalCategory } from '@/lib/types';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -56,6 +56,21 @@ const SORT_OPTIONS: { label: string; value: BrewerySortOption }[] = [
   { label: 'Recently Verified', value: 'verified-desc' },
 ];
 
+function slugifyCounty(countyName: string): string {
+  return countyName
+    .toLowerCase()
+    .replace(/'/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+}
+
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+  Microbrewery: 'microbrewery',
+  Brewpub: 'brewpub',
+  Production: 'production',
+  'Farm Brewery': 'farm-brewery',
+};
+
 function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -83,11 +98,34 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const regions: MarylandRegion[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
   const breweryTypes: BreweryType[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];
 
-  // Dynamically extract unique counties and amenities from the provided dataset
-  const counties = Array.from(new Set(breweries.map((b) => b.county))).sort();
-  const amenities = Array.from(new Set(breweries.flatMap((b) => b.amenities))).sort();
+  // Dynamically extract unique counties and amenities from dataset
+  const counties = useMemo(() => Array.from(new Set(breweries.map((b) => b.county))).sort(), [breweries]);
+  const amenities = useMemo(() => Array.from(new Set(breweries.flatMap((b) => b.amenities))).sort(), [breweries]);
 
-  // Keep track of the parameters currently reflected in the URL
+  // Counts per County
+  const countyCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    breweries.forEach((b) => {
+      counts[b.county] = (counts[b.county] || 0) + 1;
+    });
+    return counts;
+  }, [breweries]);
+
+  // Counts per Brewery Type
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    breweries.forEach((b) => {
+      counts[b.type] = (counts[b.type] || 0) + 1;
+    });
+    return counts;
+  }, [breweries]);
+
+  // Count for Dog Friendly
+  const dogFriendlyCount = useMemo(() => {
+    return breweries.filter((b) => b.amenities.some((a) => a.toLowerCase().includes('dog friendly'))).length;
+  }, [breweries]);
+
+  // Keep track of parameters currently reflected in URL
   const prevParamsRef = useRef<{
     search: string;
     region: MarylandRegion | '';
@@ -108,7 +146,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     sort: initialSort,
   });
 
-  // Keep a ref to current filter values for debounced search sync
   const filterStateRef = useRef({
     selectedRegion,
     selectedType,
@@ -117,6 +154,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     selectedStatus,
     selectedSort,
   });
+
   useEffect(() => {
     filterStateRef.current = {
       selectedRegion,
@@ -128,7 +166,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     };
   }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedSort]);
 
-  // Sync state with URL search params when they change (e.g., back/forward buttons)
   useEffect(() => {
     const currentSearch = searchParams?.get('search') || '';
     const currentRegion = searchParams?.get('region') || '';
@@ -173,7 +210,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     }
   }, [searchParams]);
 
-  // Update URL Search Params to persist filter states
   const applyFilters = (
     search: string,
     region: string,
@@ -204,7 +240,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     }
   };
 
-  // Debounced Search Query Sync
   useEffect(() => {
     const currentSearch = searchParams?.get('search') || '';
     if (searchQuery === currentSearch) return;
@@ -317,11 +352,10 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     router.push('/breweries');
   };
 
-  // Centralized filter logic execution
   const filteredBreweries = filterBreweries(breweries, {
     search: searchQuery,
-    region: selectedRegion,
-    type: selectedType,
+    region: selectedRegion || undefined,
+    type: selectedType || undefined,
     county: selectedCounty,
     amenity: selectedAmenity,
     status: selectedStatus,
@@ -334,7 +368,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       <div className="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-4">
         {/* Row 1: Search & Popular Guides preset select */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
@@ -347,7 +380,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             />
           </div>
 
-          {/* Popular Guides Preset Select */}
           <div className="relative">
             <select
               value={selectedQuickGuide}
@@ -370,7 +402,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
 
         {/* Row 2: Standard Filtering dropdowns & Reset button */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
-          {/* Region Select */}
           <div className="relative">
             <select
               value={selectedRegion}
@@ -388,7 +419,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {/* County Select */}
           <div className="relative">
             <select
               value={selectedCounty}
@@ -399,14 +429,13 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               <option value="">All Counties</option>
               {counties.map((county) => (
                 <option key={county} value={county}>
-                  {county} County
+                  {county} County ({countyCounts[county] || 0})
                 </option>
               ))}
             </select>
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {/* Brewery Type Select */}
           <div className="relative">
             <select
               value={selectedType}
@@ -417,14 +446,13 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               <option value="">All Brewery Types</option>
               {breweryTypes.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {type} ({typeCounts[type] || 0})
                 </option>
               ))}
             </select>
             <BeerIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {/* Operational Status Select */}
           <div className="relative">
             <select
               value={selectedStatus}
@@ -441,7 +469,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             <Activity className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {/* Amenity Filter */}
           <div className="relative">
             <select
               value={selectedAmenity}
@@ -459,7 +486,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {/* Sort By Select */}
           <div className="relative">
             <select
               value={selectedSort}
@@ -476,7 +502,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
             <ArrowUpDown className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {/* Reset Button */}
           <div>
             <button
               onClick={resetFilters}
@@ -518,7 +543,98 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         />
       )}
 
-      {/* Connected Curated Travel Guides & Popular Local Regions Showcase */}
+      {/* Dynamic Discovery Sections: Browse by County and Browse by Category */}
+      <div className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-850 space-y-10">
+        {/* County Discovery Grid */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-amber-500" />
+              Browse Breweries by County
+            </h3>
+            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+              {counties.length} Maryland Counties
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {counties.map((county) => {
+              const count = countyCounts[county] || 0;
+              const slug = slugifyCounty(county);
+              return (
+                <Link
+                  key={county}
+                  href={`/breweries/county/${slug}`}
+                  className="p-3.5 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all text-center group flex flex-col justify-between"
+                >
+                  <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-1">
+                    {county}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+                    {count} {count === 1 ? 'brewery' : 'breweries'}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Category & Type Discovery Cards */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+              <Tag className="w-5 h-5 text-amber-500" />
+              Browse by Category & Style
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Link
+              href="/breweries/category/dog-friendly"
+              className="p-4 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all group flex flex-col justify-between"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+                  <Dog className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400">
+                  Dog-Friendly
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight">
+                {dogFriendlyCount} taprooms with outdoor seating for dogs
+              </p>
+            </Link>
+
+            {breweryTypes.map((type) => {
+              const count = typeCounts[type] || 0;
+              const slug = CATEGORY_SLUG_MAP[type] || type.toLowerCase();
+              let icon = <BeerIcon className="w-4 h-4" />;
+              if (type === 'Brewpub') icon = <Utensils className="w-4 h-4" />;
+              if (type === 'Production') icon = <Factory className="w-4 h-4" />;
+              if (type === 'Farm Brewery') icon = <Trees className="w-4 h-4" />;
+
+              return (
+                <Link
+                  key={type}
+                  href={`/breweries/category/${slug}`}
+                  className="p-4 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all group flex flex-col justify-between"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">{icon}</div>
+                    <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400">
+                      {type}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight">
+                    {count} active {count === 1 ? 'brewery' : 'breweries'}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Connected Curated Travel Guides Showcase */}
       {guides.length > 0 && (
         <div className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-850 space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
@@ -590,41 +706,6 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Quick crawlable subcategories / popular counties SEO shortcuts block */}
-          <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Popular Counties</span>
-              <ul className="space-y-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                <li><Link href="/breweries/county/frederick" className="hover:text-amber-500 transition-colors">Frederick County</Link></li>
-                <li><Link href="/breweries/county/baltimore-city" className="hover:text-amber-500 transition-colors">Baltimore City</Link></li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">More Counties</span>
-              <ul className="space-y-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                <li><Link href="/breweries/county/montgomery" className="hover:text-amber-500 transition-colors">Montgomery County</Link></li>
-                <li><Link href="/breweries/county/baltimore-county" className="hover:text-amber-500 transition-colors">Baltimore County</Link></li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Dog-Friendly</span>
-              <ul className="space-y-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
-                <li>
-                  <Link href="/breweries/category/dog-friendly" className="hover:underline flex items-center gap-1">
-                    🐕 Dog-Friendly Taprooms
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <span className="block text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Brewery Types</span>
-              <ul className="space-y-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                <li><Link href="/breweries/category/farm-brewery" className="hover:text-amber-500 transition-colors">Farm Breweries</Link></li>
-                <li><Link href="/breweries/category/brewpub" className="hover:text-amber-500 transition-colors">Local Brewpubs</Link></li>
-              </ul>
-            </div>
           </div>
         </div>
       )}
