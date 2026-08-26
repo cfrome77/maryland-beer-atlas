@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass } from 'lucide-react';
 import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
+import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
+import { getDataFreshnessInfo } from '@/lib/utils/freshness';
 
 // Dynamically import the MapView component to disable SSR since MapLibre uses browser APIs (window, self, etc.)
 const MapView = dynamic(
@@ -379,7 +381,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               Matching Breweries ({visibleBreweries.length})
             </h3>
             {visibleBreweries.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
                 {visibleBreweries.map((brewery) => {
                   const isActive = selectedBrewery?.id === brewery.id;
                   return (
@@ -392,9 +394,14 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                           : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-850 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300'
                       }`}
                     >
-                      <div className="space-y-0.5 min-w-0">
-                        <span className="block font-bold text-sm truncate">{brewery.name}</span>
-                        <span className="block text-[10px] text-zinc-500 dark:text-zinc-400">{brewery.city} • {brewery.type}</span>
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-sm truncate">{brewery.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{brewery.city} • {brewery.type}</span>
+                          <BreweryStatusBadge brewery={brewery} size="sm" />
+                        </div>
                       </div>
                       <MapPin className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-500' : 'text-zinc-400'}`} />
                     </button>
@@ -412,7 +419,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
         {/* Sidebar Inspector Panel (RHS) */}
         <div className="lg:col-span-4">
           {selectedBrewery ? (
-            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-850 overflow-hidden shadow-lg sticky top-24 flex flex-col h-[calc(100vh-140px)] max-h-[640px]">
+            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-850 overflow-hidden shadow-lg sticky top-24 flex flex-col h-[calc(100vh-140px)] max-h-[660px]">
               {/* Photo Header */}
               <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900 shrink-0">
                 <Image
@@ -422,10 +429,13 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                   sizes="(max-width: 1024px) 100vw, 320px"
                   className="object-cover"
                 />
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
                   <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-900/85 text-white backdrop-blur-sm">
                     {selectedBrewery.type}
                   </span>
+                </div>
+                <div className="absolute top-3 right-3">
+                  <BreweryStatusBadge brewery={selectedBrewery} size="sm" />
                 </div>
               </div>
 
@@ -437,6 +447,26 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                   <p className="text-zinc-600 dark:text-zinc-400 text-xs mt-2 leading-relaxed">
                     {selectedBrewery.description}
                   </p>
+                </div>
+
+                {/* Status & Data Freshness Summary Block */}
+                <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-850 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Operational Status</span>
+                    <BreweryStatusBadge brewery={selectedBrewery} size="sm" showDetail={true} />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-200/50 dark:border-zinc-800">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Data Freshness</span>
+                    <BreweryFreshnessBadge brewery={selectedBrewery} size="sm" />
+                  </div>
+                  {(() => {
+                    const freshness = getDataFreshnessInfo(selectedBrewery);
+                    return (
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 pt-1 border-t border-zinc-200/50 dark:border-zinc-800 font-medium">
+                        {freshness.freshnessSummary}
+                      </p>
+                    );
+                  })()}
                 </div>
 
                 {/* Address and quick info */}

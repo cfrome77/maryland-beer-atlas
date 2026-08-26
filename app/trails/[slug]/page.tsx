@@ -7,6 +7,7 @@ import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon } fr
 import { contentService } from '@/lib/services/content.service';
 import { Brewery } from '@/lib/types';
 import { TrailMapView } from '@/components/ui/trail-map-view';
+import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 
 interface TrailDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -60,6 +61,9 @@ function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
         <div className="absolute top-3 left-3 bg-zinc-950/80 text-white text-[10px] font-bold px-2 py-1 rounded-md backdrop-blur-sm">
           Stop #{index + 1}
         </div>
+        <div className="absolute top-3 right-3">
+          <BreweryStatusBadge brewery={brewery} size="sm" />
+        </div>
       </div>
 
       {/* Info details */}
@@ -73,6 +77,7 @@ function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
               <MapPin className="w-3 h-3 text-amber-500" />
               {brewery.city}, MD
             </span>
+            <BreweryFreshnessBadge brewery={brewery} size="sm" />
           </div>
 
           <div>

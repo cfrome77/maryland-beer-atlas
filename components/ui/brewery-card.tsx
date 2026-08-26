@@ -5,6 +5,7 @@ import { MapPin, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brewery } from '@/lib/types';
+import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 
 interface BreweryCardProps {
   brewery: Brewery;
@@ -33,17 +34,29 @@ export function BreweryCard({ brewery }: BreweryCardProps) {
             </Badge>
           )}
         </div>
+        <div className="absolute top-3 right-3 z-10">
+          <BreweryStatusBadge brewery={brewery} size="sm" />
+        </div>
       </div>
 
       {/* Content wrapper */}
       <CardContent className="p-6 flex-1 flex flex-col justify-between gap-4">
-        <div className="space-y-2">
-          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            {brewery.region} Region
-          </span>
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              {brewery.region} Region
+            </span>
+            <BreweryFreshnessBadge brewery={brewery} size="sm" />
+          </div>
+
           <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-amber-500 transition-colors leading-snug">
             {brewery.name}
           </h3>
+
+          <div className="pt-0.5">
+            <BreweryStatusBadge brewery={brewery} size="sm" showDetail={true} />
+          </div>
+
           <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-2">
             {brewery.description}
           </p>

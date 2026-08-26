@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar, ShieldCheck, AlertTriangle, Users, Info, Sparkles } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
+import { isBreweryOpenNow } from '@/lib/utils/hours';
+import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 
 interface BreweryDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -49,6 +51,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
   if (!brewery) {
     notFound();
   }
+
+  const openStatus = isBreweryOpenNow(brewery);
+  const freshness = getDataFreshnessInfo(brewery);
 
   const brewerySchema = {
     "@context": "https://schema.org",
@@ -117,60 +122,18 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-950/20 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-2">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-zinc-950 shadow-sm">
                     {brewery.type}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
-                    brewery.status === 'Open'
-                      ? 'bg-emerald-500 text-white'
-                      : brewery.status === 'Closed' || brewery.status === 'Permanently closed'
-                      ? 'bg-rose-700 text-white'
-                      : brewery.status === 'Temporarily closed'
-                      ? 'bg-rose-600 text-white'
-                      : 'bg-amber-500 text-zinc-950'
-                  }`}>
-                    Status: {brewery.status}
-                  </span>
+                  <BreweryStatusBadge brewery={brewery} size="md" showDetail={true} />
+                  <BreweryFreshnessBadge brewery={brewery} size="md" />
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white backdrop-blur-sm border border-white/20">
                     {brewery.region} Region
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 backdrop-blur-sm border border-emerald-500/30">
                     {brewery.county} County
                   </span>
-                  {(() => {
-                    const freshness = getDataFreshnessInfo(brewery);
-                    if (freshness.freshnessCategory === 'fresh') {
-                      return (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-emerald-500/30">
-                          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                          Recently Verified
-                        </span>
-                      );
-                    }
-                    if (freshness.freshnessCategory === 'stale') {
-                      return (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-amber-500/30">
-                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                          Stale Data
-                        </span>
-                      );
-                    }
-                    if (freshness.freshnessCategory === 'outdated') {
-                      return (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-rose-500/30">
-                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                          Outdated Data
-                        </span>
-                      );
-                    }
-                    return (
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-indigo-500/30">
-                        <Users className="w-3.5 h-3.5 shrink-0" />
-                        Community Submitted
-                      </span>
-                    );
-                  })()}
                 </div>
                 <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
                   {brewery.name}
@@ -234,15 +197,23 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
           <div className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Main content */}
             <div className="lg:col-span-8 space-y-8">
-              {/* Brewery Status Warning Banner */}
-              {brewery.status !== 'Open' && (
-                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2">
-                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
+              {/* Brewery Operating Notice Banner */}
+              {openStatus.category !== 'open' && (
+                <div className={`p-5 rounded-2xl border space-y-2 ${
+                  openStatus.category === 'permanently_closed'
+                    ? 'bg-rose-500/10 border-rose-500/25 text-rose-900 dark:text-rose-300'
+                    : openStatus.category === 'temporarily_closed'
+                    ? 'bg-amber-500/10 border-amber-500/25 text-amber-900 dark:text-amber-300'
+                    : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-800 dark:text-zinc-300'
+                }`}>
+                  <div className="flex items-center gap-2 font-bold text-sm">
                     <Sparkles className="w-4 h-4" />
-                    <span>Special Operating Notice</span>
+                    <span>Operating Notice</span>
                   </div>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {brewery.statusNotes || `This location is currently marked as ${brewery.status.toLowerCase()}.`}
+                  <p className="text-sm leading-relaxed">
+                    {openStatus.category === 'hours_unavailable'
+                      ? 'Structured operating hours for this location are currently unavailable. Re-verification directly with official brewery channels is recommended before visiting.'
+                      : brewery.statusNotes || openStatus.reason}
                   </p>
                   {brewery.statusUpdatedAt && (
                     <span className="block text-[10px] text-zinc-500">Notice last updated: {brewery.statusUpdatedAt}</span>
@@ -255,7 +226,7 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">About the Brewery</h2>
                   <div className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                     <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Last Verified: {brewery.lastVerified}</span>
+                    <span>Last Verified: {brewery.lastVerified || 'Unverified'}</span>
                   </div>
                 </div>
                 <p className="text-zinc-600 dark:text-zinc-400 text-base leading-relaxed">
@@ -333,70 +304,67 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
             {/* Sidebar info */}
             <div className="lg:col-span-4 space-y-6">
               {/* Data Freshness & Verification Info */}
-              {(() => {
-                const freshness = getDataFreshnessInfo(brewery);
-                return (
-                  <div className={`p-6 rounded-2xl border space-y-4 shadow-sm ${
-                    freshness.freshnessCategory === 'fresh'
-                      ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-300'
-                      : freshness.freshnessCategory === 'stale'
-                      ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20 text-amber-900 dark:text-amber-300'
-                      : freshness.freshnessCategory === 'outdated'
-                      ? 'bg-rose-500/5 dark:bg-rose-950/10 border-rose-500/20 text-rose-900 dark:text-rose-300'
-                      : 'bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20 text-indigo-900 dark:text-indigo-300'
-                  }`}>
-                    <div className="flex items-center gap-2.5">
-                      {freshness.freshnessCategory === 'fresh' && (
-                        <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      )}
-                      {(freshness.freshnessCategory === 'stale' || freshness.freshnessCategory === 'outdated') && (
-                        <AlertTriangle className={`w-5 h-5 shrink-0 ${freshness.freshnessCategory === 'outdated' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`} />
-                      )}
-                      {freshness.freshnessCategory === 'unverified' && (
-                        <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      )}
-                      <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50">
-                        Data Verification & Freshness
-                      </h3>
-                    </div>
+              <div className={`p-6 rounded-2xl border space-y-4 shadow-sm ${
+                freshness.freshnessCategory === 'fresh'
+                  ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-300'
+                  : freshness.freshnessCategory === 'stale'
+                  ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20 text-amber-900 dark:text-amber-300'
+                  : freshness.freshnessCategory === 'outdated'
+                  ? 'bg-rose-500/5 dark:bg-rose-950/10 border-rose-500/20 text-rose-900 dark:text-rose-300'
+                  : 'bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20 text-indigo-900 dark:text-indigo-300'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  {freshness.freshnessCategory === 'fresh' && (
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  )}
+                  {(freshness.freshnessCategory === 'stale' || freshness.freshnessCategory === 'outdated') && (
+                    <AlertTriangle className={`w-5 h-5 shrink-0 ${freshness.freshnessCategory === 'outdated' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`} />
+                  )}
+                  {freshness.freshnessCategory === 'unverified' && (
+                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  )}
+                  <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50">
+                    Data Verification & Freshness
+                  </h3>
+                </div>
 
-                    <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
-                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Verification Badge</span>
-                        <span className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] uppercase tracking-wider ${
-                          freshness.freshnessCategory === 'fresh'
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                            : freshness.freshnessCategory === 'stale'
-                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
-                            : freshness.freshnessCategory === 'outdated'
-                            ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
-                            : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
-                        }`}>
-                          {freshness.verificationBadge.label}
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Status</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.verificationStatus}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.lastVerified}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
-                        <span className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium" title={brewery.verificationSource}>
-                          {brewery.verificationSource}
-                        </span>
-                      </div>
-                    </div>
+                <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Verification Badge</span>
+                    <span className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] uppercase tracking-wider ${
+                      freshness.freshnessCategory === 'fresh'
+                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                        : freshness.freshnessCategory === 'stale'
+                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                        : freshness.freshnessCategory === 'outdated'
+                        ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
+                        : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
+                    }`}>
+                      {freshness.verificationBadge.label}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Status</span>
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.verificationStatus || 'Community Submitted'}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.lastVerified || 'None Recorded'}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
+                    <span className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium" title={brewery.verificationSource || 'Community submission'}>
+                      {brewery.verificationSource || 'Community submission'}
+                    </span>
+                  </div>
+                </div>
 
-                    {/* Freshness summary box */}
-                    <div className="p-3 rounded-xl bg-zinc-500/10 border border-zinc-200/50 dark:border-zinc-800/50 text-xs leading-relaxed font-medium">
-                      {freshness.freshnessSummary}
-                    </div>
+                {/* Freshness summary box */}
+                <div className="p-3 rounded-xl bg-zinc-500/10 border border-zinc-200/50 dark:border-zinc-800/50 text-xs leading-relaxed font-medium">
+                  {freshness.freshnessSummary}
+                </div>
 
-                    {/* Separate Field Verifications */}
+                {/* Separate Field Verifications */}
                 {brewery.verification && (
                   <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
                     <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Field-Level Verification</span>
@@ -436,22 +404,23 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   </div>
                 )}
 
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
-                      <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
-                      <span>
-                        Brewery hours change frequently. We track verification status and sources to communicate current data freshness.
-                      </span>
-                    </p>
-                  </div>
-                );
-              })()}
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
+                  <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                  <span>
+                    Brewery hours change frequently. We track verification status and sources to communicate current data freshness accurately.
+                  </span>
+                </p>
+              </div>
 
               {/* Hours of Operation */}
               <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 space-y-4">
-                <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-amber-500" />
-                  Hours of Operation
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-amber-500" />
+                    Hours of Operation
+                  </h3>
+                  <BreweryStatusBadge brewery={brewery} size="sm" />
+                </div>
 
                 {brewery.structuredHours && brewery.structuredHours.length > 0 ? (
                   <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -498,14 +467,12 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     )}
                   </div>
                 ) : (
-                  // Fallback to legacy string hours
-                  <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {brewery.hours.map((item, idx) => (
-                      <div key={idx} className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850 last:border-0">
-                        <span className="font-medium text-zinc-800 dark:text-zinc-300">{item.day}</span>
-                        <span className="font-medium text-zinc-900 dark:text-zinc-100">{item.hours}</span>
-                      </div>
-                    ))}
+                  // Fallback if no structured hours available
+                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-2">
+                    <p className="font-semibold">Structured operating hours are not currently recorded for this brewery.</p>
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      Please check the brewery&apos;s website or call directly to confirm operating hours before traveling.
+                    </p>
                   </div>
                 )}
               </div>
