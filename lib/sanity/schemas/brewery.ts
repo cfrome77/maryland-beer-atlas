@@ -2,22 +2,22 @@
 
 export const brewerySchema = {
   name: 'brewery',
-  title: 'Brewery',
+  title: 'Brewery Editorial Content',
   type: 'document',
   groups: [
-    { name: 'identity', title: 'Brewery Identity' },
-    { name: 'location', title: 'Location & Contact' },
-    { name: 'operations', title: 'Operations & Hours' },
-    { name: 'verification', title: 'Data Verification & Provenance' },
-    { name: 'editorial', title: 'Editorial & Marketing Content' },
+    { name: 'identity', title: 'Identity & Reference' },
+    { name: 'editorial', title: 'Editorial & Storytelling' },
+    { name: 'curation', title: 'Curation & Recommendations' },
+    { name: 'relationships', title: 'Related Content' },
   ],
   fields: [
-    // Identity Group
+    // Identity & Reference Group (Link Sanity editorial record to canonical domain entity)
     {
       name: 'name',
       title: 'Brewery Name',
       type: 'string',
       group: 'identity',
+      description: 'The display name of the brewery for Sanity Studio reference.',
       validation: (Rule: any) => Rule.required(),
     },
     {
@@ -25,6 +25,7 @@ export const brewerySchema = {
       title: 'Slug',
       type: 'slug',
       group: 'identity',
+      description: 'Matches the canonical brewery slug for URL routing.',
       options: {
         source: 'name',
         maxLength: 96,
@@ -32,364 +33,133 @@ export const brewerySchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
-      name: 'type',
-      title: 'Brewery Type',
+      name: 'breweryId',
+      title: 'Canonical Brewery ID',
       type: 'string',
       group: 'identity',
-      options: {
-        list: [
-          { title: 'Microbrewery', value: 'Microbrewery' },
-          { title: 'Brewpub', value: 'Brewpub' },
-          { title: 'Production', value: 'Production' },
-          { title: 'Farm Brewery', value: 'Farm Brewery' },
-        ],
-      },
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'region',
-      title: 'Maryland Region',
-      type: 'string',
-      group: 'identity',
-      options: {
-        list: [
-          { title: 'Capital', value: 'Capital' },
-          { title: 'Central', value: 'Central' },
-          { title: 'Eastern Shore', value: 'Eastern Shore' },
-          { title: 'Southern', value: 'Southern' },
-          { title: 'Western', value: 'Western' },
-        ],
-      },
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'featured',
-      title: 'Featured Brewery',
-      type: 'boolean',
-      group: 'identity',
-      initialValue: false,
+      description: 'Unique identifier matching the canonical brewery domain record.',
     },
 
-    // Location Group
-    {
-      name: 'address',
-      title: 'Street Address',
-      type: 'string',
-      group: 'location',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'city',
-      title: 'City',
-      type: 'string',
-      group: 'location',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'county',
-      title: 'County',
-      type: 'string',
-      group: 'location',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'state',
-      title: 'State Code',
-      type: 'string',
-      group: 'location',
-      initialValue: 'MD',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'zipCode',
-      title: 'Zip Code',
-      type: 'string',
-      group: 'location',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'phone',
-      title: 'Phone Number',
-      type: 'string',
-      group: 'location',
-    },
-    {
-      name: 'website',
-      title: 'Website URL',
-      type: 'url',
-      group: 'location',
-    },
-    {
-      name: 'socialLinks',
-      title: 'Social Media Links',
-      type: 'object',
-      group: 'location',
-      fields: [
-        { name: 'facebook', title: 'Facebook URL', type: 'url' },
-        { name: 'instagram', title: 'Instagram URL', type: 'url' },
-        { name: 'twitter', title: 'Twitter URL', type: 'url' },
-      ],
-    },
-    {
-      name: 'coordinates',
-      title: 'Geographic Coordinates',
-      type: 'object',
-      group: 'location',
-      fields: [
-        { name: 'lat', title: 'Latitude', type: 'number', validation: (Rule: any) => Rule.required() },
-        { name: 'lng', title: 'Longitude', type: 'number', validation: (Rule: any) => Rule.required() },
-      ],
-      validation: (Rule: any) => Rule.required(),
-    },
-
-    // Operations Group
-    {
-      name: 'status',
-      title: 'Operating Status',
-      type: 'string',
-      group: 'operations',
-      options: {
-        list: [
-          { title: 'Open', value: 'Open' },
-          { title: 'Temporarily Closed', value: 'Temporarily closed' },
-          { title: 'Permanently Closed', value: 'Permanently closed' },
-          { title: 'Seasonal', value: 'Seasonal' },
-          { title: 'Opening Soon', value: 'Opening soon' },
-          { title: 'Relocating', value: 'Relocating' },
-          { title: 'Closed', value: 'Closed' },
-          { title: 'Contract-only', value: 'Contract-only' },
-        ],
-      },
-      initialValue: 'Open',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'statusUpdatedAt',
-      title: 'Status Updated At',
-      type: 'date',
-      group: 'operations',
-      options: {
-        dateFormat: 'YYYY-MM-DD',
-      },
-    },
-    {
-      name: 'statusNotes',
-      title: 'Status Notes',
-      type: 'text',
-      group: 'operations',
-    },
-    {
-      name: 'hours',
-      title: 'Operating Hours (Legacy Display String)',
-      type: 'array',
-      group: 'operations',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            { name: 'day', title: 'Day', type: 'string', validation: (Rule: any) => Rule.required() },
-            { name: 'hours', title: 'Hours', type: 'string', validation: (Rule: any) => Rule.required() },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'structuredHours',
-      title: 'Structured Operating Hours',
-      type: 'array',
-      group: 'operations',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            {
-              name: 'day',
-              title: 'Day',
-              type: 'string',
-              options: {
-                list: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-              },
-              validation: (Rule: any) => Rule.required(),
-            },
-            {
-              name: 'isClosed',
-              title: 'Is Closed',
-              type: 'boolean',
-              initialValue: false,
-            },
-            {
-              name: 'periods',
-              title: 'Opening Periods',
-              type: 'array',
-              of: [
-                {
-                  type: 'object',
-                  fields: [
-                    { name: 'opens', title: 'Opens At (HH:MM)', type: 'string' },
-                    { name: 'closes', title: 'Closes At (HH:MM)', type: 'string' },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'holidayExceptions',
-      title: 'Holiday and Special Date Exceptions',
-      type: 'array',
-      group: 'operations',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            { name: 'date', title: 'Date (YYYY-MM-DD)', type: 'date', validation: (Rule: any) => Rule.required() },
-            { name: 'isClosed', title: 'Is Closed', type: 'boolean', initialValue: true },
-            {
-              name: 'periods',
-              title: 'Alternative Hours',
-              type: 'array',
-              of: [
-                {
-                  type: 'object',
-                  fields: [
-                    { name: 'opens', title: 'Opens At (HH:MM)', type: 'string' },
-                    { name: 'closes', title: 'Closes At (HH:MM)', type: 'string' },
-                  ],
-                },
-              ],
-            },
-            { name: 'notes', title: 'Notes / Holiday Name', type: 'string' },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'beerStyles',
-      title: 'Specialty Beer Styles',
-      type: 'array',
-      group: 'operations',
-      of: [{ type: 'string' }],
-    },
-    {
-      name: 'amenities',
-      title: 'Taproom Amenities',
-      type: 'array',
-      group: 'operations',
-      of: [{ type: 'string' }],
-    },
-
-    // Verification Group
-    {
-      name: 'lastVerified',
-      title: 'Last Verified Date',
-      type: 'date',
-      group: 'verification',
-      options: {
-        dateFormat: 'YYYY-MM-DD',
-      },
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'verificationSource',
-      title: 'Verification Source',
-      type: 'string',
-      group: 'verification',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'verificationStatus',
-      title: 'Verification Status',
-      type: 'string',
-      group: 'verification',
-      options: {
-        list: [
-          { title: 'Verified', value: 'Verified' },
-          { title: 'Needs Review', value: 'Needs Review' },
-          { title: 'Community Submitted', value: 'Community Submitted' },
-        ],
-      },
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: 'verification',
-      title: 'Detailed Field Verifications',
-      type: 'object',
-      group: 'verification',
-      fields: [
-        {
-          name: 'general',
-          title: 'General Profile Verification',
-          type: 'object',
-          fields: [
-            { name: 'verified', type: 'boolean', initialValue: false },
-            { name: 'sourceType', type: 'string' },
-            { name: 'sourceUrl', type: 'url' },
-            { name: 'checkedAt', type: 'date' },
-            { name: 'confidence', type: 'string' },
-            { name: 'notes', type: 'string' },
-          ],
-        },
-        {
-          name: 'hours',
-          title: 'Hours Verification',
-          type: 'object',
-          fields: [
-            { name: 'verified', type: 'boolean', initialValue: false },
-            { name: 'sourceType', type: 'string' },
-            { name: 'sourceUrl', type: 'url' },
-            { name: 'checkedAt', type: 'date' },
-            { name: 'confidence', type: 'string' },
-            { name: 'notes', type: 'string' },
-          ],
-        },
-        {
-          name: 'address',
-          title: 'Address Verification',
-          type: 'object',
-          fields: [
-            { name: 'verified', type: 'boolean', initialValue: false },
-            { name: 'sourceType', type: 'string' },
-            { name: 'sourceUrl', type: 'url' },
-            { name: 'checkedAt', type: 'date' },
-            { name: 'confidence', type: 'string' },
-            { name: 'notes', type: 'string' },
-          ],
-        },
-        {
-          name: 'amenities',
-          title: 'Amenities Verification',
-          type: 'object',
-          fields: [
-            { name: 'verified', type: 'boolean', initialValue: false },
-            { name: 'sourceType', type: 'string' },
-            { name: 'sourceUrl', type: 'url' },
-            { name: 'checkedAt', type: 'date' },
-            { name: 'confidence', type: 'string' },
-            { name: 'notes', type: 'string' },
-          ],
-        },
-      ],
-    },
-
-    // Editorial Group
+    // Editorial & Storytelling Group
     {
       name: 'description',
-      title: 'Description',
+      title: 'Editorial Description',
       type: 'text',
       group: 'editorial',
+      description: 'Curated narrative description highlighting the history, brewing craft, and visitor experience.',
       validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'highlights',
+      title: 'Brewery Highlights',
+      type: 'array',
+      group: 'editorial',
+      description: 'Key highlights and unique features (e.g. Scenic beer garden, Historic timber barn, Rooftop patio).',
+      of: [{ type: 'string' }],
+    },
+    {
+      name: 'atmosphere',
+      title: 'Atmosphere & Style',
+      type: 'array',
+      group: 'editorial',
+      description: 'Descriptive ambiance and style tags (e.g. Industrial Chic, Family Friendly, Outdoor Centric).',
+      of: [{ type: 'string' }],
     },
     {
       name: 'image',
-      title: 'Brewery Image',
+      title: 'Editorial Photo',
       type: 'image',
       group: 'editorial',
+      description: 'Featured high-resolution imagery showcasing the brewery exterior or taproom.',
       options: {
         hotspot: true,
       },
       validation: (Rule: any) => Rule.required(),
+    },
+
+    // Curation & Editorial Recommendations Group
+    {
+      name: 'featured',
+      title: 'Featured Editorial Listing',
+      type: 'boolean',
+      group: 'curation',
+      description: 'Flag to highlight this brewery in featured editorial showcases.',
+      initialValue: false,
+    },
+    {
+      name: 'editorialRecommendations',
+      title: 'Editorial Recommendations & Staff Picks',
+      type: 'array',
+      group: 'curation',
+      description: 'Curated staff picks, recommended beers, food pairings, or best visiting times.',
+      of: [
+        {
+          type: 'object',
+          title: 'Recommendation',
+          fields: [
+            {
+              name: 'category',
+              title: 'Recommendation Category',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Must-Try Beer', value: 'beer' },
+                  { title: 'Food Pairing / Bite', value: 'food' },
+                  { title: 'Best Time to Visit', value: 'timing' },
+                  { title: 'Local Tip', value: 'tip' },
+                ],
+              },
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'title',
+              title: 'Title / Item',
+              type: 'string',
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'notes',
+              title: 'Editorial Notes',
+              type: 'text',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'curatedContent',
+      title: 'Curated Content & Badges',
+      type: 'object',
+      group: 'curation',
+      description: 'Editorial tags, badges, and curated notes assigned by editors.',
+      fields: [
+        {
+          name: 'editorNotes',
+          title: 'Editor Notes',
+          type: 'text',
+        },
+        {
+          name: 'curatedTags',
+          title: 'Curated Tags',
+          type: 'array',
+          of: [{ type: 'string' }],
+        },
+      ],
+    },
+
+    // Related Guides Group
+    {
+      name: 'relatedGuides',
+      title: 'Related Travel Guides',
+      type: 'array',
+      group: 'relationships',
+      description: 'Articles and travel guides that feature or recommend this brewery.',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'guide' }],
+        },
+      ],
     },
   ],
 };
