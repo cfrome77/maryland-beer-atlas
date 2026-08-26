@@ -1,11 +1,13 @@
 import { brewerySchema } from './brewery';
 import { trailSchema } from './trail';
 import { guideSchema } from './guide';
-import { eventSchema } from './event';
+import { categorySchema } from './category';
+import { countySchema } from './county';
 
 export const schemaTypes = [
   brewerySchema,
   trailSchema,
   guideSchema,
-  eventSchema,
+  categorySchema,
+  countySchema,
 ];

@@ -8,10 +8,10 @@ export const brewerySchema = {
     { name: 'identity', title: 'Identity & Reference' },
     { name: 'editorial', title: 'Editorial & Storytelling' },
     { name: 'curation', title: 'Curation & Recommendations' },
-    { name: 'relationships', title: 'Related Content' },
+    { name: 'relationships', title: 'Related Content & Classifications' },
   ],
   fields: [
-    // Identity & Reference Group (Link Sanity editorial record to canonical domain entity)
+    // Identity & Reference Group (Links Sanity editorial record to canonical domain entity)
     {
       name: 'name',
       title: 'Brewery Name',
@@ -37,7 +37,8 @@ export const brewerySchema = {
       title: 'Canonical Brewery ID',
       type: 'string',
       group: 'identity',
-      description: 'Unique identifier matching the canonical brewery domain record.',
+      description: 'Unique stable identifier matching the canonical brewery domain record.',
+      validation: (Rule: any) => Rule.required(),
     },
 
     // Editorial & Storytelling Group
@@ -46,7 +47,7 @@ export const brewerySchema = {
       title: 'Editorial Description',
       type: 'text',
       group: 'editorial',
-      description: 'Curated narrative description highlighting the history, brewing craft, and visitor experience.',
+      description: 'Curated narrative description highlighting history, craft, and visitor experience.',
       validation: (Rule: any) => Rule.required(),
     },
     {
@@ -54,7 +55,7 @@ export const brewerySchema = {
       title: 'Brewery Highlights',
       type: 'array',
       group: 'editorial',
-      description: 'Key highlights and unique features (e.g. Scenic beer garden, Historic timber barn, Rooftop patio).',
+      description: 'Key highlights and unique features (e.g. Scenic beer garden, Historic timber barn).',
       of: [{ type: 'string' }],
     },
     {
@@ -62,7 +63,7 @@ export const brewerySchema = {
       title: 'Atmosphere & Style',
       type: 'array',
       group: 'editorial',
-      description: 'Descriptive ambiance and style tags (e.g. Industrial Chic, Family Friendly, Outdoor Centric).',
+      description: 'Descriptive ambiance and style tags (e.g. Industrial Chic, Family Friendly).',
       of: [{ type: 'string' }],
     },
     {
@@ -147,19 +148,27 @@ export const brewerySchema = {
       ],
     },
 
-    // Related Guides Group
+    // Relationships & Editorial Classifications Group
     {
-      name: 'relatedGuides',
-      title: 'Related Travel Guides',
+      name: 'categories',
+      title: 'Categories & Styles',
       type: 'array',
       group: 'relationships',
-      description: 'Articles and travel guides that feature or recommend this brewery.',
+      description: 'Editorial categories, amenities, or style tags linked to this brewery.',
       of: [
         {
           type: 'reference',
-          to: [{ type: 'guide' }],
+          to: [{ type: 'category' }],
         },
       ],
+    },
+    {
+      name: 'county',
+      title: 'County Reference',
+      type: 'reference',
+      group: 'relationships',
+      description: 'Reference to the County editorial document.',
+      to: [{ type: 'county' }],
     },
   ],
 };
