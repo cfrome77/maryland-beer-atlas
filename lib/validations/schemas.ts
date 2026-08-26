@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getDataFreshnessInfo, DataFreshnessInfo } from '../utils/freshness';
 
 /**
  * Maryland Beer Atlas - Zod Runtime Validation Layer
@@ -213,16 +214,24 @@ export interface DerivedBreweryFields {
   fullAddress: string;
   isVerified: boolean;
   hasStructuredHours: boolean;
+  isStale: boolean;
+  freshness: DataFreshnessInfo;
 }
 
 /**
  * Computes derived domain properties from raw Brewery facts.
  */
-export function getDerivedBreweryFields(brewery: z.infer<typeof brewerySchema>): DerivedBreweryFields {
+export function getDerivedBreweryFields(
+  brewery: z.infer<typeof brewerySchema>,
+  targetDate?: Date
+): DerivedBreweryFields {
+  const freshness = getDataFreshnessInfo(brewery, targetDate);
   return {
     fullAddress: `${brewery.address}, ${brewery.city}, ${brewery.state || 'MD'} ${brewery.zipCode}`,
-    isVerified: brewery.verificationStatus === 'Verified',
+    isVerified: brewery.verificationStatus === 'Verified' && !freshness.isStale,
     hasStructuredHours: Array.isArray(brewery.structuredHours) && brewery.structuredHours.length > 0,
+    isStale: freshness.isStale,
+    freshness,
   };
 }
 
@@ -233,6 +242,7 @@ export const breweryWithDerivedSchema = brewerySchema.extend({
   fullAddress: z.string(),
   isVerified: z.boolean(),
   hasStructuredHours: z.boolean(),
+  isStale: z.boolean(),
 });
 
 // ==========================================
