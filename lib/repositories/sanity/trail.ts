@@ -1,6 +1,7 @@
 import { BeerTrail } from '../../types';
 import { ITrailRepository } from '../interfaces';
 import { sanityClient } from '../../sanity/client';
+import { validateBeerTrail, validateBeerTrailList } from '../../validations/schemas';
 
 export class SanityTrailRepository implements ITrailRepository {
   private breweryProjection = `
@@ -9,6 +10,9 @@ export class SanityTrailRepository implements ITrailRepository {
     name,
     type,
     region,
+    status,
+    statusUpdatedAt,
+    statusNotes,
     address,
     city,
     county,
@@ -20,12 +24,15 @@ export class SanityTrailRepository implements ITrailRepository {
     description,
     "image": image.asset->url,
     hours,
+    structuredHours,
+    holidayExceptions,
     beerStyles,
     amenities,
     featured,
     lastVerified,
     verificationSource,
-    verificationStatus
+    verificationStatus,
+    verification
   `;
 
   private baseProjection = `
@@ -46,25 +53,25 @@ export class SanityTrailRepository implements ITrailRepository {
   `;
 
   async getAll(): Promise<BeerTrail[]> {
-    const results = await sanityClient.fetch<BeerTrail[]>(
+    const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "trail"] { ${this.baseProjection} }`
     );
-    return results || [];
+    return results && results.length > 0 ? validateBeerTrailList(results) : [];
   }
 
   async getById(id: string): Promise<BeerTrail | null> {
-    const results = await sanityClient.fetch<BeerTrail[]>(
+    const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "trail" && _id == $id] { ${this.baseProjection} }`,
       { id }
     );
-    return results[0] || null;
+    return results && results[0] ? validateBeerTrail(results[0]) : null;
   }
 
   async getBySlug(slug: string): Promise<BeerTrail | null> {
-    const results = await sanityClient.fetch<BeerTrail[]>(
+    const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "trail" && slug.current == $slug] { ${this.baseProjection} }`,
       { slug }
     );
-    return results[0] || null;
+    return results && results[0] ? validateBeerTrail(results[0]) : null;
   }
 }
