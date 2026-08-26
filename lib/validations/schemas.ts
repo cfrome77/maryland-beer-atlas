@@ -212,6 +212,26 @@ export const brewerySchema = z.object({
   holidayExceptions: z.array(holidayExceptionSchema).nullish(),
   verification: breweryVerificationSchema.nullish(),
   sourceInfo: z.string().nullish(),
+
+  // --- SANITY EDITORIAL CONTENT FIELDS ---
+  highlights: z.array(z.string()).nullish(),
+  atmosphere: z.array(z.string()).nullish(),
+  editorialRecommendations: z
+    .array(
+      z.object({
+        category: z.string(),
+        title: z.string(),
+        notes: z.string().nullish(),
+      })
+    )
+    .nullish(),
+  curatedContent: z
+    .object({
+      editorNotes: z.string().nullish(),
+      curatedTags: z.array(z.string()).nullish(),
+    })
+    .nullish(),
+  relatedGuides: z.array(z.string()).nullish(),
 });
 
 /**

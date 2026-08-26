@@ -54,7 +54,20 @@ export const mockBreweries: Brewery[] = [
       hours: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com/visit', checkedAt: '2025-05-10', confidence: 'High' },
       address: { verified: true, sourceType: 'Official Website', checkedAt: '2025-05-10', confidence: 'High' },
       amenities: { verified: true, sourceType: 'Social Media', sourceUrl: 'https://instagram.com/flyingdogbrewery', checkedAt: '2025-05-09', confidence: 'Medium' }
-    }
+    },
+    highlights: ['Ralph Steadman Label Art Gallery', 'Expansive Outdoor Beer Garden', 'Small-Batch Experimental Brewhouse'],
+    atmosphere: ['Industrial Chic', 'Artistic & Edgy', 'Lively Social Hub'],
+    editorialRecommendations: [
+      { category: 'beer', title: 'Raging Bitch Belgian IPA', notes: 'A classic Maryland craft beer icon combining Belgian yeast fruitiness with American hop bitterness.' },
+      { category: 'food', title: 'Local Food Trucks', notes: 'Rotating weekly food trucks featuring Maryland crab cakes and artisanal tacos on weekends.' },
+      { category: 'timing', title: 'Friday Happy Hour', notes: 'Arrive early around 4:00 PM on Friday to secure prime outdoor patio seating.' },
+      { category: 'tip', title: 'Merch & Art Prints', notes: 'Check out the tasting room shop for limited-edition Steadman art prints and brewery apparel.' }
+    ],
+    curatedContent: {
+      editorNotes: 'Flying Dog remains an indispensable pillar of Maryland craft beer history. The tasting room offers exclusive small-batch experimental releases not distributed anywhere else.',
+      curatedTags: ['Flagship Pioneer', 'Must-Visit Frederick', 'Art & Craft']
+    },
+    relatedGuides: ['frederick-historic-brews']
   },
   {
     id: 'monocacy',
@@ -104,7 +117,18 @@ export const mockBreweries: Brewery[] = [
     verification: {
       general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://monocacybrewing.com', checkedAt: '2025-06-15', confidence: 'High' },
       hours: { verified: true, sourceType: 'Official Website', checkedAt: '2025-06-15', confidence: 'High' }
-    }
+    },
+    highlights: ['Historic Warehouse Setting', 'Local Maryland Grown Ingredients', 'Family & Pet Friendly Patio'],
+    atmosphere: ['Welcoming Neighborhood Spot', 'Rustic & Historic', 'Relaxed Outdoors'],
+    editorialRecommendations: [
+      { category: 'beer', title: 'Riot Rye Pale Ale', notes: 'Subtly spicy malt backbone balanced by vibrant floral and citrus hop notes.' },
+      { category: 'tip', title: 'Patio Sunset Views', notes: 'The sunny outdoor patio is perfect for weekend afternoons with family and pets.' }
+    ],
+    curatedContent: {
+      editorNotes: 'Great neighborhood atmosphere with a strong commitment to sourcing local Maryland agricultural ingredients.',
+      curatedTags: ['Historic District', 'Community Favorite']
+    },
+    relatedGuides: ['frederick-historic-brews']
   },
   {
     id: 'elder-pine',
