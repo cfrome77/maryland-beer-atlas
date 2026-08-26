@@ -5,22 +5,252 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 532ms
-✓ Running next.config.ts took 44ms
+✓ Ready in 540ms
+✓ Running next.config.ts took 45ms
 
-○ Compiling / ...
- GET / 200 in 4.7s (next.js: 4.0s, application-code: 685ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries 200 in 1742ms (next.js: 1635ms, application-code: 107ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries 200 in 241ms (next.js: 5ms, application-code: 236ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries/county/frederick 200 in 1664ms (next.js: 1565ms, application-code: 99ms)
- GET /breweries 200 in 61ms (next.js: 5ms, application-code: 56ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries/county/frederick 200 in 156ms (next.js: 21ms, application-code: 134ms)
-[browser] Image with src "https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /breweries/category/dog-friendly 200 in 1624ms (next.js: 1451ms, application-code: 173ms)
- GET /breweries 200 in 180ms (next.js: 4ms, application-code: 176ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+○ Compiling /map ...
+ HEAD /map 200 in 5.2s (next.js: 4.6s, application-code: 576ms)
+ GET /map 200 in 162ms (next.js: 14ms, application-code: 149ms)
+ GET /map 200 in 212ms (next.js: 5ms, application-code: 207ms)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
+[browser] Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.
+    at MapView.useEffect (components/ui/map-view.tsx:271:16)
+    at Array.forEach (<anonymous>)
+    at MapView.useEffect (components/ui/map-view.tsx:269:44)
+  269 |       Object.values(popupRootsRef.current).forEach((root) => {
+  270 |         try {
+> 271 |           root.unmount();
+      |                ^
+  272 |         } catch {
+  273 |           // Safe to ignore
+  274 |         } (components/ui/map-view.tsx:271:16)
