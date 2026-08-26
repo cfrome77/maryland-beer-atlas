@@ -182,4 +182,13 @@ describe('BreweriesDirectoryContent', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/breweries');
   });
+
+  it('changes sorting option and updates URL', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const sortSelect = screen.getByDisplayValue('Sort: Name (A to Z)');
+    fireEvent.change(sortSelect, { target: { value: 'county-asc' } });
+
+    expect(mockPush).toHaveBeenCalledWith('/breweries?sort=county-asc');
+  });
 });

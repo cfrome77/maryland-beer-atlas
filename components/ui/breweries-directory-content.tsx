@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity } from 'lucide-react';
+import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity, ArrowUpDown } from 'lucide-react';
 import { Brewery, BreweryType, MarylandRegion, OperationalCategory } from '@/lib/types';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
-import { filterBreweries } from '@/lib/utils/filter-breweries';
+import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Compass, BookOpen, ArrowRight } from 'lucide-react';
@@ -46,6 +46,16 @@ const OPERATIONAL_STATUS_OPTIONS: { label: string; value: OperationalCategory | 
   { label: 'Hours Unavailable', value: 'hours_unavailable' },
 ];
 
+const SORT_OPTIONS: { label: string; value: BrewerySortOption }[] = [
+  { label: 'Name (A to Z)', value: 'name-asc' },
+  { label: 'Name (Z to A)', value: 'name-desc' },
+  { label: 'County (A to Z)', value: 'county-asc' },
+  { label: 'City (A to Z)', value: 'city-asc' },
+  { label: 'Region (A to Z)', value: 'region-asc' },
+  { label: 'Type (A to Z)', value: 'type-asc' },
+  { label: 'Recently Verified', value: 'verified-desc' },
+];
+
 function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -58,6 +68,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const initialAmenity = searchParams?.get('amenity') || '';
   const initialStatus = searchParams?.get('status') || '';
   const initialQuickGuide = searchParams?.get('quickGuide') || '';
+  const initialSort = (searchParams?.get('sort') as BrewerySortOption) || 'name-asc';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedRegion, setSelectedRegion] = useState<MarylandRegion | ''>(initialRegion);
@@ -66,6 +77,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   const [selectedAmenity, setSelectedAmenity] = useState<string>(initialAmenity);
   const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus);
   const [selectedQuickGuide, setSelectedQuickGuide] = useState<string>(initialQuickGuide);
+  const [selectedSort, setSelectedSort] = useState<BrewerySortOption>(initialSort);
 
   // Region, Type, County and Amenity lists
   const regions: MarylandRegion[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
@@ -84,6 +96,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     amenity: string;
     status: string;
     quickGuide: string;
+    sort: BrewerySortOption;
   }>({
     search: initialSearch,
     region: initialRegion,
@@ -92,6 +105,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     amenity: initialAmenity,
     status: initialStatus,
     quickGuide: initialQuickGuide,
+    sort: initialSort,
   });
 
   // Keep a ref to current filter values for debounced search sync
@@ -101,6 +115,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     selectedCounty,
     selectedAmenity,
     selectedStatus,
+    selectedSort,
   });
   useEffect(() => {
     filterStateRef.current = {
@@ -109,8 +124,9 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       selectedCounty,
       selectedAmenity,
       selectedStatus,
+      selectedSort,
     };
-  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus]);
+  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedSort]);
 
   // Sync state with URL search params when they change (e.g., back/forward buttons)
   useEffect(() => {
@@ -121,6 +137,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     const currentAmenity = searchParams?.get('amenity') || '';
     const currentStatus = searchParams?.get('status') || '';
     const currentQuickGuide = searchParams?.get('quickGuide') || '';
+    const currentSort = (searchParams?.get('sort') as BrewerySortOption) || 'name-asc';
 
     const prev = prevParamsRef.current;
     const hasChanged =
@@ -130,7 +147,8 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       currentCounty !== prev.county ||
       currentAmenity !== prev.amenity ||
       currentStatus !== prev.status ||
-      currentQuickGuide !== prev.quickGuide;
+      currentQuickGuide !== prev.quickGuide ||
+      currentSort !== prev.sort;
 
     if (hasChanged) {
       setSearchQuery(currentSearch);
@@ -140,6 +158,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       setSelectedAmenity(currentAmenity);
       setSelectedStatus(currentStatus);
       setSelectedQuickGuide(currentQuickGuide);
+      setSelectedSort(currentSort);
 
       prevParamsRef.current = {
         search: currentSearch,
@@ -149,6 +168,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         amenity: currentAmenity,
         status: currentStatus,
         quickGuide: currentQuickGuide,
+        sort: currentSort,
       };
     }
   }, [searchParams]);
@@ -162,6 +182,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     amenity: string,
     status: string,
     quickGuide: string = '',
+    sort: BrewerySortOption = 'name-asc',
     replace: boolean = false
   ) => {
     const params = new URLSearchParams();
@@ -172,8 +193,10 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     if (amenity) params.set('amenity', amenity);
     if (status) params.set('status', status);
     if (quickGuide) params.set('quickGuide', quickGuide);
+    if (sort && sort !== 'name-asc') params.set('sort', sort);
 
-    const url = `/breweries?${params.toString()}`;
+    const query = params.toString();
+    const url = query ? `/breweries?${query}` : '/breweries';
     if (replace) {
       router.replace(url);
     } else {
@@ -194,6 +217,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         selectedCounty: c,
         selectedAmenity: a,
         selectedStatus: s,
+        selectedSort: st,
       } = filterStateRef.current;
       const params = new URLSearchParams();
       if (searchQuery) params.set('search', searchQuery);
@@ -202,8 +226,10 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       if (c) params.set('county', c);
       if (a) params.set('amenity', a);
       if (s) params.set('status', s);
+      if (st && st !== 'name-asc') params.set('sort', st);
 
-      router.replace(`/breweries?${params.toString()}`);
+      const query = params.toString();
+      router.replace(query ? `/breweries?${query}` : '/breweries');
     }, 400);
 
     return () => clearTimeout(timer);
@@ -227,10 +253,10 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
       setSelectedAmenity(targetAmenity);
       setSelectedStatus(targetStatus);
 
-      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, val);
+      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, val, selectedSort);
     } else {
       setSelectedQuickGuide('');
-      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, '');
+      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, '', selectedSort);
     }
   };
 
@@ -242,35 +268,41 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     const val = e.target.value as MarylandRegion | '';
     setSelectedRegion(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, '');
+    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, '', selectedSort);
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BreweryType | '';
     setSelectedType(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, '');
+    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, '', selectedSort);
   };
 
   const handleCountyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedCounty(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, '');
+    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, '', selectedSort);
   };
 
   const handleAmenityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedAmenity(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, '');
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, '', selectedSort);
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedStatus(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, '');
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, '', selectedSort);
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value as BrewerySortOption;
+    setSelectedSort(val);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedQuickGuide, val);
   };
 
   const resetFilters = () => {
@@ -281,6 +313,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     setSelectedAmenity('');
     setSelectedStatus('');
     setSelectedQuickGuide('');
+    setSelectedSort('name-asc');
     router.push('/breweries');
   };
 
@@ -292,6 +325,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
     county: selectedCounty,
     amenity: selectedAmenity,
     status: selectedStatus,
+    sort: selectedSort,
   });
 
   return (
@@ -335,7 +369,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         </div>
 
         {/* Row 2: Standard Filtering dropdowns & Reset button */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
           {/* Region Select */}
           <div className="relative">
             <select
@@ -423,6 +457,23 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               ))}
             </select>
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          </div>
+
+          {/* Sort By Select */}
+          <div className="relative">
+            <select
+              value={selectedSort}
+              onChange={handleSortChange}
+              aria-label="Sort breweries"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer font-medium"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  Sort: {opt.label}
+                </option>
+              ))}
+            </select>
+            <ArrowUpDown className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
           </div>
 
           {/* Reset Button */}
