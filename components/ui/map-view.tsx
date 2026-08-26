@@ -5,6 +5,7 @@ import * as maplibregl from 'maplibre-gl';
 import { Brewery, BeerTrail } from '@/lib/types';
 import { createRoot, Root } from 'react-dom/client';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
+import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 
 interface MapViewProps {
   breweries: Brewery[];
@@ -215,6 +216,12 @@ export default function MapView({
             <h4 className="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">{brewery.name}</h4>
             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">{brewery.city} • {brewery.region} Region</p>
           </div>
+
+          <div className="flex flex-col gap-1 py-1 border-y border-zinc-100 dark:border-zinc-850">
+            <BreweryStatusBadge brewery={brewery} size="sm" showDetail={true} />
+            <BreweryFreshnessBadge brewery={brewery} size="sm" />
+          </div>
+
           <p className="text-zinc-600 dark:text-zinc-300 text-[11px] line-clamp-2 leading-snug">
             {brewery.description}
           </p>

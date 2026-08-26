@@ -140,7 +140,7 @@ describe('Data Models & Filter Presets', () => {
     render(detailElement);
 
     // Check that custom operating status notices are displayed
-    expect(screen.getByText('Status: Opening soon')).toBeInTheDocument();
+    expect(screen.getAllByText('Opening Soon')[0]).toBeInTheDocument();
     expect(screen.getByText(/Undergoing taproom renovations/)).toBeInTheDocument();
 
     // Check structured hours parsing (Monday Closed)

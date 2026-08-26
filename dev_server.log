@@ -5,12 +5,20 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 534ms
-✓ Running next.config.ts took 43ms
+✓ Ready in 617ms
+✓ Running next.config.ts took 65ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
 
-○ Compiling /breweries ...
- HEAD /breweries 200 in 4.5s (next.js: 3.9s, application-code: 580ms)
- GET /breweries 200 in 171ms (next.js: 12ms, application-code: 160ms)
+
+○ Compiling / ...
+ HEAD / 200 in 5.3s (next.js: 4.6s, application-code: 748ms)
+ HEAD / 200 in 235ms (next.js: 8ms, application-code: 227ms)
+ GET /breweries 200 in 2.1s (next.js: 1705ms, application-code: 381ms)
 ⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
- GET /breweries?sort=county-asc 200 in 63ms (next.js: 6ms, application-code: 57ms)
- GET /breweries?region=Western&sort=county-asc 200 in 71ms (next.js: 8ms, application-code: 63ms)
+ GET /breweries 200 in 209ms (next.js: 11ms, application-code: 198ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+ GET /breweries/burley-oak-brewing-company 200 in 2.6s (next.js: 2.4s, application-code: 255ms)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
