@@ -48,3 +48,5 @@ export type BreweryVerification = z.infer<typeof breweryVerificationSchema>;
 export type Brewery = z.infer<typeof brewerySchema>;
 export type BeerTrail = z.infer<typeof beerTrailSchema>;
 export type TravelGuide = z.infer<typeof travelGuideSchema>;
+
+export type { DataFreshnessInfo, FreshnessCategory, VerificationBadgeInfo } from './utils/freshness';

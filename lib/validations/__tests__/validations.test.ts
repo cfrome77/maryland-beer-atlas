@@ -139,11 +139,26 @@ describe('Zod Validation Layer', () => {
   describe('Derived Fields Helper', () => {
     it('correctly calculates derived domain fields for a brewery', () => {
       const brewery = mockBreweries[0];
-      const derived = getDerivedBreweryFields(brewery);
+      // Pass a targetDate close to lastVerified date (2025-05-10) to test fresh verified state
+      const targetDate = new Date('2025-05-20');
+      const derived = getDerivedBreweryFields(brewery, targetDate);
 
       expect(derived.fullAddress).toBe('4607 Wedgewood Blvd, Frederick, MD 21703');
       expect(derived.isVerified).toBe(true);
       expect(derived.hasStructuredHours).toBe(true);
+      expect(derived.isStale).toBe(false);
+      expect(derived.freshness.freshnessCategory).toBe('fresh');
+    });
+
+    it('identifies stale verified data when verification date is old', () => {
+      const brewery = mockBreweries[0];
+      // Target date > 180 days after 2025-05-10
+      const targetDate = new Date('2026-01-01');
+      const derived = getDerivedBreweryFields(brewery, targetDate);
+
+      expect(derived.isStale).toBe(true);
+      expect(derived.isVerified).toBe(false);
+      expect(derived.freshness.freshnessCategory).toBe('outdated');
     });
   });
 

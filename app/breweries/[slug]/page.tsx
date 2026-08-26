@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, MapPin, Globe, Clock, Beer as BeerIcon, Calendar, ShieldCheck, AlertTriangle, Users, Info, Sparkles } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
+import { getDataFreshnessInfo } from '@/lib/utils/freshness';
 
 interface BreweryDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -137,24 +138,39 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 backdrop-blur-sm border border-emerald-500/30">
                     {brewery.county} County
                   </span>
-                  {brewery.verificationStatus === 'Verified' && (
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-emerald-500/30">
-                      <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                      Verified
-                    </span>
-                  )}
-                  {brewery.verificationStatus === 'Needs Review' && (
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-amber-500/30">
-                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                      Needs Review
-                    </span>
-                  )}
-                  {brewery.verificationStatus === 'Community Submitted' && (
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-indigo-500/30">
-                      <Users className="w-3.5 h-3.5 shrink-0" />
-                      Community Submitted
-                    </span>
-                  )}
+                  {(() => {
+                    const freshness = getDataFreshnessInfo(brewery);
+                    if (freshness.freshnessCategory === 'fresh') {
+                      return (
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-emerald-500/30">
+                          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                          Recently Verified
+                        </span>
+                      );
+                    }
+                    if (freshness.freshnessCategory === 'stale') {
+                      return (
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-amber-500/30">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          Stale Data
+                        </span>
+                      );
+                    }
+                    if (freshness.freshnessCategory === 'outdated') {
+                      return (
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-rose-500/30">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          Outdated Data
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-sm flex items-center gap-1 backdrop-blur-sm border border-indigo-500/30">
+                        <Users className="w-3.5 h-3.5 shrink-0" />
+                        Community Submitted
+                      </span>
+                    );
+                  })()}
                 </div>
                 <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
                   {brewery.name}
@@ -317,54 +333,70 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
             {/* Sidebar info */}
             <div className="lg:col-span-4 space-y-6">
               {/* Data Freshness & Verification Info */}
-              <div className={`p-6 rounded-2xl border space-y-4 shadow-sm ${
-                brewery.verificationStatus === 'Verified'
-                  ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-300'
-                  : brewery.verificationStatus === 'Needs Review'
-                  ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20 text-amber-900 dark:text-amber-300'
-                  : 'bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20 text-indigo-900 dark:text-indigo-300'
-              }`}>
-                <div className="flex items-center gap-2.5">
-                  {brewery.verificationStatus === 'Verified' && (
-                    <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  )}
-                  {brewery.verificationStatus === 'Needs Review' && (
-                    <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-                  )}
-                  {brewery.verificationStatus === 'Community Submitted' && (
-                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                  )}
-                  <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50">
-                    Data Verification
-                  </h3>
-                </div>
+              {(() => {
+                const freshness = getDataFreshnessInfo(brewery);
+                return (
+                  <div className={`p-6 rounded-2xl border space-y-4 shadow-sm ${
+                    freshness.freshnessCategory === 'fresh'
+                      ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-300'
+                      : freshness.freshnessCategory === 'stale'
+                      ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20 text-amber-900 dark:text-amber-300'
+                      : freshness.freshnessCategory === 'outdated'
+                      ? 'bg-rose-500/5 dark:bg-rose-950/10 border-rose-500/20 text-rose-900 dark:text-rose-300'
+                      : 'bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20 text-indigo-900 dark:text-indigo-300'
+                  }`}>
+                    <div className="flex items-center gap-2.5">
+                      {freshness.freshnessCategory === 'fresh' && (
+                        <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      )}
+                      {(freshness.freshnessCategory === 'stale' || freshness.freshnessCategory === 'outdated') && (
+                        <AlertTriangle className={`w-5 h-5 shrink-0 ${freshness.freshnessCategory === 'outdated' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`} />
+                      )}
+                      {freshness.freshnessCategory === 'unverified' && (
+                        <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      )}
+                      <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50">
+                        Data Verification & Freshness
+                      </h3>
+                    </div>
 
-                <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
-                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Status</span>
-                    <span className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] uppercase tracking-wider ${
-                      brewery.verificationStatus === 'Verified'
-                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                        : brewery.verificationStatus === 'Needs Review'
-                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
-                        : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
-                    }`}>
-                      {brewery.verificationStatus}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.lastVerified}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                    <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
-                    <span className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium" title={brewery.verificationSource}>
-                      {brewery.verificationSource}
-                    </span>
-                  </div>
-                </div>
+                    <div className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
+                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Verification Badge</span>
+                        <span className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] uppercase tracking-wider ${
+                          freshness.freshnessCategory === 'fresh'
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                            : freshness.freshnessCategory === 'stale'
+                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                            : freshness.freshnessCategory === 'outdated'
+                            ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
+                            : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
+                        }`}>
+                          {freshness.verificationBadge.label}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Status</span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.verificationStatus}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{brewery.lastVerified}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
+                        <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
+                        <span className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium" title={brewery.verificationSource}>
+                          {brewery.verificationSource}
+                        </span>
+                      </div>
+                    </div>
 
-                {/* Separate Field Verifications */}
+                    {/* Freshness summary box */}
+                    <div className="p-3 rounded-xl bg-zinc-500/10 border border-zinc-200/50 dark:border-zinc-800/50 text-xs leading-relaxed font-medium">
+                      {freshness.freshnessSummary}
+                    </div>
+
+                    {/* Separate Field Verifications */}
                 {brewery.verification && (
                   <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
                     <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Field-Level Verification</span>
@@ -404,13 +436,15 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   </div>
                 )}
 
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
-                  <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
-                  <span>
-                    Brewery hours change frequently. We track verification status and sources to communicate current data freshness.
-                  </span>
-                </p>
-              </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
+                      <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                      <span>
+                        Brewery hours change frequently. We track verification status and sources to communicate current data freshness.
+                      </span>
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Hours of Operation */}
               <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 space-y-4">
