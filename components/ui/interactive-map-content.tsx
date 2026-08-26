@@ -263,11 +263,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
       setActiveTrailId(null);
     } else {
       setActiveTrailId(trailId);
-      // Auto-select the first brewery in the trail
-      const trail = trails.find((t) => t.id === trailId);
-      if (trail && trail.breweries && trail.breweries.length > 0) {
-        setSelectedBrewery(trail.breweries[0]);
-      }
+      // Keep selectedBrewery null so the map uses fitBounds for full trail route overview
+      setSelectedBrewery(null);
     }
   };
 

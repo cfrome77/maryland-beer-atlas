@@ -120,11 +120,13 @@ const mockTrails: BeerTrail[] = [
 ];
 
 describe('InteractiveMapContent Component', () => {
-  it('renders interactive map content correctly with initial brewery state', () => {
+  it('renders interactive map content correctly with initial brewery state as null for full overview', () => {
     render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
 
     expect(screen.getByText('Map Filters & Layer Explorer')).toBeInTheDocument();
     expect(screen.getByText('Matching Breweries (3)')).toBeInTheDocument();
+    expect(screen.getByText('No Brewery Selected')).toBeInTheDocument();
+    expect(screen.queryByTestId('selected-brewery-id')).not.toBeInTheDocument();
     expect(screen.getAllByText('Flying Dog Brewery').length).toBeGreaterThan(0);
     expect(screen.getByText('Burley Oak Brewing Company')).toBeInTheDocument();
   });
@@ -140,13 +142,15 @@ describe('InteractiveMapContent Component', () => {
     expect(profileLink).toHaveAttribute('href', '/breweries/flying-dog-brewery');
   });
 
-  it('filters breweries when active trail layer is toggled', () => {
+  it('filters breweries when active trail layer is toggled and keeps selectedBrewery as null for route overview', () => {
     render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
 
     const trailToggle = screen.getByRole('button', { name: /Frederick Trail/i });
     fireEvent.click(trailToggle);
 
     expect(screen.getByText('Matching Breweries (1)')).toBeInTheDocument();
+    expect(screen.getByText('No Brewery Selected')).toBeInTheDocument();
+    expect(screen.queryByTestId('selected-brewery-id')).not.toBeInTheDocument();
     expect(screen.getAllByText('Flying Dog Brewery').length).toBeGreaterThan(0);
     expect(screen.queryByText('Burley Oak Brewing Company')).not.toBeInTheDocument();
   });
