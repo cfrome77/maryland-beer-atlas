@@ -32,6 +32,7 @@ export const breweryTypeSchema = z.enum([
 export const breweryOperatingStatusSchema = z.enum([
   'Open',
   'Temporarily closed',
+  'Permanently closed',
   'Seasonal',
   'Opening soon',
   'Relocating',
