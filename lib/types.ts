@@ -32,6 +32,10 @@ export type VerificationSourceType = z.infer<typeof verificationSourceTypeSchema
 export type VerificationConfidence = z.infer<typeof verificationConfidenceSchema>;
 export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
 
+export type OperationalCategory = 'permanently_closed' | 'temporarily_closed' | 'open' | 'hours_unavailable';
+
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
 export type Coordinates = z.infer<typeof coordinatesSchema>;
 export type OperatingHours = z.infer<typeof operatingHoursSchema>;
 export type TimePeriod = z.infer<typeof timePeriodSchema>;

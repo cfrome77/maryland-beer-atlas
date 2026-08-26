@@ -123,7 +123,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
                     brewery.status === 'Open'
                       ? 'bg-emerald-500 text-white'
-                      : brewery.status === 'Temporarily closed' || brewery.status === 'Closed'
+                      : brewery.status === 'Closed' || brewery.status === 'Permanently closed'
+                      ? 'bg-rose-700 text-white'
+                      : brewery.status === 'Temporarily closed'
                       ? 'bg-rose-600 text-white'
                       : 'bg-amber-500 text-zinc-950'
                   }`}>

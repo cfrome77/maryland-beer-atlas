@@ -237,7 +237,7 @@ export const mockBreweries: Brewery[] = [
     structuredHours: [
       { day: 'Monday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
       { day: 'Tuesday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
-      { day: 'Wednesday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
+      { day: 'Wednesday', isClosed: false, periods: [{ opens: '11:30', closes: '14:00' }, { opens: '17:00', closes: '21:30' }] },
       { day: 'Thursday', isClosed: false, periods: [{ opens: '11:00', closes: '21:30' }] },
       { day: 'Friday', isClosed: false, periods: [{ opens: '11:00', closes: '22:30' }] },
       { day: 'Saturday', isClosed: false, periods: [{ opens: '11:00', closes: '22:30' }] },

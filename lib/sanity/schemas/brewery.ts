@@ -152,6 +152,7 @@ export const brewerySchema = {
         list: [
           { title: 'Open', value: 'Open' },
           { title: 'Temporarily Closed', value: 'Temporarily closed' },
+          { title: 'Permanently Closed', value: 'Permanently closed' },
           { title: 'Seasonal', value: 'Seasonal' },
           { title: 'Opening Soon', value: 'Opening soon' },
           { title: 'Relocating', value: 'Relocating' },
