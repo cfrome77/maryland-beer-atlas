@@ -221,4 +221,87 @@ describe('filterBreweries', () => {
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe('Flying Dog Brewery');
   });
+
+  describe('sortBreweries & filter Breweries sorting options', () => {
+    it('sorts by name-asc (default)', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'name-asc' });
+      expect(result.map((b) => b.name)).toEqual([
+        'Flying Dog Brewery',
+        'Heavy Seas Beer',
+        'Mystery Brews',
+        'Old Craft Co',
+        'Station Brewpub',
+      ]);
+    });
+
+    it('sorts by name-desc', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'name-desc' });
+      expect(result.map((b) => b.name)).toEqual([
+        'Station Brewpub',
+        'Old Craft Co',
+        'Mystery Brews',
+        'Heavy Seas Beer',
+        'Flying Dog Brewery',
+      ]);
+    });
+
+    it('sorts by county-asc with stable tie-breaking', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'county-asc' });
+      expect(result.map((b) => ({ county: b.county, name: b.name }))).toEqual([
+        { county: 'Anne Arundel', name: 'Old Craft Co' },
+        { county: 'Baltimore City', name: 'Station Brewpub' },
+        { county: 'Baltimore County', name: 'Heavy Seas Beer' },
+        { county: 'Frederick', name: 'Flying Dog Brewery' },
+        { county: 'Worcester', name: 'Mystery Brews' },
+      ]);
+    });
+
+    it('sorts by city-asc with stable tie-breaking', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'city-asc' });
+      expect(result.map((b) => ({ city: b.city, name: b.name }))).toEqual([
+        { city: 'Annapolis', name: 'Old Craft Co' },
+        { city: 'Baltimore', name: 'Station Brewpub' },
+        { city: 'Frederick', name: 'Flying Dog Brewery' },
+        { city: 'Halethorpe', name: 'Heavy Seas Beer' },
+        { city: 'Ocean City', name: 'Mystery Brews' },
+      ]);
+    });
+
+    it('sorts by region-asc', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'region-asc' });
+      // Central: Heavy Seas Beer, Station Brewpub
+      // Eastern Shore: Mystery Brews
+      // Southern: Old Craft Co
+      // Western: Flying Dog Brewery
+      expect(result.map((b) => ({ region: b.region, name: b.name }))).toEqual([
+        { region: 'Central', name: 'Heavy Seas Beer' },
+        { region: 'Central', name: 'Station Brewpub' },
+        { region: 'Eastern Shore', name: 'Mystery Brews' },
+        { region: 'Southern', name: 'Old Craft Co' },
+        { region: 'Western', name: 'Flying Dog Brewery' },
+      ]);
+    });
+
+    it('sorts by type-asc', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'type-asc' });
+      expect(result.map((b) => ({ type: b.type, name: b.name }))).toEqual([
+        { type: 'Brewpub', name: 'Station Brewpub' },
+        { type: 'Farm Brewery', name: 'Old Craft Co' },
+        { type: 'Microbrewery', name: 'Flying Dog Brewery' },
+        { type: 'Microbrewery', name: 'Mystery Brews' },
+        { type: 'Production', name: 'Heavy Seas Beer' },
+      ]);
+    });
+
+    it('sorts by verified-desc', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'verified-desc' });
+      expect(result.map((b) => ({ lastVerified: b.lastVerified, name: b.name }))).toEqual([
+        { lastVerified: '2026-08-01', name: 'Flying Dog Brewery' },
+        { lastVerified: '2026-07-25', name: 'Heavy Seas Beer' },
+        { lastVerified: '2026-07-01', name: 'Mystery Brews' },
+        { lastVerified: '2026-06-10', name: 'Station Brewpub' },
+        { lastVerified: '2025-12-01', name: 'Old Craft Co' },
+      ]);
+    });
+  });
 });
