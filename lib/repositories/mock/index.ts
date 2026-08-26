@@ -2,8 +2,8 @@ import { Brewery, BeerTrail, TravelGuide } from '../../types';
 import { IBreweryRepository, ITrailRepository, IGuideRepository } from '../interfaces';
 import { mockBreweries, mockTrails, mockGuides } from '../../data/mock-data';
 import {
-  validateBrewery,
-  validateBreweryList,
+  normalizeAndValidateBrewery,
+  normalizeAndValidateBreweryList,
   validateBeerTrail,
   validateBeerTrailList,
   validateTravelGuide,
@@ -12,22 +12,22 @@ import {
 
 export class MockBreweryRepository implements IBreweryRepository {
   async getAll(): Promise<Brewery[]> {
-    return validateBreweryList(mockBreweries);
+    return normalizeAndValidateBreweryList(mockBreweries);
   }
 
   async getBySlug(slug: string): Promise<Brewery | null> {
     const brewery = mockBreweries.find((b) => b.slug === slug);
-    return brewery ? validateBrewery(brewery) : null;
+    return brewery ? normalizeAndValidateBrewery(brewery) : null;
   }
 
   async getById(id: string): Promise<Brewery | null> {
     const brewery = mockBreweries.find((b) => b.id === id);
-    return brewery ? validateBrewery(brewery) : null;
+    return brewery ? normalizeAndValidateBrewery(brewery) : null;
   }
 
   async getFeatured(): Promise<Brewery[]> {
     const featured = mockBreweries.filter((b) => b.featured);
-    return validateBreweryList(featured);
+    return normalizeAndValidateBreweryList(featured);
   }
 }
 
