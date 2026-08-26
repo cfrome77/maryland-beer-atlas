@@ -4,16 +4,72 @@ import { getDataFreshnessInfo, DataFreshnessInfo } from '../utils/freshness';
 /**
  * Maryland Beer Atlas - Zod Runtime Validation Layer
  *
- * This layer provides runtime validation for domain data at boundary entry points (e.g. Sanity CMS, external APIs, mock repositories).
- * Fields are explicitly categorized as:
- * - Required: Mandatory domain facts that must be present and valid.
- * - Optional / Nullable: Non-mandatory properties that may be omitted or null in external API responses.
- * - Derived: Calculated domain values derived from raw facts (e.g., full address, verification flag).
+ * Provides strict runtime validation for domain data at boundary entry points
+ * (Sanity CMS, external APIs, mock repositories) based on production data quality standards.
  */
 
 // ==========================================
-// 1. Primitive & Enum Schemas
+// 1. Regex Formats & Boundary Constants
 // ==========================================
+
+export const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export const PHONE_REGEX = /^(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+export const ZIP_REGEX = /^\d{5}(-\d{4})?$/;
+export const TIME_24H_REGEX = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+export const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+export const URL_REGEX = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+
+/**
+ * Geographic bounding box for the State of Maryland (approximate bounds).
+ */
+export const MARYLAND_BOUNDS = {
+  minLat: 37.8,
+  maxLat: 39.75,
+  minLng: -79.5,
+  maxLng: -75.0,
+};
+
+/**
+ * Checks if geographic coordinates fall within Maryland state boundaries.
+ */
+export function isWithinMarylandBounds(coords: { lat: number; lng: number }): boolean {
+  if (typeof coords?.lat !== 'number' || typeof coords?.lng !== 'number') return false;
+  return (
+    coords.lat >= MARYLAND_BOUNDS.minLat &&
+    coords.lat <= MARYLAND_BOUNDS.maxLat &&
+    coords.lng >= MARYLAND_BOUNDS.minLng &&
+    coords.lng <= MARYLAND_BOUNDS.maxLng
+  );
+}
+
+// ==========================================
+// 2. Primitive & Reusable Value Schemas
+// ==========================================
+
+export const slugSchema = z
+  .string()
+  .min(1, 'Brewery slug is required')
+  .regex(SLUG_REGEX, 'Slug must be lower-case alphanumeric separated by single hyphens (e.g., "flying-dog-brewery")');
+
+export const phoneSchema = z
+  .string()
+  .refine((val) => val === '' || PHONE_REGEX.test(val), {
+    message: 'Phone must be a valid 10-digit US telephone number (e.g., 301-694-7899)',
+  });
+
+export const zipCodeSchema = z
+  .string()
+  .regex(ZIP_REGEX, 'ZIP code must be a 5-digit or 9-digit US ZIP code (e.g., 21703 or 21703-1234)');
+
+export const urlSchema = z
+  .string()
+  .refine((val) => val === '' || URL_REGEX.test(val), {
+    message: 'Must be a valid HTTP or HTTPS URL (e.g., "https://www.example.com")',
+  });
+
+export const dateSchema = z
+  .string()
+  .regex(ISO_DATE_REGEX, 'Date must be formatted as YYYY-MM-DD');
 
 export const marylandRegionSchema = z.enum([
   'Capital',
@@ -62,107 +118,95 @@ export const verificationStatusSchema = z.enum([
 ]);
 
 // ==========================================
-// 2. Sub-object & Helper Schemas
+// 3. Sub-object & Helper Schemas
 // ==========================================
 
 export const coordinatesSchema = z.object({
-  // Required geographic coordinates bounded to valid latitude (-90 to 90) and longitude (-180 to 180)
   lat: z.number({ message: 'Latitude is required' }).min(-90).max(90),
   lng: z.number({ message: 'Longitude is required' }).min(-180).max(180),
 });
 
 export const operatingHoursSchema = z.object({
-  // Required human-readable operating hours entry
   day: z.string().min(1, 'Day name is required'),
   hours: z.string().min(1, 'Hours specification is required'),
 });
 
 export const timePeriodSchema = z.object({
-  // Time format string "HH:MM" (e.g. "11:00", "22:00")
-  opens: z.string().min(1, 'Opening time is required'),
-  closes: z.string().min(1, 'Closing time is required'),
+  opens: z.string().regex(TIME_24H_REGEX, 'Opening time must be in 24-hour HH:MM format (e.g. "11:00")'),
+  closes: z.string().regex(TIME_24H_REGEX, 'Closing time must be in 24-hour HH:MM format (e.g. "22:00")'),
 });
 
 export const dailyHoursSchema = z.object({
-  // Required structured day entry
   day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
   isClosed: z.boolean(),
-  // Optional / Nullable array of time slots
   periods: z.array(timePeriodSchema).nullish(),
 });
 
 export const holidayExceptionSchema = z.object({
-  // Required holiday exception details
-  date: z.string().min(1, 'Holiday date is required'), // "YYYY-MM-DD"
+  date: dateSchema,
   isClosed: z.boolean(),
-  // Optional / Nullable periods & notes
   periods: z.array(timePeriodSchema).nullish(),
   notes: z.string().nullish(),
 });
 
 export const socialLinksSchema = z.object({
-  // Optional / Nullable social media URLs
-  facebook: z.string().nullish(),
-  instagram: z.string().nullish(),
-  twitter: z.string().nullish(),
+  facebook: urlSchema.nullish(),
+  instagram: urlSchema.nullish(),
+  twitter: urlSchema.nullish(),
 });
 
 export const fieldVerificationSchema = z.object({
-  // Required provenance properties
   verified: z.boolean(),
   sourceType: verificationSourceTypeSchema,
-  checkedAt: z.string().min(1, 'Verification checkedAt date is required'),
+  checkedAt: dateSchema,
   confidence: verificationConfidenceSchema,
-  // Optional / Nullable verification details
-  sourceUrl: z.string().nullish(),
+  sourceUrl: urlSchema.nullish(),
   notes: z.string().nullish(),
 });
 
 export const breweryVerificationSchema = z.object({
-  // Required general field verification
   general: fieldVerificationSchema,
-  // Optional / Nullable field-specific verifications
   hours: fieldVerificationSchema.nullish(),
   address: fieldVerificationSchema.nullish(),
   amenities: fieldVerificationSchema.nullish(),
 });
 
 // ==========================================
-// 3. Domain Entity Schemas
+// 4. Domain Entity Schemas
 // ==========================================
 
 /**
- * Zod Schema for Canonical Brewery domain records.
+ * Zod Schema for Canonical Brewery domain records with explicit validation rules.
  */
 export const brewerySchema = z.object({
   // --- REQUIRED DOMAIN FIELDS ---
   id: z.string().min(1, 'Brewery ID is required'),
-  slug: z.string().min(1, 'Brewery slug is required'),
+  slug: slugSchema,
   name: z.string().min(1, 'Brewery name is required'),
   type: breweryTypeSchema,
   region: marylandRegionSchema,
   status: breweryOperatingStatusSchema,
-  address: z.string(),
-  city: z.string(),
-  county: z.string(),
+  address: z.string().min(1, 'Street address is required'),
+  city: z.string().min(1, 'City is required'),
+  county: z.string().min(1, 'County is required'),
   state: z.string().default('MD'),
-  zipCode: z.string(),
-  phone: z.string(),
-  website: z.string(),
+  zipCode: zipCodeSchema,
+  phone: phoneSchema,
+  website: urlSchema,
   socialLinks: socialLinksSchema,
   coordinates: coordinatesSchema,
   hours: z.array(operatingHoursSchema),
   beerStyles: z.array(z.string()),
   amenities: z.array(z.string()),
   featured: z.boolean(),
-  lastVerified: z.string(),
-  verificationSource: z.string(),
+  lastVerified: dateSchema,
+  verificationSource: z.string().min(1, 'Verification source is required'),
   verificationStatus: verificationStatusSchema,
   description: z.string(),
-  image: z.string(),
+  image: urlSchema,
 
   // --- OPTIONAL / NULLABLE DOMAIN FIELDS ---
-  statusUpdatedAt: z.string().nullish(),
+  statusUpdatedAt: dateSchema.nullish(),
   statusNotes: z.string().nullish(),
   structuredHours: z.array(dailyHoursSchema).nullish(),
   holidayExceptions: z.array(holidayExceptionSchema).nullish(),
@@ -174,16 +218,15 @@ export const brewerySchema = z.object({
  * Zod Schema for Beer Trail domain records (reuses brewerySchema).
  */
 export const beerTrailSchema = z.object({
-  // --- REQUIRED FIELDS ---
   id: z.string().min(1, 'Trail ID is required'),
-  slug: z.string().min(1, 'Trail slug is required'),
+  slug: slugSchema,
   name: z.string().min(1, 'Trail name is required'),
   description: z.string(),
   region: marylandRegionSchema,
   distance: z.string(),
   duration: z.string(),
   breweries: z.array(brewerySchema),
-  image: z.string(),
+  image: urlSchema,
   highlight: z.string(),
   nearbyAttractions: z.array(z.string()),
   difficulty: z.string(),
@@ -193,21 +236,20 @@ export const beerTrailSchema = z.object({
  * Zod Schema for Travel Guide domain records (reuses brewerySchema).
  */
 export const travelGuideSchema = z.object({
-  // --- REQUIRED FIELDS ---
-  slug: z.string().min(1, 'Guide slug is required'),
+  slug: slugSchema,
   title: z.string().min(1, 'Guide title is required'),
   description: z.string(),
   author: z.string(),
   publishDate: z.string(),
   region: marylandRegionSchema,
   content: z.string(),
-  image: z.string(),
+  image: urlSchema,
   recommendedStops: z.array(brewerySchema),
   tips: z.array(z.string()),
 });
 
 // ==========================================
-// 4. Derived Fields & Helpers
+// 5. Derived Fields & Helpers
 // ==========================================
 
 export interface DerivedBreweryFields {
@@ -246,12 +288,79 @@ export const breweryWithDerivedSchema = brewerySchema.extend({
 });
 
 // ==========================================
-// 5. Error Formatting & Runtime Helpers
+// 6. Normalization & Format Validation Helpers
 // ==========================================
 
 /**
+ * Standardizes street address suffix abbreviations and directionals.
+ */
+export function normalizeStreetAddress(address: string): string {
+  let cleaned = address.trim().replace(/\s+/g, ' ');
+
+  // Standardize directional prefixes / suffixes
+  cleaned = cleaned
+    .replace(/\bN\.\b/gi, 'N')
+    .replace(/\bS\.\b/gi, 'S')
+    .replace(/\bE\.\b/gi, 'E')
+    .replace(/\bW\.\b/gi, 'W')
+    .replace(/\bNorth\b/gi, 'N')
+    .replace(/\bSouth\b/gi, 'S')
+    .replace(/\bEast\b/gi, 'E')
+    .replace(/\bWest\b/gi, 'W');
+
+  // Standardize common street suffixes
+  cleaned = cleaned
+    .replace(/\bStreet\b/gi, 'St')
+    .replace(/\bSt\.\b/gi, 'St')
+    .replace(/\bAvenue\b/gi, 'Ave')
+    .replace(/\bAve\.\b/gi, 'Ave')
+    .replace(/\bRoad\b/gi, 'Rd')
+    .replace(/\bRd\.\b/gi, 'Rd')
+    .replace(/\bBoulevard\b/gi, 'Blvd')
+    .replace(/\bBlvd\.\b/gi, 'Blvd')
+    .replace(/\bDrive\b/gi, 'Dr')
+    .replace(/\bDr\.\b/gi, 'Dr')
+    .replace(/\bCourt\b/gi, 'Ct')
+    .replace(/\bCt\.\b/gi, 'Ct')
+    .replace(/\bParkway\b/gi, 'Pkwy')
+    .replace(/\bPkwy\.\b/gi, 'Pkwy')
+    .replace(/\bLane\b/gi, 'Ln')
+    .replace(/\bLn\.\b/gi, 'Ln');
+
+  return cleaned;
+}
+
+/**
+ * Standardizes phone numbers into canonical "XXX-XXX-XXXX" format.
+ */
+export function normalizePhone(phone: string): string {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `${digits.slice(1, 4)}-${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+  return phone.trim();
+}
+
+/**
+ * Standardizes URL strings, auto-prefixing missing HTTP/HTTPS protocols.
+ */
+export function normalizeUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}
+
+/**
  * Normalizes raw or inconsistent brewery data into canonical Brewery format before validation.
- * Trims whitespace, standardizes state, normalizes phone numbers, fills missing defaults.
+ * Trims whitespace, normalizes street addresses, formats phone numbers, prefixes URLs.
  */
 export function normalizeBreweryData(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object') {
@@ -261,19 +370,19 @@ export function normalizeBreweryData(raw: unknown): unknown {
   const data = { ...(raw as Record<string, unknown>) };
 
   if (typeof data.name === 'string') {
-    data.name = data.name.trim();
+    data.name = data.name.trim().replace(/\s+/g, ' ');
   }
 
   if (typeof data.address === 'string') {
-    data.address = data.address.trim();
+    data.address = normalizeStreetAddress(data.address);
   }
 
   if (typeof data.city === 'string') {
-    data.city = data.city.trim();
+    data.city = data.city.trim().replace(/\s+/g, ' ');
   }
 
   if (typeof data.county === 'string') {
-    data.county = data.county.trim();
+    data.county = data.county.trim().replace(/\s+/g, ' ');
   }
 
   if (!data.state || typeof data.state !== 'string' || !data.state.trim()) {
@@ -292,11 +401,23 @@ export function normalizeBreweryData(raw: unknown): unknown {
   }
 
   if (typeof data.phone === 'string') {
-    data.phone = data.phone.trim();
+    data.phone = normalizePhone(data.phone);
   }
 
   if (typeof data.website === 'string') {
-    data.website = data.website.trim();
+    data.website = normalizeUrl(data.website);
+  }
+
+  if (typeof data.image === 'string') {
+    data.image = normalizeUrl(data.image);
+  }
+
+  if (data.socialLinks && typeof data.socialLinks === 'object') {
+    const socials = { ...(data.socialLinks as Record<string, unknown>) };
+    if (typeof socials.facebook === 'string') socials.facebook = normalizeUrl(socials.facebook);
+    if (typeof socials.instagram === 'string') socials.instagram = normalizeUrl(socials.instagram);
+    if (typeof socials.twitter === 'string') socials.twitter = normalizeUrl(socials.twitter);
+    data.socialLinks = socials;
   }
 
   if (typeof data.description === 'string') {
