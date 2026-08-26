@@ -131,7 +131,7 @@ describe('InteractiveMapContent Component', () => {
     expect(screen.getByText('Burley Oak Brewing Company')).toBeInTheDocument();
   });
 
-  it('selects a brewery and displays path to detail page', () => {
+  it('selects a brewery and displays path to detail page and directions link', () => {
     render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
 
     const flyingDogButton = screen.getAllByText('Flying Dog Brewery')[0];
@@ -140,6 +140,9 @@ describe('InteractiveMapContent Component', () => {
     expect(screen.getByText('View Taproom Profile')).toBeInTheDocument();
     const profileLink = screen.getByRole('link', { name: 'View Taproom Profile' });
     expect(profileLink).toHaveAttribute('href', '/breweries/flying-dog-brewery');
+
+    const directionsLink = screen.getByRole('link', { name: /Directions/i });
+    expect(directionsLink).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=39.3621,-77.4245');
   });
 
   it('filters breweries when active trail layer is toggled and keeps selectedBrewery as null for route overview', () => {
