@@ -13,6 +13,14 @@ export const DAYS_OF_WEEK: DayOfWeek[] = [
 ];
 
 /**
+ * Gets the previous day of the week.
+ */
+export function getPreviousDayOfWeek(day: DayOfWeek): DayOfWeek {
+  const index = DAYS_OF_WEEK.indexOf(day);
+  return DAYS_OF_WEEK[(index + 6) % 7];
+}
+
+/**
   * Categorizes brewery operational status into 4 distinct canonical states:
   * - permanently_closed ('Closed' | 'Permanently closed')
   * - temporarily_closed ('Temporarily closed' | 'Seasonal' | 'Opening soon' | 'Relocating' | 'Contract-only')
@@ -76,14 +84,13 @@ export function formatPeriods(periods?: TimePeriod[] | null): string {
 }
 
 /**
-  * Parses a Date or current time into components specifically in Maryland timezone (America/New_York).
+  * Parses a Date into components specifically in Maryland timezone (America/New_York).
   */
 export function getMarylandDateComponents(date: Date = new Date()): {
   dayOfWeek: DayOfWeek;
   dateStr: string; // YYYY-MM-DD
   minutesFromMidnight: number;
 } {
-  // Use Intl.DateTimeFormat with timeZone
   const dtfDate = new Intl.DateTimeFormat('en-US', {
     timeZone: MARYLAND_TIMEZONE,
     year: 'numeric',
@@ -104,7 +111,6 @@ export function getMarylandDateComponents(date: Date = new Date()): {
   const dayOfWeek = partMap.weekday as DayOfWeek;
   const dateStr = `${partMap.year}-${partMap.month}-${partMap.day}`;
 
-  // Format hour 24 accurately (Intl may return '24' for midnight in some Node versions, normalize)
   let hour = parseInt(partMap.hour, 10);
   if (hour === 24) hour = 0;
   const minute = parseInt(partMap.minute, 10);
@@ -117,8 +123,9 @@ export function getMarylandDateComponents(date: Date = new Date()): {
   * Converts "HH:MM" to minutes from midnight (0 to 1439).
   */
 export function timeToMinutes(timeStr: string): number {
+  if (!timeStr || !timeStr.includes(':')) return 0;
   const [h, m] = timeStr.split(':').map((v) => parseInt(v, 10));
-  return h * 60 + (m || 0);
+  return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m);
 }
 
 export interface OpenNowStatus {
@@ -126,12 +133,12 @@ export interface OpenNowStatus {
   category: OperationalCategory;
   reason: string;
   currentPeriod?: TimePeriod;
-  nextChange?: string; // e.g., "Closes at 9:00 PM" or "Opens tomorrow at 12:00 PM"
+  nextChange?: string; // e.g., "Closes at 9:00 PM"
 }
 
 /**
   * Evaluates whether a brewery is open at a given Date/time in Maryland timezone (`America/New_York`).
-  * Built to safely serve future "Open Now" queries.
+  * Reused throughout the application for reliable status calculation.
   */
 export function isBreweryOpenNow(brewery: Brewery, targetDate: Date = new Date()): OpenNowStatus {
   const category = getOperationalCategory(brewery.status, brewery.structuredHours);
@@ -160,80 +167,128 @@ export function isBreweryOpenNow(brewery: Brewery, targetDate: Date = new Date()
     };
   }
 
+  // Current date components in MD timezone
   const { dayOfWeek, dateStr, minutesFromMidnight } = getMarylandDateComponents(targetDate);
 
-  // Check holiday/special date exception
+  // 1. Check today's holiday exception first
   if (brewery.holidayExceptions && brewery.holidayExceptions.length > 0) {
-    const holiday = brewery.holidayExceptions.find((ex) => ex.date === dateStr);
-    if (holiday) {
-      if (holiday.isClosed) {
+    const todayHoliday = brewery.holidayExceptions.find((ex) => ex.date === dateStr);
+    if (todayHoliday) {
+      if (todayHoliday.isClosed) {
         return {
           isOpen: false,
           category,
-          reason: holiday.notes ? `Closed for holiday: ${holiday.notes}` : 'Closed for holiday exception.',
+          reason: todayHoliday.notes ? `Closed for holiday: ${todayHoliday.notes}` : 'Closed for holiday exception.',
         };
       }
-      if (holiday.periods && holiday.periods.length > 0) {
-        const matchingPeriod = holiday.periods.find((p) => {
-          const openMin = timeToMinutes(p.opens);
-          const closeMin = timeToMinutes(p.closes);
-          return minutesFromMidnight >= openMin && minutesFromMidnight < closeMin;
-        });
-        if (matchingPeriod) {
+      if (todayHoliday.periods && todayHoliday.periods.length > 0) {
+        for (const period of todayHoliday.periods) {
+          const openMin = timeToMinutes(period.opens);
+          let closeMin = timeToMinutes(period.closes);
+          if (closeMin <= openMin) {
+            closeMin += 24 * 60;
+          }
+          if (minutesFromMidnight >= openMin && minutesFromMidnight < closeMin) {
+            return {
+              isOpen: true,
+              category,
+              reason: 'Open for special holiday hours.',
+              currentPeriod: period,
+              nextChange: `Closes at ${formatTime12h(period.closes)}`,
+            };
+          }
+        }
+        return {
+          isOpen: false,
+          category,
+          reason: 'Outside special holiday operating periods.',
+        };
+      }
+    }
+  }
+
+  // 2. Check today's weekly structured schedule
+  const todaySchedule = brewery.structuredHours?.find((h) => h.day === dayOfWeek);
+  if (todaySchedule && !todaySchedule.isClosed && todaySchedule.periods && todaySchedule.periods.length > 0) {
+    for (const period of todaySchedule.periods) {
+      const openMin = timeToMinutes(period.opens);
+      let closeMin = timeToMinutes(period.closes);
+
+      // Handle overnight shift starting today and ending tomorrow (e.g., 16:00 to 02:00)
+      if (closeMin <= openMin) {
+        closeMin += 24 * 60;
+      }
+
+      if (minutesFromMidnight >= openMin && minutesFromMidnight < closeMin) {
+        return {
+          isOpen: true,
+          category,
+          reason: `Open today (${formatTime12h(period.opens)} - ${formatTime12h(period.closes)}).`,
+          currentPeriod: period,
+          nextChange: `Closes at ${formatTime12h(period.closes)}`,
+        };
+      }
+    }
+  }
+
+  // 3. Check if target time falls within an overnight shift from YESTERDAY
+  const prevTargetDate = new Date(targetDate.getTime() - 24 * 60 * 60 * 1000);
+  const prevComponents = getMarylandDateComponents(prevTargetDate);
+  const prevDayOfWeek = prevComponents.dayOfWeek;
+  const prevDateStr = prevComponents.dateStr;
+  const targetMinutesFromPrevMidnight = minutesFromMidnight + 24 * 60;
+
+  // Check yesterday's holiday exception if any
+  if (brewery.holidayExceptions && brewery.holidayExceptions.length > 0) {
+    const prevHoliday = brewery.holidayExceptions.find((ex) => ex.date === prevDateStr);
+    if (prevHoliday && !prevHoliday.isClosed && prevHoliday.periods && prevHoliday.periods.length > 0) {
+      for (const period of prevHoliday.periods) {
+        const openMin = timeToMinutes(period.opens);
+        let closeMin = timeToMinutes(period.closes);
+        if (closeMin <= openMin) {
+          closeMin += 24 * 60;
+          if (targetMinutesFromPrevMidnight >= openMin && targetMinutesFromPrevMidnight < closeMin) {
+            return {
+              isOpen: true,
+              category,
+              reason: 'Open for special holiday hours (overnight shift).',
+              currentPeriod: period,
+              nextChange: `Closes at ${formatTime12h(period.closes)}`,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // Check yesterday's regular weekly schedule
+  const prevSchedule = brewery.structuredHours?.find((h) => h.day === prevDayOfWeek);
+  if (prevSchedule && !prevSchedule.isClosed && prevSchedule.periods && prevSchedule.periods.length > 0) {
+    for (const period of prevSchedule.periods) {
+      const openMin = timeToMinutes(period.opens);
+      let closeMin = timeToMinutes(period.closes);
+      if (closeMin <= openMin) {
+        closeMin += 24 * 60;
+        if (targetMinutesFromPrevMidnight >= openMin && targetMinutesFromPrevMidnight < closeMin) {
           return {
             isOpen: true,
             category,
-            reason: 'Open for special holiday hours.',
-            currentPeriod: matchingPeriod,
-            nextChange: `Closes at ${formatTime12h(matchingPeriod.closes)}`,
-          };
-        } else {
-          return {
-            isOpen: false,
-            category,
-            reason: 'Outside special holiday operating periods.',
+            reason: `Open today late night shift (${formatTime12h(period.opens)} - ${formatTime12h(period.closes)}).`,
+            currentPeriod: period,
+            nextChange: `Closes at ${formatTime12h(period.closes)}`,
           };
         }
       }
     }
   }
 
-  // Check weekly structured hours
-  const todaySchedule = brewery.structuredHours?.find((h) => h.day === dayOfWeek);
-
+  // 4. Default closed response if no shift matches
   if (!todaySchedule || todaySchedule.isClosed || !todaySchedule.periods || todaySchedule.periods.length === 0) {
     return {
       isOpen: false,
       category,
       reason: `Closed on ${dayOfWeek}s.`,
     };
-  }
-
-  // Check periods (supports multiple opening periods per day / split shifts)
-  for (const period of todaySchedule.periods) {
-    const openMin = timeToMinutes(period.opens);
-    let closeMin = timeToMinutes(period.closes);
-
-    // Handle overnight closing (e.g. opens 16:00, closes 02:00)
-    if (closeMin <= openMin) {
-      closeMin += 24 * 60;
-    }
-
-    const effectiveMinutes = minutesFromMidnight;
-    if (minutesFromMidnight < openMin && openMin > 12 * 60) {
-      // Check if target time is early AM belonging to previous day's overnight shift
-      // Handled simply by checking current day range:
-    }
-
-    if (effectiveMinutes >= openMin && effectiveMinutes < closeMin) {
-      return {
-        isOpen: true,
-        category,
-        reason: `Open today (${formatTime12h(period.opens)} - ${formatTime12h(period.closes)}).`,
-        currentPeriod: period,
-        nextChange: `Closes at ${formatTime12h(period.closes)}`,
-      };
-    }
   }
 
   return {
