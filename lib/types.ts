@@ -16,6 +16,9 @@ import {
   brewerySchema,
   beerTrailSchema,
   travelGuideSchema,
+  guideTypeSchema,
+  guideSeoSchema,
+  guideGalleryItemSchema,
 } from './validations/schemas';
 
 /**
@@ -44,6 +47,10 @@ export type HolidayException = z.infer<typeof holidayExceptionSchema>;
 
 export type FieldVerification = z.infer<typeof fieldVerificationSchema>;
 export type BreweryVerification = z.infer<typeof breweryVerificationSchema>;
+
+export type GuideType = z.infer<typeof guideTypeSchema>;
+export type GuideSeo = z.infer<typeof guideSeoSchema>;
+export type GuideGalleryItem = z.infer<typeof guideGalleryItemSchema>;
 
 export type Brewery = z.infer<typeof brewerySchema>;
 export type BeerTrail = z.infer<typeof beerTrailSchema>;

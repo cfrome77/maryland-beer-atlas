@@ -639,10 +639,13 @@ export const mockGuides: TravelGuide[] = [
   {
     slug: 'beers-of-eastern-shore',
     title: 'A Weekend Beer Guide to Maryland\'s Eastern Shore',
+    guideType: 'regional_guide',
     description: 'Sun, sand, and sours! Discover how to pair a perfect coastal getaway with the legendary brewing community of Maryland\'s Eastern Shore, from historic Berlin to the boardwalk of Ocean City.',
     author: 'Maryland Explorer',
     publishDate: 'May 14, 2025',
     region: 'Eastern Shore',
+    county: 'Worcester',
+    categories: ['Day Trips', 'Waterfront Breweries', 'Fruited Sours'],
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800',
     recommendedStops: [
       mockBreweries.find(b => b.id === 'burley-oak')!
@@ -652,41 +655,163 @@ export const mockGuides: TravelGuide[] = [
       'Check the taproom releases ahead of time: the J.R.E.A.M. sour series is highly coveted and can sell out early.',
       'Always have a designated driver or use rideshare services when traveling between Berlin and Ocean City.'
     ],
+    seo: {
+      metaTitle: 'Maryland Eastern Shore Craft Beer & Beach Weekend Guide',
+      metaDescription: 'Explore the best coastal breweries, taprooms, and seaside sights on Maryland\'s Eastern Shore.',
+      keywords: ['Eastern Shore Breweries', 'Burley Oak', 'Ocean City Beer', 'Maryland Craft Beer'],
+      noIndex: false,
+    },
     content: `
-      <p>Maryland's Eastern Shore is famous for its blue crabs, sandy beaches, and relaxed, slow-paced lifestyle. But over the last decade, it has also quietely transformed into an international beacon for craft beer lovers.</p>
+      <p>Maryland's Eastern Shore is famous for its blue crabs, sandy beaches, and relaxed, slow-paced lifestyle. But over the last decade, it has also quietly transformed into an international beacon for craft beer lovers.</p>
 
-      <h3>The Gem of Berlin: Burley Oak</h3>
+      <h2>The Gem of Berlin: Burley Oak</h2>
       <p>Your journey begins in Berlin, Maryland, located just fifteen minutes west of Ocean City's bustling boardwalk. Berlin represents classic Eastern Shore architecture and hospitality. At the heart of this town is Burley Oak Brewing Company.</p>
       <p>Burley Oak operates on a simple philosophy: produce high-quality, craft beverages using local ingredients and sustainable practices. They have built an incredibly loyal, global following around their fruited sours, but their traditional IPAs and pilsners are equally exceptional.</p>
 
-      <h3>Beaches and Beyond</h3>
+      <h2>Beaches and Beyond</h2>
       <p>After sampling the local drafts in Berlin, make your way to the coast. Ocean City offers miles of clean beaches and a world-renowned boardwalk. The sea air pairs perfectly with Maryland's crisp craft pilsners and fruity ales. It makes for an unbeatable weekend escape.</p>
     `
   },
   {
     slug: 'frederick-historic-brews',
     title: 'Historic Sips: Touring Frederick\'s Industrial Breweries',
+    guideType: 'brewery_guide',
     description: 'Dive deep into the rich historic and industrial craft beer hub of Frederick, MD. Home to massive production spaces and amazing mountain vistas.',
     author: 'Brewmaster Pete',
     publishDate: 'June 2, 2025',
     region: 'Central',
+    county: 'Frederick',
+    categories: ['Historic Taprooms', 'IPAs & Ales', 'Mountain Views'],
     image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800',
     recommendedStops: [
       mockBreweries.find(b => b.id === 'flying-dog')!,
       mockBreweries.find(b => b.id === 'monocacy')!
     ],
+    relatedTrails: [
+      mockTrails.find(t => t.id === 'frederick-beer-adventure')!
+    ],
     tips: [
       'Bring your hiking shoes—Frederick is flanked by beautiful state parks like Catoctin Mountain and Sugarloaf, perfect for pre-beer adventures.',
       'Frederick\'s historic downtown is highly walkable with unique restaurants, boutiques, and historic buildings along Carroll Creek.'
     ],
+    seo: {
+      metaTitle: 'Frederick Maryland Craft Brewery Tour Guide',
+      metaDescription: 'Discover historic taprooms, craft beer tours, and mountain scenery in Frederick, MD.',
+      keywords: ['Frederick Breweries', 'Flying Dog Brewery', 'Monocacy Brewing', 'Frederick Beer Trail'],
+    },
     content: `
       <p>Frederick, Maryland holds a legendary place in East Coast brewing history. It blends a gorgeous, historic downtown canal with expansive industrial facilities that supply delicious beer across the entire Mid-Atlantic.</p>
 
-      <h3>The Giants of Frederick</h3>
-      <p>Flying Dog Brewery stands as an imposing, beloved anchor of this community. Step into their Wedgewood tasting room to see walls decorated with original Ralph Steadman paintings, and experience their highly experimental small-batch behaviors alongside classic offerings like Raging Bitch IPA.</p>
+      <h2>The Giants of Frederick</h2>
+      <p>Flying Dog Brewery stands as an imposing, beloved anchor of this community. Step into their Wedgewood tasting room to see walls decorated with original Ralph Steadman paintings, and experience their highly experimental small-batch beers alongside classic offerings like Raging Bitch IPA.</p>
 
-      <h3>Heading West to Monocacy</h3>
+      <h2>Heading West to Monocacy</h2>
       <p>A short drive takes you to Monocacy Brewing. Monocacy is situated inside a beautifully converted historic warehouse building, producing crisp beers using locally grown Maryland hops and malts.</p>
+    `
+  },
+  {
+    slug: 'capital-route-1-craft-road-trip',
+    title: 'Capital Region Craft Road Trip: Route 1 & Hyattsville',
+    guideType: 'trip_planning',
+    description: 'Plan an unforgettable 1-day craft beer road trip through Maryland\'s Capital Region along historic Route 1, featuring Deaf-owned microbreweries and retro toy-store brewpubs.',
+    author: 'Elena Rostova',
+    publishDate: 'July 10, 2025',
+    region: 'Capital',
+    county: "Prince George's",
+    categories: ['Road Trips', 'Urban Trails', 'Deaf-Friendly'],
+    image: 'https://images.unsplash.com/photo-1518176258769-f227c798150e?auto=format&fit=crop&q=80&w=800',
+    recommendedStops: [
+      mockBreweries.find(b => b.id === 'streetcar82')!,
+      mockBreweries.find(b => b.id === 'franklins')!
+    ],
+    relatedTrails: [
+      mockTrails.find(t => t.id === 'hyattsville-beer-trail')!
+    ],
+    tips: [
+      'Take advantage of the Anacostia River Trail bike paths for an eco-friendly craft tour.',
+      'Franklin\'s offers a full dinner menu and an incredible general store—save time to browse vintage toys and local hot sauces!'
+    ],
+    seo: {
+      metaTitle: 'Hyattsville & Route 1 Beer Road Trip Guide',
+      metaDescription: 'Complete 1-day itinerary for exploring Prince George\'s County breweries and local spots.',
+      keywords: ['Hyattsville Beer', 'Streetcar 82', 'Franklins Brewery', 'Route 1 Craft Beer'],
+    },
+    content: `
+      <p>Just minutes north of Washington D.C., Prince George's County boasts one of the most vibrant, walkable craft beer corridors in the State of Maryland.</p>
+
+      <h2>Stop 1: Streetcar 82 Brewing Co.</h2>
+      <p>Founded by graduates of Gallaudet University, Streetcar 82 is proudly Deaf-owned and operated. The taproom is a warm, inclusive community space serving classic Belgian Witbiers and crisp IPAs.</p>
+
+      <h2>Stop 2: Franklin's Brewery</h2>
+      <p>Continue down Baltimore Avenue to Franklin's, Prince George's County's original microbrewery and the world's only brewery-meets-toy-store!</p>
+    `
+  },
+  {
+    slug: 'maryland-farm-brewery-revolution',
+    title: 'The Farm Brewery Revolution: Agricultural Craft Beer in Maryland',
+    guideType: 'education',
+    description: 'Learn how Maryland\'s pioneering Farm Brewery legislation unlocked a new era of agricultural craft brewing, soil-to-glass lagers, and scenic pine grove taprooms.',
+    author: 'Dr. Arthur Vance',
+    publishDate: 'August 18, 2025',
+    region: 'Capital',
+    county: 'Montgomery',
+    categories: ['Farm Breweries', 'Agritourism', 'Local Ingredients'],
+    image: 'https://images.unsplash.com/photo-1584225065152-4a1454aa3d4e?auto=format&fit=crop&q=80&w=800',
+    recommendedStops: [
+      mockBreweries.find(b => b.id === 'elder-pine')!
+    ],
+    tips: [
+      'Farm breweries are active agricultural sites—dress comfortably for outdoor pine groves and open fields.',
+      'Visit during fall harvest for fresh-hop seasonal releases brewed with hops picked right on site.'
+    ],
+    seo: {
+      metaTitle: 'Maryland Farm Brewery Law & Agricultural Craft Beer Guide',
+      metaDescription: 'Educational deep-dive into Maryland farm brewing history, agritourism, and local malts.',
+      keywords: ['Maryland Farm Brewery', 'Elder Pine', 'Agritourism Maryland', 'Farm to Glass Beer'],
+    },
+    content: `
+      <p>In 2012, Maryland enacted landmark Class 8 Farm Brewery legislation that transformed the state's craft beverage industry. This license allowed farmers to craft beer on agricultural land using home-grown grains and hops.</p>
+
+      <h2>Soil-to-Glass Innovation at Elder Pine</h2>
+      <p>Elder Pine Brewing & Blending in Gaithersburg embodies the pinnacle of farm brewing. Situated on an active pine farm, they blend traditional wood-aging techniques with estate-grown botanical ingredients.</p>
+    `
+  },
+  {
+    slug: 'top-outdoor-beer-gardens-maryland',
+    title: 'Curated Picks: Best Dog-Friendly Outdoor Beer Gardens in Maryland',
+    guideType: 'curated_recommendations',
+    description: 'Our top curated selections for spacious, dog-friendly outdoor beer gardens, pine groves, and urban plazas across Maryland.',
+    author: 'Maryland Explorer',
+    publishDate: 'September 5, 2025',
+    region: 'Central',
+    county: 'Baltimore City',
+    categories: ['Dog Friendly', 'Outdoor Seating', 'Beer Gardens'],
+    image: 'https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?auto=format&fit=crop&q=80&w=800',
+    recommendedStops: [
+      mockBreweries.find(b => b.id === 'union-craft')!,
+      mockBreweries.find(b => b.id === 'peabody')!,
+      mockBreweries.find(b => b.id === 'elder-pine')!
+    ],
+    relatedTrails: [
+      mockTrails.find(t => t.id === 'baltimore-craft-loop')!
+    ],
+    tips: [
+      'Bring a foldable water bowl for your pup during warm summer afternoons.',
+      'Check individual taproom social pages for food truck schedules before heading out.'
+    ],
+    seo: {
+      metaTitle: 'Best Outdoor Dog-Friendly Breweries & Beer Gardens in Maryland',
+      metaDescription: 'Hand-picked selection of the finest dog-friendly taprooms and outdoor spaces in MD.',
+      keywords: ['Dog Friendly Breweries Maryland', 'Union Collective', 'Peabody Heights', 'Outdoor Beer Gardens'],
+    },
+    content: `
+      <p>Nothing beats enjoying a cold, locally brewed craft beer in the fresh outdoor air with your favorite four-legged friend by your side.</p>
+
+      <h2>1. Union Collective Plaza (Baltimore City)</h2>
+      <p>Union Craft Brewing features a vast outdoor plaza with ample shade, food vendors, and plenty of space for family and pets.</p>
+
+      <h2>2. Peabody Heights Beer Garden (Baltimore City)</h2>
+      <p>Located on the historic site of Old Oriole Park, Peabody Heights offers a vibrant, historic outdoor garden space surrounded by Baltimore history.</p>
     `
   }
 ];
