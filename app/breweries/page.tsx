@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { contentService } from '@/lib/services/content.service';
+import { recommendationService } from '@/lib/services/recommendation.service';
 import { PageContainer } from '@/components/layout/page-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { BreweriesDirectoryContainer } from '@/components/ui/breweries-directory-content';
@@ -20,6 +21,12 @@ export default async function BreweriesDirectoryPage() {
   const breweries = await contentService.breweries.getAll();
   const guides = await contentService.guides.getAll();
 
+  // Fetch curated recommendations (no user location by default). Guides and featured breweries
+  // will surface as 'curated' editorial recommendations. Computed nearby suggestions require
+  // a location; client-side location handling can be added later. We return up to 6 nearby items
+  // when a location is provided; for now just include curated items and any featured breweries.
+  const recommendations = await recommendationService.getRecommendationsForLocation(null, { nearbyMaxMiles: 40, nearbyLimit: 6 });
+
   const breadcrumbs = [
     { label: 'Directory', href: '/breweries' },
   ];
@@ -36,7 +43,7 @@ export default async function BreweriesDirectoryPage() {
 
       {/* PageContainer structure */}
       <PageContainer size="default">
-        <BreweriesDirectoryContainer breweries={breweries} guides={guides} />
+        <BreweriesDirectoryContainer breweries={breweries} guides={guides} recommendations={recommendations} />
       </PageContainer>
     </div>
   );
