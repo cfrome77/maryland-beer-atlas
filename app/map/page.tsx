@@ -6,6 +6,9 @@ import { InteractiveMapContent } from '@/components/ui/interactive-map-content';
 export const metadata: Metadata = {
   title: "Interactive Maryland Beer Map | Locate MD Craft Breweries",
   description: "Use our interactive map of Maryland to locate and explore craft breweries throughout the state. Filter by region to plan your perfect taproom tour.",
+  alternates: {
+    canonical: "/map",
+  },
   openGraph: {
     title: "Interactive Maryland Beer Map | Locate MD Craft Breweries",
     description: "Map and locate Maryland's craft breweries geographically. Plan routes and filter by region with our interactive map.",

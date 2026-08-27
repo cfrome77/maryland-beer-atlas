@@ -15,8 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://marylandbeeratlas.com"),
   title: "Maryland Beer Atlas | Discover Maryland Craft Breweries & Trails",
   description: "Your comprehensive directory, interactive map, curated beer trails, and expert travel guides for exploring the Maryland craft beer scene.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

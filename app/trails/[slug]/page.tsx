@@ -26,6 +26,9 @@ export async function generateMetadata({ params }: TrailDetailPageProps): Promis
   return {
     title: `${trail.name} | Maryland Beer Trail Itinerary`,
     description: `Explore the ${trail.name}. Distance: ${trail.distance} (${trail.duration}). Stop highlights: ${trail.breweries.map(b => b.name).join(', ')}. Get the ultimate self-guided route.`,
+    alternates: {
+      canonical: `/trails/${slug}`,
+    },
     openGraph: {
       title: `${trail.name} | Curated Maryland Beer Trail`,
       description: trail.description,
