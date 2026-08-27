@@ -255,17 +255,56 @@ export const beerTrailSchema = z.object({
 /**
  * Zod Schema for Travel Guide domain records (reuses brewerySchema).
  */
+export const guideTypeSchema = z.enum([
+  'brewery_guide',
+  'regional_guide',
+  'trip_planning',
+  'curated_recommendations',
+  'education',
+]);
+
+export const guideSeoSchema = z.object({
+  metaTitle: z.string().nullish(),
+  metaDescription: z.string().nullish(),
+  keywords: z.array(z.string()).nullish(),
+  ogImage: urlSchema.nullish(),
+  noIndex: z.boolean().nullish(),
+});
+
+export const guideGalleryItemSchema = z.object({
+  url: urlSchema,
+  caption: z.string().nullish(),
+  alt: z.string().nullish(),
+});
+
 export const travelGuideSchema = z.object({
   slug: slugSchema,
   title: z.string().min(1, 'Guide title is required'),
+  guideType: guideTypeSchema.optional().default('brewery_guide'),
   description: z.string(),
   author: z.string(),
   publishDate: z.string(),
   region: marylandRegionSchema,
+  county: z.string().nullish(),
+  categories: z.array(z.string()).nullish(),
   content: z.string(),
   image: urlSchema,
+  gallery: z.array(guideGalleryItemSchema).nullish(),
   recommendedStops: z.array(brewerySchema),
+  relatedTrails: z.array(beerTrailSchema).nullish(),
+  relatedGuides: z
+    .array(
+      z.object({
+        slug: slugSchema,
+        title: z.string(),
+        description: z.string(),
+        image: urlSchema,
+        guideType: guideTypeSchema.optional(),
+      })
+    )
+    .nullish(),
   tips: z.array(z.string()),
+  seo: guideSeoSchema.nullish(),
 });
 
 // ==========================================
