@@ -11,10 +11,13 @@ import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries
 import Image from 'next/image';
 import Link from 'next/link';
 import { Compass, BookOpen, ArrowRight } from 'lucide-react';
+import { Recommendation } from '@/lib/services/recommendation.service';
+import { RecommendationsPanel } from '@/components/ui/recommendations/recommendations-panel';
 
 interface BreweriesDirectoryContentProps {
   breweries: Brewery[];
   guides?: TravelGuide[];
+  recommendations?: Recommendation[];
 }
 
 interface FilterPreset {
@@ -71,7 +74,7 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Farm Brewery': 'farm-brewery',
 };
 
-function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
+function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -376,7 +379,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               placeholder="Search by name, style, city..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:shadow-none"
             />
           </div>
 
@@ -385,7 +388,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedQuickGuide}
               onChange={handleQuickGuideChange}
               aria-label="Popular guides and presets"
-              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none"
             >
               <option value="" className="text-zinc-800 dark:text-zinc-200">
                 Select Popular Guide or Filter Preset...
@@ -407,7 +410,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedRegion}
               onChange={handleRegionChange}
               aria-label="Filter by region"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
             >
               <option value="">All Regions</option>
               {regions.map((region) => (
@@ -424,7 +427,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedCounty}
               onChange={handleCountyChange}
               aria-label="Filter by county"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
             >
               <option value="">All Counties</option>
               {counties.map((county) => (
@@ -441,7 +444,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedType}
               onChange={handleTypeChange}
               aria-label="Filter by brewery type"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
             >
               <option value="">All Brewery Types</option>
               {breweryTypes.map((type) => (
@@ -458,7 +461,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedStatus}
               onChange={handleStatusChange}
               aria-label="Filter by operational status"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
             >
               {OPERATIONAL_STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -474,7 +477,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedAmenity}
               onChange={handleAmenityChange}
               aria-label="Filter by amenity"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
             >
               <option value="">All Amenities</option>
               {amenities.map((amenity) => (
@@ -491,7 +494,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               value={selectedSort}
               onChange={handleSortChange}
               aria-label="Sort breweries"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer font-medium"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -507,7 +510,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
               onClick={resetFilters}
               title="Reset Filters"
               aria-label="Reset all filters"
-              className="w-full py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-800 font-bold text-xs cursor-pointer"
+              className="w-full py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700"
             >
               <RotateCcw className="w-4 h-4" />
               Reset Filters
@@ -543,6 +546,11 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
         />
       )}
 
+      {/* Recommendations Panel */}
+      <div className="mt-8">
+        <RecommendationsPanel recommendations={recommendations} />
+      </div>
+
       {/* Dynamic Discovery Sections: Browse by County and Browse by Category */}
       <div className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-850 space-y-10">
         {/* County Discovery Grid */}
@@ -564,7 +572,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
                 <Link
                   key={county}
                   href={`/breweries/county/${slug}`}
-                  className="p-3.5 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all text-center group flex flex-col justify-between"
+                  className="p-3.5 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all"
                 >
                   <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-1">
                     {county}
@@ -589,7 +597,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Link
               href="/breweries/category/dog-friendly"
-              className="p-4 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all group flex flex-col justify-between"
+              className="p-4 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all"
             >
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
@@ -616,7 +624,7 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
                 <Link
                   key={type}
                   href={`/breweries/category/${slug}`}
-                  className="p-4 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all group flex flex-col justify-between"
+                  className="p-4 rounded-xl bg-white dark:bg-zinc-950 hover:bg-amber-50 dark:hover:bg-amber-950/20 border border-zinc-200 dark:border-zinc-850 hover:border-amber-400 transition-all"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">{icon}</div>
@@ -713,10 +721,10 @@ function BreweriesDirectoryContent({ breweries, guides = [] }: BreweriesDirector
   );
 }
 
-export function BreweriesDirectoryContainer({ breweries, guides = [] }: BreweriesDirectoryContentProps) {
+export function BreweriesDirectoryContainer({ breweries, guides = [], recommendations = [] }: BreweriesDirectoryContentProps) {
   return (
     <Suspense fallback={<div>Loading breweries directory...</div>}>
-      <BreweriesDirectoryContent breweries={breweries} guides={guides} />
+      <BreweriesDirectoryContent breweries={breweries} guides={guides} recommendations={recommendations} />
     </Suspense>
   );
 }
