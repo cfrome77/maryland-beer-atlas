@@ -59,6 +59,9 @@ export async function generateMetadata({ params }: BreweryDetailPageProps): Prom
   return {
     title: `${brewery.name} | ${brewery.city}, MD Craft Brewery Details`,
     description: `Visit ${brewery.name} in ${brewery.city}, MD (${brewery.county} County). ${dogFriendlyText}${stylesText}View hours, amenities, interactive map, and editorial guide.`,
+    alternates: {
+      canonical: `/breweries/${slug}`,
+    },
     openGraph: {
       title: `${brewery.name} | ${brewery.city}, MD Brewery`,
       description: brewery.description,

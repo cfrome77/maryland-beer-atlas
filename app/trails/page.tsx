@@ -9,6 +9,9 @@ import { LoadingGrid } from '@/components/ui/loading-state';
 export const metadata: Metadata = {
   title: "Maryland Beer Trails | Curated Craft Beer Itineraries & Road Trips",
   description: "Explore curated, self-guided Maryland beer trails. Plan craft beer road trips through historic Frederick, active hiking spots, and beautiful scenic coastal roads.",
+  alternates: {
+    canonical: "/trails",
+  },
   openGraph: {
     title: "Maryland Beer Trails | Curated Craft Beer Itineraries",
     description: "Plan your ultimate self-guided Maryland beer road trip. Curated itineraries pairing beautiful scenic drives, historic streets, and scenic views with great craft beers.",

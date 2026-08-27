@@ -95,6 +95,9 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return {
     title: `${data.title} (${data.breweries.length}) | Maryland Beer Atlas`,
     description: `${data.desc} Browse ${countText} with taproom hours, amenities, and directions.`,
+    alternates: {
+      canonical: `/breweries/category/${slug}`,
+    },
     openGraph: {
       title: `${data.title} (${data.breweries.length}) | Maryland Beer Atlas`,
       description: data.desc,

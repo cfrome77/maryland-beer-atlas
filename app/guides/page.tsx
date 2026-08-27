@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: 'Maryland Beer Travel Guides & Editorial Articles | Maryland Beer Atlas',
   description:
     'Read expert Maryland craft beer travel guides, regional brewery tours, trip-planning itineraries, curated recommendations, and Maryland beer history.',
+  alternates: {
+    canonical: '/guides',
+  },
   openGraph: {
     title: 'Maryland Beer Travel Guides & Editorial Articles',
     description:

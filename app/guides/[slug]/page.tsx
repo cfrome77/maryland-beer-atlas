@@ -40,6 +40,9 @@ export async function generateMetadata({ params }: GuideDetailPageProps): Promis
     description,
     keywords: guide.seo?.keywords || guide.categories || ['Maryland Beer', 'Brewery Guide'],
     robots: guide.seo?.noIndex ? { index: false, follow: false } : undefined,
+    alternates: {
+      canonical: `/guides/${slug}`,
+    },
     openGraph: {
       title,
       description,

@@ -9,6 +9,9 @@ import { BreweriesDirectoryContainer } from '@/components/ui/breweries-directory
 export const metadata: Metadata = {
   title: "Maryland Brewery Directory | Find Local MD Craft Breweries",
   description: "Browse and filter Maryland craft breweries by region, county, brewery type, and amenities. Search for dog-friendly breweries or find your new favorite taproom.",
+  alternates: {
+    canonical: "/breweries",
+  },
   openGraph: {
     title: "Maryland Brewery Directory | Find Local MD Craft Breweries",
     description: "Complete database of Maryland's craft breweries. Filter by county, region, amenities (like dog friendly), or type to map out your next visit.",

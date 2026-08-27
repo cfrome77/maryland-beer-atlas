@@ -374,9 +374,15 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
           {/* List of matching breweries in active region */}
           <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-850 p-6 space-y-4">
-            <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-50">
-              Matching Breweries ({visibleBreweries.length})
-            </h3>
+            <div
+              aria-live="polite"
+              aria-atomic="true"
+              className="flex items-center justify-between"
+            >
+              <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-50">
+                Matching Breweries ({visibleBreweries.length})
+              </h3>
+            </div>
             {visibleBreweries.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
                 {visibleBreweries.map((brewery) => {
@@ -385,7 +391,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     <button
                       key={brewery.id}
                       onClick={() => handleSelectBrewery(brewery)}
-                      className={`text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                      className={`text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer ${
                         isActive
                           ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-500 text-zinc-950 dark:text-white'
                           : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-850 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300'

@@ -59,6 +59,9 @@ export async function generateMetadata({ params }: CountyPageProps): Promise<Met
   return {
     title: `Best Breweries in ${data.countyName} County MD (${data.breweries.length}) | Taprooms & Map`,
     description: `Discover ${countText} in ${data.countyName} County, Maryland. Explore craft taprooms, check amenities, hours, and map out your next brewery visit in ${data.countyName} MD.`,
+    alternates: {
+      canonical: `/breweries/county/${slug}`,
+    },
     openGraph: {
       title: `Best Breweries in ${data.countyName} County MD | Maryland Beer Atlas`,
       description: `Discover ${countText} in ${data.countyName} County, Maryland. Check hours, dog-friendly outdoor seating, and directions.`,

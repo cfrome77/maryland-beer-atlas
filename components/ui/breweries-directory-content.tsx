@@ -379,7 +379,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               placeholder="Search by name, style, city..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:shadow-none"
+              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             />
           </div>
 
@@ -388,7 +388,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedQuickGuide}
               onChange={handleQuickGuideChange}
               aria-label="Popular guides and presets"
-              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               <option value="" className="text-zinc-800 dark:text-zinc-200">
                 Select Popular Guide or Filter Preset...
@@ -410,7 +410,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedRegion}
               onChange={handleRegionChange}
               aria-label="Filter by region"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               <option value="">All Regions</option>
               {regions.map((region) => (
@@ -427,7 +427,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedCounty}
               onChange={handleCountyChange}
               aria-label="Filter by county"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               <option value="">All Counties</option>
               {counties.map((county) => (
@@ -444,7 +444,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedType}
               onChange={handleTypeChange}
               aria-label="Filter by brewery type"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               <option value="">All Brewery Types</option>
               {breweryTypes.map((type) => (
@@ -461,7 +461,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedStatus}
               onChange={handleStatusChange}
               aria-label="Filter by operational status"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               {OPERATIONAL_STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -477,7 +477,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedAmenity}
               onChange={handleAmenityChange}
               aria-label="Filter by amenity"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               <option value="">All Amenities</option>
               {amenities.map((amenity) => (
@@ -494,7 +494,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               value={selectedSort}
               onChange={handleSortChange}
               aria-label="Sort breweries"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -510,7 +510,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               onClick={resetFilters}
               title="Reset Filters"
               aria-label="Reset all filters"
-              className="w-full py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700"
+              className="w-full py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               Reset Filters
@@ -518,8 +518,12 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
           </div>
         </div>
 
-        {/* Result Count and active filters */}
-        <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-850">
+        {/* Result Count and active filters with aria-live */}
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-850"
+        >
           <div>
             Showing <span className="font-semibold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
           </div>

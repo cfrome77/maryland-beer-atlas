@@ -9,6 +9,9 @@ import { BreweryCard } from '@/components/ui/brewery-card';
 export const metadata: Metadata = {
   title: "Maryland Beer Atlas | Best MD Craft Breweries, Trails & Dog-Friendly Taprooms",
   description: "Discover the best breweries in Maryland. Explore curated Maryland beer trails, search dog-friendly taprooms in Frederick, Baltimore, and beyond, and map your next craft beer adventure.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Maryland Beer Atlas | Discover Maryland Craft Breweries & Trails",
     description: "Your ultimate guide to Maryland's craft beer scene. Find dog-friendly breweries, explore curated trails, and map your next destination.",
