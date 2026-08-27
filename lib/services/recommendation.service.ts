@@ -35,16 +35,14 @@ export class RecommendationService {
 
     const fromGuides: Recommendation[] = [];
     for (const g of guides || []) {
-      // Expect guides to include lists of brewery slugs or brewery ids; be defensive
-      if (!g?.breweries || !Array.isArray(g.breweries)) continue;
-      for (const bRef of g.breweries) {
-        const brewery = await contentService.breweries.getById?.(bRef.id || bRef) || await contentService.breweries.getBySlug?.(bRef.slug || bRef);
-        if (!brewery) continue;
+      if (!g?.recommendedStops || !Array.isArray(g.recommendedStops)) continue;
+      for (const b of g.recommendedStops) {
+        if (!b) continue;
         fromGuides.push({
-          brewery,
+          brewery: b,
           reason: `From guide: ${g.title}`,
           source: 'curated',
-          tags: brewery.categories || [],
+          tags: b.amenities || [],
         });
       }
     }
@@ -53,7 +51,7 @@ export class RecommendationService {
       brewery: b,
       reason: 'Featured by the Atlas editors',
       source: 'curated',
-      tags: b.categories || [],
+      tags: b.amenities || [],
     }));
 
     // De-duplicate by brewery id
@@ -84,8 +82,8 @@ export class RecommendationService {
 
     const scored = breweries
       .map((b) => {
-        if (!b?.location?.latitude || !b?.location?.longitude) return null;
-        const dist = haversineMiles(location.lat, location.lon, b.location.latitude, b.location.longitude);
+        if (!b?.coordinates || typeof b.coordinates.lat !== 'number' || typeof b.coordinates.lng !== 'number') return null;
+        const dist = haversineMiles(location.lat, location.lon, b.coordinates.lat, b.coordinates.lng);
         return { brewery: b, distance: dist };
       })
       .filter(Boolean) as { brewery: Brewery; distance: number }[];
@@ -94,8 +92,8 @@ export class RecommendationService {
       .filter((s) => s.distance <= maxDist)
       .filter((s) => {
         if (!tags.length) return true;
-        const cats = (s.brewery.categories || []).map((c) => c.toLowerCase());
-        return tags.every((t) => cats.includes(t.toLowerCase()));
+        const ams = (s.brewery.amenities || []).map((c: string) => c.toLowerCase());
+        return tags.every((t) => ams.includes(t.toLowerCase()));
       })
       .sort((a, b) => a.distance - b.distance)
       .slice(0, options?.limit ?? 10);
@@ -105,7 +103,7 @@ export class RecommendationService {
       distanceMiles: Number(f.distance.toFixed(1)),
       source: 'computed',
       reason: `About ${Number(f.distance.toFixed(1))} miles away`,
-      tags: f.brewery.categories || [],
+      tags: f.brewery.amenities || [],
     }));
 
     return results;
