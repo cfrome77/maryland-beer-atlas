@@ -51,8 +51,8 @@ export function GeolocationRecommendations({
             const filtered = (json.recommendations || []).filter((r: Recommendation) => !curatedIds.has(r.brewery?.id));
             setComputed(filtered);
           }
-        } catch (err: any) {
-          setError(err?.message || String(err));
+        } catch (err: unknown) {
+          setError(err instanceof Error ? err.message : String(err));
         } finally {
           setLoading(false);
         }

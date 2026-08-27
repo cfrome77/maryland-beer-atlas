@@ -14,8 +14,8 @@ export function RecommendationsPanel({ recommendations }: { recommendations: Rec
       <ul className="space-y-3">
         {recommendations.map((r) => (
           <li key={r.brewery.id} className="flex items-start gap-3">
-            {r.brewery.logoUrl ? (
-              <Image src={r.brewery.logoUrl} alt={r.brewery.name} width={56} height={56} className="rounded-md object-cover" />
+            {r.brewery.image ? (
+              <Image src={r.brewery.image} alt={r.brewery.name} width={56} height={56} className="rounded-md object-cover" />
             ) : (
               <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-700 rounded-md flex items-center justify-center text-sm">
                 {r.brewery.name?.slice(0,2)}
