@@ -7,6 +7,7 @@ import { isValidImageSrc, DEFAULT_PLACEHOLDER } from '@/components/ui/safe-image
 import { AlertTriangle } from 'lucide-react';
 import { isBreweryOpenNow } from '@/lib/utils/hours';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
+import { getDirectionsUrls } from '@/lib/utils/directions';
 
 interface MapViewProps {
   breweries: Brewery[];
@@ -299,7 +300,7 @@ export default function MapView({
           ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Temporarily Closed</span>`
           : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Closed Now</span>`;
 
-        const freshnessBadgeHtml = freshness.isFresh
+        const freshnessBadgeHtml = freshness.freshnessCategory === 'fresh'
           ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Verified Fresh</span>`
           : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Verified ${brewery.lastVerified || 'recently'}</span>`;
 
@@ -334,7 +335,15 @@ export default function MapView({
               >
                 Visit Profile &rarr;
               </a>
-              <span class="text-[9px] text-zinc-400">MD ${brewery.zipCode}</span>
+              <a
+                href="${getDirectionsUrls(brewery).googleMapsUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Get directions to ${brewery.name.replace(/"/g, '&quot;')}"
+                class="px-2 py-1 rounded bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
+              >
+                Directions
+              </a>
             </div>
           </div>
         `;

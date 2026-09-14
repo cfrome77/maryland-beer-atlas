@@ -28,6 +28,7 @@ import { contentService } from '@/lib/services/content.service';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
 import { isBreweryOpenNow } from '@/lib/utils/hours';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
+import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import BreweryDetailMap from '@/components/ui/brewery-detail-map';
 
 interface BreweryDetailPageProps {
@@ -223,14 +224,21 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <BreweryDirectionsAction
+                  brewery={brewery}
+                  variant="primary"
+                  size="lg"
+                  preferredApp="both"
+                />
+
                 {brewery.website && (
                   <a
                     href={brewery.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-sm transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95"
+                    className="px-5 py-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white font-bold text-sm border border-zinc-700/60 transition-all backdrop-blur-md flex items-center gap-1.5 active:scale-95"
                   >
-                    <Globe className="w-4 h-4" />
+                    <Globe className="w-4 h-4 text-amber-400" />
                     Website
                   </a>
                 )}

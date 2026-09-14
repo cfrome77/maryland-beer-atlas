@@ -127,14 +127,24 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
         <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
           ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}
         </p>
-        <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex gap-2">
+        <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-1.5">
           <a
             href="${googleMapsUrl}"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Get directions to ${brewery.name.replace(/"/g, '&quot;')} via Google Maps"
             class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
           >
-            Google Maps
+            Get Directions (Google)
+          </a>
+          <a
+            href="${appleMapsUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Get directions to ${brewery.name.replace(/"/g, '&quot;')} via Apple Maps"
+            class="px-2 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
+          >
+            Apple Maps
           </a>
         </div>
       </div>
