@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Brewery } from '../../types';
 import { IBreweryRepository } from '../interfaces';
-import { sanityClient } from '../../sanity/client';
+import { sanityClient, isSanityConfigured } from '../../sanity/client';
 import { normalizeAndValidateBrewery, normalizeAndValidateBreweryList } from '../../validations/schemas';
 
 /**
@@ -67,7 +67,17 @@ export class SanityBreweryRepository implements IBreweryRepository {
 
   constructor(private canonicalBreweries: Brewery[] = []) {}
 
+  private ensureConfigured(): void {
+    if (!isSanityConfigured()) {
+      throw new Error(
+        'Sanity CMS configuration is missing or invalid (NEXT_PUBLIC_SANITY_PROJECT_ID is unconfigured). ' +
+        'Set valid Sanity environment variables or set USE_MOCK_DATA=true for development mock data.'
+      );
+    }
+  }
+
   async getAll(): Promise<Brewery[]> {
+    this.ensureConfigured();
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery"] { ${this.baseProjection} }`
     );
@@ -79,6 +89,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
   }
 
   async getBySlug(slug: string): Promise<Brewery | null> {
+    this.ensureConfigured();
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery" && slug.current == $slug] { ${this.baseProjection} }`,
       { slug }
@@ -89,6 +100,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
   }
 
   async getById(id: string): Promise<Brewery | null> {
+    this.ensureConfigured();
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery" && (_id == $id || breweryId == $id)] { ${this.baseProjection} }`,
       { id }
@@ -99,6 +111,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
   }
 
   async getFeatured(): Promise<Brewery[]> {
+    this.ensureConfigured();
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery" && featured == true] { ${this.baseProjection} }`
     );

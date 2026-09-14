@@ -124,33 +124,38 @@ export default async function Home() {
             </div>
 
             <div className="lg:col-span-5 relative hidden lg:block">
-              {/* Creative Image/Card stack to look highly polished */}
-              <div className="relative w-full aspect-square max-w-[400px] mx-auto">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 rotate-3 opacity-20 blur-xl" />
-                <div className="relative rounded-2xl border border-zinc-850 bg-zinc-950 p-6 space-y-6 shadow-2xl">
-                  <div className="flex items-center justify-between border-b border-zinc-850 pb-4">
-                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Featured Brewery</span>
-                    <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Farm Brewery</span>
+              {/* Dynamic Featured Brewery hero card */}
+              {(featuredBreweries[0] || allBreweries[0]) && (() => {
+                const heroBrewery = featuredBreweries[0] || allBreweries[0];
+                return (
+                  <div className="relative w-full aspect-square max-w-[400px] mx-auto">
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 rotate-3 opacity-20 blur-xl" />
+                    <div className="relative rounded-2xl border border-zinc-850 bg-zinc-950 p-6 space-y-6 shadow-2xl">
+                      <div className="flex items-center justify-between border-b border-zinc-850 pb-4">
+                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Featured Brewery</span>
+                        <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">{heroBrewery.type}</span>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold">{heroBrewery.name}</h3>
+                        <p className="text-zinc-400 text-sm leading-relaxed font-normal line-clamp-3">
+                          {heroBrewery.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
+                        <MapPin className="w-4 h-4 text-amber-500" />
+                        {heroBrewery.city}, Maryland
+                      </div>
+                      <Link
+                        href={`/breweries/${heroBrewery.slug}`}
+                        className="flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-850 text-sm font-bold transition-all border border-zinc-800 group cursor-pointer"
+                      >
+                        View Brewery Details
+                        <ArrowRight className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-bold">Elder Pine Brewing</h3>
-                    <p className="text-zinc-400 text-sm leading-relaxed font-normal">
-                      Nestled on an active pine farm in Montgomery County, Elder Pine blends traditional styles with modern, experimental brewing.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
-                    <MapPin className="w-4 h-4 text-amber-500" />
-                    Gaithersburg, Maryland
-                  </div>
-                  <Link
-                    href="/breweries/elder-pine-brewing-and-blending"
-                    className="flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-850 text-sm font-bold transition-all border border-zinc-800 group cursor-pointer"
-                  >
-                    View Brewery Details
-                    <ArrowRight className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           </div>
         </div>
