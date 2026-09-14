@@ -1,8 +1,10 @@
-import { Brewery, BreweryCoordinates } from '../types';
+import { Brewery, Coordinates } from '../types';
+
+export type BreweryCoordinates = Coordinates;
 
 export function hasValidCoordinates(
-  coordinates?: BreweryCoordinates | null
-): coordinates is BreweryCoordinates {
+  coordinates?: Coordinates | null
+): coordinates is Coordinates {
   return !!(
     coordinates &&
     typeof coordinates.lat === 'number' &&

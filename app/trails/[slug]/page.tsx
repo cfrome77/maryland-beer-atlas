@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Navigation, ExternalLink, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { Brewery } from '@/lib/types';
-import { getDirectionsUrls } from '@/lib/utils/directions';
+import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { TrailMapView } from '@/components/ui/trail-map-view';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 
@@ -52,10 +52,6 @@ interface BreweryStopCardProps {
 
 function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
   const isClosedStatus = brewery.status === 'Permanently closed' || brewery.status === 'Temporarily closed' || brewery.status === 'Closed';
-
-  const directions = getDirectionsUrls(brewery);
-  const googleMapsDirectionsUrl = directions.googleMapsUrl;
-  const appleMapsDirectionsUrl = directions.appleMapsUrl;
 
   return (
     <article
@@ -160,29 +156,16 @@ function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
             )}
 
             <div className="flex items-center gap-2 shrink-0">
-              <a
-                href={googleMapsDirectionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 hover:bg-amber-500 hover:text-zinc-950 dark:hover:bg-amber-500 dark:hover:text-zinc-950 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] inline-flex items-center gap-1 transition-colors border border-zinc-200 dark:border-zinc-800"
-                title={`Get directions to ${brewery.name}`}
-              >
-                <Navigation className="w-3 h-3 text-amber-500" />
-                Directions
-              </a>
-              <a
-                href={appleMapsDirectionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] inline-flex items-center gap-1 transition-colors border border-zinc-200 dark:border-zinc-800"
-                title={`Open ${brewery.name} in Apple Maps`}
-                aria-label={`Open ${brewery.name} in Apple Maps`}
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
-              </a>
+              <BreweryDirectionsAction
+                brewery={brewery}
+                variant="secondary"
+                size="sm"
+                preferredApp="both"
+                label="Directions"
+              />
               <Link
                 href={`/breweries/${brewery.slug}`}
-                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[11px] inline-flex items-center gap-1 transition-colors shadow-xs"
+                className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[11px] inline-flex items-center gap-1 transition-colors shadow-xs min-h-[32px]"
               >
                 View Stop &rarr;
               </Link>

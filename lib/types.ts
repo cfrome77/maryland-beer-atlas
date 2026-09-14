@@ -59,3 +59,4 @@ export type BeerTrail = z.infer<typeof beerTrailSchema>;
 export type TravelGuide = z.infer<typeof travelGuideSchema>;
 
 export type { DataFreshnessInfo, FreshnessCategory, VerificationBadgeInfo } from './utils/freshness';
+export type { BreweryCoordinates, BreweryDirectionsUrls } from './utils/directions';

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brewery } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
+import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 
 interface BreweryCardProps {
   brewery: Brewery;
@@ -63,19 +64,22 @@ export function BreweryCard({ brewery }: BreweryCardProps) {
         </div>
 
         {/* Footer info within CardContent */}
-        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-850 flex items-center justify-between text-xs mt-auto">
-          <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 font-medium">
+        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-850 flex items-center justify-between text-xs mt-auto gap-2">
+          <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 font-medium min-w-0">
             <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span className="truncate max-w-[140px]">{brewery.city}</span>
+            <span className="truncate">{brewery.city}</span>
           </span>
-          <Link
-            href={`/breweries/${brewery.slug}`}
-            className="font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors inline-flex items-center gap-1 shrink-0"
-            aria-label={`View ${brewery.name} details`}
-          >
-            View Taproom
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <BreweryDirectionsAction brewery={brewery} variant="compact" size="sm" label="Directions" />
+            <Link
+              href={`/breweries/${brewery.slug}`}
+              className="font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors inline-flex items-center gap-1 shrink-0"
+              aria-label={`View ${brewery.name} details`}
+            >
+              View Taproom
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
         </div>
       </CardContent>
     </Card>
