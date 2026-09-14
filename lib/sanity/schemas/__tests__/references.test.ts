@@ -97,15 +97,27 @@ describe('Sanity Schema Types and References', () => {
     expect(guideFields).toContain('county');
     expect(guideFields).toContain('categories');
 
-    const stopsField = guideSchema.fields.find((f) => f.name === 'recommendedStops') as any;
-    expect(stopsField?.type).toBe('array');
-    expect(stopsField?.of?.[0]?.type).toBe('reference');
-    expect(stopsField?.of?.[0]?.to?.[0]?.type).toBe('brewery');
+    const guideStopsField = guideSchema.fields.find((f) => f.name === 'recommendedStops') as any;
+    expect(guideStopsField?.type).toBe('array');
+    expect(guideStopsField?.of?.[0]?.type).toBe('reference');
+    expect(guideStopsField?.of?.[0]?.to?.[0]?.type).toBe('brewery');
 
     const trailFields = trailSchema.fields.map((f) => f.name);
+    expect(trailFields).toContain('stops');
     expect(trailFields).toContain('breweries');
     expect(trailFields).toContain('county');
     expect(trailFields).toContain('categories');
+    expect(trailFields).toContain('notes');
+
+    const trailStopsField = trailSchema.fields.find((f) => f.name === 'stops') as any;
+    expect(trailStopsField?.type).toBe('array');
+    expect(trailStopsField?.of?.[0]?.name).toBe('trailStop');
+    const stopFieldNames = trailStopsField?.of?.[0]?.fields?.map((f: any) => f.name);
+    expect(stopFieldNames).toContain('order');
+    expect(stopFieldNames).toContain('brewery');
+    expect(stopFieldNames).toContain('isOptional');
+    expect(stopFieldNames).toContain('notes');
+    expect(stopFieldNames).toContain('recommendedDuration');
 
     const breweriesField = trailSchema.fields.find((f) => f.name === 'breweries') as any;
     expect(breweriesField?.type).toBe('array');

@@ -32,6 +32,18 @@ export class SanityTrailRepository implements ITrailRepository {
     highlight,
     nearbyAttractions,
     difficulty,
+    notes,
+    "stops": stops[] {
+      order,
+      isOptional,
+      notes,
+      highlight,
+      recommendedDuration,
+      attractions,
+      "brewery": brewery-> {
+        ${this.breweryProjection}
+      }
+    },
     "breweries": breweries[defined(@->._id)]-> {
       ${this.breweryProjection}
     }
@@ -50,14 +62,47 @@ export class SanityTrailRepository implements ITrailRepository {
 
   private mapTrailReferences(trailRecord: any): unknown {
     if (!trailRecord) return null;
-    const breweries = Array.isArray(trailRecord.breweries)
+
+    let mappedStops: any[] = [];
+    if (Array.isArray(trailRecord.stops) && trailRecord.stops.length > 0) {
+      mappedStops = trailRecord.stops
+        .map((stop: any) => {
+          if (!stop || typeof stop !== 'object') return null;
+          const brewery = stop.brewery
+            ? mergeSanityEditorialWithCanonical(stop.brewery, this.canonicalBreweries)
+            : null;
+          if (!brewery) return null;
+          return {
+            ...stop,
+            order: typeof stop.order === 'number' ? stop.order : 1,
+            brewery,
+            isOptional: Boolean(stop.isOptional),
+          };
+        })
+        .filter(Boolean);
+
+      mappedStops.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+    }
+
+    const legacyBreweries = Array.isArray(trailRecord.breweries)
       ? trailRecord.breweries
           .map((brewery: any) => mergeSanityEditorialWithCanonical(brewery, this.canonicalBreweries))
           .filter(Boolean)
       : [];
 
+    if (mappedStops.length === 0 && legacyBreweries.length > 0) {
+      mappedStops = legacyBreweries.map((b: any, idx: number) => ({
+        order: idx + 1,
+        brewery: b,
+        isOptional: false,
+      }));
+    }
+
+    const breweries = mappedStops.map((s: any) => s.brewery).filter(Boolean);
+
     return {
       ...trailRecord,
+      stops: mappedStops,
       breweries,
     };
   }

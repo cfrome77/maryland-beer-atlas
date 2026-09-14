@@ -14,6 +14,7 @@ import {
   fieldVerificationSchema,
   breweryVerificationSchema,
   brewerySchema,
+  trailStopSchema,
   beerTrailSchema,
   travelGuideSchema,
   guideTypeSchema,
@@ -53,6 +54,7 @@ export type GuideSeo = z.infer<typeof guideSeoSchema>;
 export type GuideGalleryItem = z.infer<typeof guideGalleryItemSchema>;
 
 export type Brewery = z.infer<typeof brewerySchema>;
+export type TrailStop = z.infer<typeof trailStopSchema>;
 export type BeerTrail = z.infer<typeof beerTrailSchema>;
 export type TravelGuide = z.infer<typeof travelGuideSchema>;
 

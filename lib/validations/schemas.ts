@@ -235,7 +235,20 @@ export const brewerySchema = z.object({
 });
 
 /**
- * Zod Schema for Beer Trail domain records (reuses brewerySchema).
+ * Zod Schema for explicit Trail Stop objects in structured itineraries.
+ */
+export const trailStopSchema = z.object({
+  order: z.number({ message: 'Stop order is required' }).int('Stop order must be an integer').min(1, 'Stop order must be at least 1'),
+  brewery: brewerySchema,
+  isOptional: z.boolean().default(false),
+  notes: z.string().nullish(),
+  highlight: z.string().nullish(),
+  recommendedDuration: z.string().nullish(),
+  attractions: z.array(z.string()).nullish(),
+});
+
+/**
+ * Zod Schema for Beer Trail domain records structured as detailed itineraries.
  */
 export const beerTrailSchema = z.object({
   id: z.string().min(1, 'Trail ID is required'),
@@ -246,10 +259,13 @@ export const beerTrailSchema = z.object({
   distance: z.string(),
   duration: z.string(),
   breweries: z.array(brewerySchema),
+  stops: z.array(trailStopSchema).min(1, 'At least one stop is required on a trail itinerary'),
   image: urlSchema,
   highlight: z.string(),
+  highlights: z.array(z.string()).nullish(),
   nearbyAttractions: z.array(z.string()),
   difficulty: z.string(),
+  notes: z.string().nullish(),
 });
 
 /**
@@ -581,10 +597,108 @@ export function validateBreweryList(data: unknown[]): z.infer<typeof brewerySche
 }
 
 /**
+ * Normalizes raw or legacy trail data into a structured BeerTrail domain format before validation.
+ * Ensures explicit stop ordering, maps legacy breweries arrays to stops if missing, and defaults flags.
+ */
+export function normalizeTrailData(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') {
+    return raw;
+  }
+
+  const data = { ...(raw as Record<string, unknown>) };
+
+  if (typeof data.name === 'string') {
+    data.name = data.name.trim().replace(/\s+/g, ' ');
+  }
+
+  if (typeof data.description === 'string') {
+    data.description = data.description.trim();
+  }
+
+  // Handle structured stops and legacy breweries
+  let rawStops: unknown[] = Array.isArray(data.stops) ? data.stops : [];
+  const rawBreweries: unknown[] = Array.isArray(data.breweries) ? data.breweries : [];
+
+  if (rawStops.length === 0 && rawBreweries.length > 0) {
+    // Map legacy breweries array into structured stops
+    rawStops = rawBreweries.map((brewery, idx) => ({
+      order: idx + 1,
+      brewery: normalizeBreweryData(brewery),
+      isOptional: false,
+    }));
+  } else if (rawStops.length > 0) {
+    // Normalize existing stops and ensure order
+    rawStops = rawStops.map((stop, idx) => {
+      if (!stop || typeof stop !== 'object') return stop;
+      const s = { ...(stop as Record<string, unknown>) };
+      const orderNum = typeof s.order === 'number' ? s.order : idx + 1;
+      const breweryObj = s.brewery ? normalizeBreweryData(s.brewery) : s.brewery;
+      return {
+        ...s,
+        order: orderNum,
+        brewery: breweryObj,
+        isOptional: typeof s.isOptional === 'boolean' ? s.isOptional : false,
+      };
+    });
+
+    // Sort stops explicitly by order number ascending
+    (rawStops as { order?: number }[]).sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  }
+
+  data.stops = rawStops;
+
+  // Always derive/sync breweries array from resolved stops for backwards compatibility
+  data.breweries = rawStops
+    .map((s: unknown) => (s && typeof s === 'object' && 'brewery' in s) ? (s as { brewery: unknown }).brewery : null)
+    .filter(Boolean);
+
+  if (!data.highlight && Array.isArray(data.highlights) && data.highlights.length > 0) {
+    data.highlight = String(data.highlights[0]);
+  } else if (typeof data.highlight === 'string') {
+    data.highlight = data.highlight.trim();
+  } else if (!data.highlight) {
+    data.highlight = '';
+  }
+
+  if (!data.nearbyAttractions || !Array.isArray(data.nearbyAttractions)) {
+    data.nearbyAttractions = [];
+  }
+
+  return data;
+}
+
+/**
+ * Normalizes and validates raw data as a BeerTrail domain object.
+ */
+export function normalizeAndValidateBeerTrail(data: unknown): z.infer<typeof beerTrailSchema> {
+  const normalized = normalizeTrailData(data);
+  return validateBeerTrail(normalized);
+}
+
+/**
+ * Normalizes and validates an array of BeerTrail objects.
+ */
+export function normalizeAndValidateBeerTrailList(data: unknown[]): z.infer<typeof beerTrailSchema>[] {
+  if (!Array.isArray(data)) {
+    throw new Error('[Runtime Validation Error] Input for normalizeAndValidateBeerTrailList must be an array');
+  }
+  return data.map((item, idx) => {
+    const normalized = normalizeTrailData(item);
+    const result = beerTrailSchema.safeParse(normalized);
+    if (!result.success) {
+      const name = (normalized && typeof normalized === 'object' && 'name' in normalized) ? (normalized as { name: unknown }).name : `Index ${idx}`;
+      throw new Error(formatZodError(result.error, `Beer Trail "${name}"`));
+    }
+    return result.data;
+  });
+}
+
+/**
  * Validates raw data as a BeerTrail domain object.
  */
 export function validateBeerTrail(data: unknown): z.infer<typeof beerTrailSchema> {
-  const result = beerTrailSchema.safeParse(data);
+  const normalized = normalizeTrailData(data);
+  const result = beerTrailSchema.safeParse(normalized);
   if (!result.success) {
     const context = (data && typeof data === 'object' && 'name' in data) ? `Beer Trail "${(data as { name: unknown }).name}"` : 'Beer Trail';
     throw new Error(formatZodError(result.error, context));
@@ -600,7 +714,8 @@ export function validateBeerTrailList(data: unknown[]): z.infer<typeof beerTrail
     throw new Error('[Runtime Validation Error] Input for validateBeerTrailList must be an array');
   }
   return data.map((item, idx) => {
-    const result = beerTrailSchema.safeParse(item);
+    const normalized = normalizeTrailData(item);
+    const result = beerTrailSchema.safeParse(normalized);
     if (!result.success) {
       const name = (item && typeof item === 'object' && 'name' in item) ? (item as { name: unknown }).name : `Index ${idx}`;
       throw new Error(formatZodError(result.error, `Beer Trail "${name}"`));

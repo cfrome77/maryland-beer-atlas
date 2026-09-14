@@ -580,6 +580,30 @@ export const mockTrails: BeerTrail[] = [
     duration: 'Half Day',
     image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
     highlight: 'Sip bold IPAs at Flying Dog\'s legendary tasting room and experience Monocacy\'s historic warehouse brewery tour.',
+    highlights: [
+      'Sip bold IPAs at Flying Dog\'s legendary tasting room',
+      'Experience Monocacy\'s historic warehouse brewery tour',
+    ],
+    stops: [
+      {
+        order: 1,
+        brewery: mockBreweries.find(b => b.id === 'flying-dog')!,
+        isOptional: false,
+        notes: 'Start early to secure outdoor patio seating and view Ralph Steadman art prints.',
+        highlight: 'Ralph Steadman Label Art & Flagship IPAs',
+        recommendedDuration: '1.5 - 2 Hours',
+        attractions: ['Wedgewood Village', 'Ballenger Creek Park'],
+      },
+      {
+        order: 2,
+        brewery: mockBreweries.find(b => b.id === 'monocacy')!,
+        isOptional: false,
+        notes: 'Tour the historic warehouse facility and enjoy local Maryland-sourced malt beers.',
+        highlight: 'Historic Warehouse Brewhouse & Local Ingredients',
+        recommendedDuration: '1 - 1.5 Hours',
+        attractions: ['Monocacy National Battlefield'],
+      },
+    ],
     breweries: [
       mockBreweries.find(b => b.id === 'flying-dog')!,
       mockBreweries.find(b => b.id === 'monocacy')!
@@ -589,7 +613,8 @@ export const mockTrails: BeerTrail[] = [
       'Carroll Creek Linear Park',
       'Monocacy National Battlefield'
     ],
-    difficulty: 'Easy'
+    difficulty: 'Easy',
+    notes: 'A compact, highly accessible itinerary in historic Frederick. Rideshares or designated drivers recommended between stops.',
   },
   {
     id: 'hyattsville-beer-trail',
@@ -601,6 +626,29 @@ export const mockTrails: BeerTrail[] = [
     duration: '3-4 Hours',
     image: 'https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800',
     highlight: 'Walk between Prince George\'s first microbrewery and a vibrant Deaf-owned neighbourhood taproom.',
+    highlights: [
+      'Walk between Prince George\'s first microbrewery and a vibrant Deaf-owned neighbourhood taproom',
+    ],
+    stops: [
+      {
+        order: 1,
+        brewery: mockBreweries.find(b => b.id === 'streetcar82')!,
+        isOptional: false,
+        notes: 'A vibrant Deaf-owned microbrewery with an inviting neighborhood patio.',
+        highlight: 'Belgian Witbiers & Community ASL atmosphere',
+        recommendedDuration: '1 - 1.5 Hours',
+        attractions: ['Hyattsville Arts District'],
+      },
+      {
+        order: 2,
+        brewery: mockBreweries.find(b => b.id === 'franklins')!,
+        isOptional: false,
+        notes: 'Combine craft beer, artisanal food, and vintage toy store shopping in one spot!',
+        highlight: 'Brewpub Dinner & Vintage General Store',
+        recommendedDuration: '1.5 - 2 Hours',
+        attractions: ['Anacostia River Trail'],
+      },
+    ],
     breweries: [
       mockBreweries.find(b => b.id === 'streetcar82')!,
       mockBreweries.find(b => b.id === 'franklins')!
@@ -610,7 +658,8 @@ export const mockTrails: BeerTrail[] = [
       'Anacostia River Trail',
       'University of Maryland Campus'
     ],
-    difficulty: 'Easy'
+    difficulty: 'Easy',
+    notes: 'Extremely walkable and bike-friendly Route 1 corridor itinerary.',
   },
   {
     id: 'baltimore-craft-loop',
@@ -622,16 +671,51 @@ export const mockTrails: BeerTrail[] = [
     duration: '4-5 Hours',
     image: 'https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?auto=format&fit=crop&q=80&w=800',
     highlight: 'Enjoy fresh Duckpin Pale Ale in the Union Collective and retro sours on the historic Old Oriole Park site at Peabody Heights.',
+    highlights: [
+      'Fresh Duckpin Pale Ale at Union Collective',
+      'Retro sours on the historic Old Oriole Park site at Peabody Heights',
+    ],
+    stops: [
+      {
+        order: 1,
+        brewery: mockBreweries.find(b => b.id === 'union-craft')!,
+        isOptional: false,
+        notes: 'Anchor spot at Union Collective featuring wide open seating and local artisanal food vendors.',
+        highlight: 'Duckpin Pale Ale & Union Collective Plaza',
+        recommendedDuration: '1.5 - 2 Hours',
+        attractions: ['The Union Collective'],
+      },
+      {
+        order: 2,
+        brewery: mockBreweries.find(b => b.id === 'peabody')!,
+        isOptional: false,
+        notes: 'Co-op production brewery situated on the historic site of Old Oriole Park.',
+        highlight: 'Retro Sours & Historic Baseball Site',
+        recommendedDuration: '1.5 - 2 Hours',
+        attractions: ['Charles Village Historic District'],
+      },
+      {
+        order: 3,
+        brewery: mockBreweries.find(b => b.id === 'heavy-seas')!,
+        isOptional: true,
+        notes: 'Optional detour stop just outside the city for pirate-themed Loose Cannon IPAs.',
+        highlight: 'Loose Cannon IPA & Pirate Legend Taproom',
+        recommendedDuration: '1 Hour',
+        attractions: ['BWI Trail'],
+      },
+    ],
     breweries: [
       mockBreweries.find(b => b.id === 'union-craft')!,
-      mockBreweries.find(b => b.id === 'peabody')!
+      mockBreweries.find(b => b.id === 'peabody')!,
+      mockBreweries.find(b => b.id === 'heavy-seas')!
     ],
     nearbyAttractions: [
       'The Union Collective',
       'Charles Village Historic District',
       'Johns Hopkins University Campus'
     ],
-    difficulty: 'Easy'
+    difficulty: 'Easy',
+    notes: 'Short rideshare or bike trip connecting Baltimore City\'s finest urban microbreweries.',
   }
 ];
 

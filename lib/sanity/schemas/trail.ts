@@ -86,17 +86,95 @@ export const trailSchema = {
       validation: (Rule: any) => Rule.required().min(2),
     },
     {
+      name: 'stops',
+      title: 'Itinerary Stops',
+      type: 'array',
+      description: 'Structured, ordered stops along the trail itinerary with brewery references, optional flags, and stop-specific notes.',
+      of: [
+        {
+          type: 'object',
+          name: 'trailStop',
+          title: 'Trail Stop',
+          fields: [
+            {
+              name: 'order',
+              title: 'Stop Order Number',
+              type: 'number',
+              validation: (Rule: any) => Rule.required().integer().min(1),
+            },
+            {
+              name: 'brewery',
+              title: 'Brewery Reference',
+              type: 'reference',
+              to: [{ type: 'brewery' }],
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'isOptional',
+              title: 'Optional Stop',
+              type: 'boolean',
+              description: 'Toggle if this stop is an optional detour or alternative on the itinerary.',
+              initialValue: false,
+            },
+            {
+              name: 'notes',
+              title: 'Stop Notes / Tips',
+              type: 'text',
+              description: 'Specific advice or recommendations for this stop.',
+            },
+            {
+              name: 'highlight',
+              title: 'Stop Highlight',
+              type: 'string',
+              description: 'Featured highlight or signature offering at this stop.',
+            },
+            {
+              name: 'recommendedDuration',
+              title: 'Recommended Duration',
+              type: 'string',
+              description: 'e.g. 1-2 hours',
+            },
+            {
+              name: 'attractions',
+              title: 'Nearby Attractions',
+              type: 'array',
+              of: [{ type: 'string' }],
+            },
+          ],
+          preview: {
+            select: {
+              title: 'brewery.name',
+              order: 'order',
+              isOptional: 'isOptional',
+            },
+            prepare(selection: any) {
+              const { title, order, isOptional } = selection;
+              return {
+                title: `#${order || '?'}: ${title || 'Unnamed Brewery'}`,
+                subtitle: isOptional ? 'Optional Stop' : 'Required Stop',
+              };
+            },
+          },
+        },
+      ],
+    },
+    {
       name: 'breweries',
       title: 'Breweries on the Trail',
       type: 'array',
-      description: 'References to brewery editorial documents included on this trail.',
+      description: 'References to brewery editorial documents included on this trail (legacy reference array).',
       of: [
         {
           type: 'reference',
           to: [{ type: 'brewery' }],
         },
       ],
-      validation: (Rule: any) => Rule.required().min(1).error('At least one brewery reference is required on a beer trail'),
+    },
+    {
+      name: 'notes',
+      title: 'Trail Itinerary Notes',
+      type: 'text',
+      description: 'General trail notes, driving advice, or travel tips for this itinerary.',
     },
     {
       name: 'image',

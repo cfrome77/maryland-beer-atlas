@@ -162,27 +162,103 @@ describe('Zod Validation Layer', () => {
     });
   });
 
-  describe('Beer Trail & Travel Guide Validation', () => {
-    it('validates beer trails reusing brewery schema', () => {
+  describe('Beer Trail & Structured Itinerary Validation', () => {
+    it('validates beer trails structured as explicit ordered itineraries with stops', () => {
       const trail = mockTrails[0];
       const parsed = validateBeerTrail(trail);
       expect(parsed.name).toBe('Frederick City Beer Trail');
+      expect(parsed.stops.length).toBe(2);
+      expect(parsed.stops[0].order).toBe(1);
+      expect(parsed.stops[0].brewery.name).toBe('Flying Dog Brewery');
+      expect(parsed.stops[0].isOptional).toBe(false);
+      expect(parsed.stops[0].notes).toBeDefined();
       expect(parsed.breweries.length).toBe(2);
       expect(parsed.breweries[0].name).toBe('Flying Dog Brewery');
     });
 
-    it('fails beer trail validation if an embedded brewery is invalid', () => {
+    it('supports optional stops and explicit stop metadata', () => {
+      const trailWithOptionalStop = mockTrails.find(t => t.id === 'baltimore-craft-loop')!;
+      const parsed = validateBeerTrail(trailWithOptionalStop);
+      expect(parsed.stops.length).toBe(3);
+
+      const optionalStop = parsed.stops.find(s => s.isOptional);
+      expect(optionalStop).toBeDefined();
+      expect(optionalStop?.brewery.name).toBe('Heavy Seas Beer');
+      expect(optionalStop?.order).toBe(3);
+    });
+
+    it('normalizes legacy un-ordered breweries array into ordered stops automatically', () => {
+      const legacyTrailData = {
+        id: 'legacy-trail',
+        slug: 'legacy-trail',
+        name: 'Legacy Craft Trail',
+        description: 'A legacy trail format with only breweries array.',
+        region: 'Central',
+        distance: '10 miles',
+        duration: 'Full Day',
+        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e',
+        highlight: 'Legacy highlights',
+        difficulty: 'Moderate',
+        breweries: [mockBreweries[0], mockBreweries[1]],
+      };
+
+      const parsed = validateBeerTrail(legacyTrailData);
+      expect(parsed.stops.length).toBe(2);
+      expect(parsed.stops[0].order).toBe(1);
+      expect(parsed.stops[0].brewery.name).toBe('Flying Dog Brewery');
+      expect(parsed.stops[1].order).toBe(2);
+      expect(parsed.stops[1].brewery.name).toBe('Monocacy Brewing Company');
+      expect(parsed.breweries.length).toBe(2);
+    });
+
+    it('sorts out-of-order stops explicitly by order number ascending', () => {
+      const unSortedTrailData = {
+        id: 'unsorted-trail',
+        slug: 'unsorted-trail',
+        name: 'Unsorted Trail',
+        description: 'Trail with stops out of order.',
+        region: 'Central',
+        distance: '6 miles',
+        duration: '3 Hours',
+        image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e',
+        highlight: 'Out of order test',
+        difficulty: 'Easy',
+        stops: [
+          { order: 2, brewery: mockBreweries[1], isOptional: false },
+          { order: 1, brewery: mockBreweries[0], isOptional: false },
+        ],
+      };
+
+      const parsed = validateBeerTrail(unSortedTrailData);
+      expect(parsed.stops[0].order).toBe(1);
+      expect(parsed.stops[0].brewery.name).toBe('Flying Dog Brewery');
+      expect(parsed.stops[1].order).toBe(2);
+      expect(parsed.stops[1].brewery.name).toBe('Monocacy Brewing Company');
+    });
+
+    it('fails beer trail validation if stops array is empty or an embedded brewery is invalid', () => {
       const invalidTrail = {
         ...mockTrails[0],
-        breweries: [
+        stops: [
           {
-            ...mockBreweries[0],
-            region: 'Invalid Region Name',
+            order: 1,
+            brewery: {
+              ...mockBreweries[0],
+              region: 'Invalid Region Name',
+            },
           },
         ],
       };
 
       expect(() => validateBeerTrail(invalidTrail)).toThrowError(/region/);
+
+      const emptyStopsTrail = {
+        ...mockTrails[0],
+        stops: [],
+        breweries: [],
+      };
+
+      expect(() => validateBeerTrail(emptyStopsTrail)).toThrowError(/stop/);
     });
 
     it('validates travel guides reusing brewery schema', () => {
