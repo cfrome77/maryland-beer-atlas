@@ -217,7 +217,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const types: string[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];
   const statusOptions = [
     { label: 'All Statuses', value: '' },
-    { label: 'Open Now', value: 'open' },
+    { label: 'Open Now', value: 'open_now' },
+    { label: 'Open Taprooms', value: 'open' },
     { label: 'Temporarily Closed', value: 'temporarily_closed' },
     { label: 'Hours Unavailable', value: 'hours_unavailable' },
     { label: 'Permanently Closed', value: 'permanently_closed' },

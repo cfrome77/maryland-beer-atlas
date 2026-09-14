@@ -197,6 +197,15 @@ describe('filterBreweries', () => {
     expect(hoursUnavail.map((b) => b.name)).toEqual(['Mystery Brews']);
   });
 
+  it('filters by "open_now" status based on real-time canonical brewery hours', () => {
+    const result = filterBreweries(sampleBreweries, { status: 'open_now' });
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((b) => {
+      expect(b.status).toBe('Open');
+      expect(b.structuredHours.length).toBeGreaterThan(0);
+    });
+  });
+
   it('filters by amenity', () => {
     const result = filterBreweries(sampleBreweries, { amenity: 'Dog Friendly' });
     expect(result).toHaveLength(3);
