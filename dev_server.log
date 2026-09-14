@@ -5,15 +5,9 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 550ms
-✓ Running next.config.ts took 52ms
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
+✓ Ready in 587ms
+✓ Running next.config.ts took 58ms
 
-
-○ Compiling / ...
- HEAD / 200 in 4.6s (next.js: 3.9s, application-code: 641ms)
- GET / 200 in 348ms (next.js: 18ms, application-code: 330ms)
-⨯ upstream image response failed for https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800 404
+○ Compiling /map ...
+ GET /map 200 in 7.2s (next.js: 6.4s, application-code: 821ms)
+ GET /map 200 in 185ms (next.js: 15ms, application-code: 170ms)

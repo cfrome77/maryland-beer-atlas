@@ -1,5 +1,5 @@
 import { Brewery, MarylandRegion, BreweryType, OperationalCategory } from '../types';
-import { getOperationalCategory } from './hours';
+import { getOperationalCategory, isBreweryOpenNow } from './hours';
 
 export type BrewerySortOption =
   | 'name-asc'
@@ -138,18 +138,24 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
 
     // 5. Operational Status Filter
     if (targetStatus) {
-      const category = getOperationalCategory(brewery.status, brewery.structuredHours);
-      const isCanonical = CANONICAL_OPERATIONAL_CATEGORIES.includes(targetStatus as OperationalCategory);
-
-      if (isCanonical) {
-        if (category !== targetStatus) {
+      if (targetStatus === 'open_now') {
+        if (!isBreweryOpenNow(brewery).isOpen) {
           return false;
         }
       } else {
-        const matchesCategory = category === targetStatus;
-        const matchesRawStatus = brewery.status.toLowerCase() === targetStatus.toLowerCase();
-        if (!matchesCategory && !matchesRawStatus) {
-          return false;
+        const category = getOperationalCategory(brewery.status, brewery.structuredHours);
+        const isCanonical = CANONICAL_OPERATIONAL_CATEGORIES.includes(targetStatus as OperationalCategory);
+
+        if (isCanonical) {
+          if (category !== targetStatus) {
+            return false;
+          }
+        } else {
+          const matchesCategory = category === targetStatus;
+          const matchesRawStatus = brewery.status.toLowerCase() === targetStatus.toLowerCase();
+          if (!matchesCategory && !matchesRawStatus) {
+            return false;
+          }
         }
       }
     }
