@@ -202,7 +202,7 @@ describe('filterBreweries', () => {
     expect(Array.isArray(result)).toBe(true);
     result.forEach((b) => {
       expect(b.status).toBe('Open');
-      expect(b.structuredHours.length).toBeGreaterThan(0);
+      expect(b.structuredHours?.length).toBeGreaterThan(0);
     });
   });
 
