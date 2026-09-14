@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Navigation, ExternalLink, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { Brewery } from '@/lib/types';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';

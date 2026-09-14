@@ -167,7 +167,7 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
       }
       mapRef.current = null;
     };
-  }, [brewery, googleMapsUrl, validCoords, webglSupported]);
+  }, [brewery, googleMapsUrl, appleMapsUrl, validCoords, webglSupported]);
 
   if (!validCoords) {
     return (

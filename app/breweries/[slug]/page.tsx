@@ -22,7 +22,6 @@ import {
   Bookmark,
   ChevronRight,
   Tag,
-  Building2,
 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';

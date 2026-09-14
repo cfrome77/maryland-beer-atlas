@@ -10,9 +10,9 @@ import { Recommendation } from '@/lib/services/recommendation.service';
 // Mock next/image to render a standard HTML <img> element in JSDOM tests
 vi.mock('next/image', () => ({
   default: function DummyImage(props: React.ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean; priority?: boolean }) {
-    const { fill, priority, ...rest } = props;
+    const { fill, priority, alt = '', ...rest } = props;
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...rest} data-fill={fill ? 'true' : 'false'} data-priority={priority ? 'true' : 'false'} />;
+    return <img alt={alt} {...rest} data-fill={fill ? 'true' : 'false'} data-priority={priority ? 'true' : 'false'} />;
   },
 }));
 
