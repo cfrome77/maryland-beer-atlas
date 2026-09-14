@@ -5,23 +5,43 @@ import { SanityTrailRepository } from '../repositories/sanity/trail';
 import { SanityGuideRepository } from '../repositories/sanity/guide';
 
 export class ContentService {
+  private _breweries?: IBreweryRepository;
+  private _trails?: ITrailRepository;
+  private _guides?: IGuideRepository;
+
   constructor(
-    public breweries: IBreweryRepository,
-    public trails: ITrailRepository,
-    public guides: IGuideRepository
-  ) {}
+    breweries?: IBreweryRepository,
+    trails?: ITrailRepository,
+    guides?: IGuideRepository
+  ) {
+    this._breweries = breweries;
+    this._trails = trails;
+    this._guides = guides;
+  }
+
+  get breweries(): IBreweryRepository {
+    if (this._breweries) return this._breweries;
+    if (process.env.USE_MOCK_DATA === 'true') {
+      return new MockBreweryRepository();
+    }
+    return new SanityBreweryRepository();
+  }
+
+  get trails(): ITrailRepository {
+    if (this._trails) return this._trails;
+    if (process.env.USE_MOCK_DATA === 'true') {
+      return new MockTrailRepository();
+    }
+    return new SanityTrailRepository();
+  }
+
+  get guides(): IGuideRepository {
+    if (this._guides) return this._guides;
+    if (process.env.USE_MOCK_DATA === 'true') {
+      return new MockGuideRepository();
+    }
+    return new SanityGuideRepository();
+  }
 }
 
-// Check if Sanity is configured
-const isSanityConfigured = !!(
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID &&
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID !== 'placeholder_project_id' &&
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID !== 'your_project_id_here'
-);
-
-// Instantiate with Sanity implementations if configured, fallback to Mock implementations.
-export const contentService = new ContentService(
-  isSanityConfigured ? new SanityBreweryRepository() : new MockBreweryRepository(),
-  isSanityConfigured ? new SanityTrailRepository() : new MockTrailRepository(),
-  isSanityConfigured ? new SanityGuideRepository() : new MockGuideRepository()
-);
+export const contentService = new ContentService();

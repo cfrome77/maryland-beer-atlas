@@ -36,6 +36,7 @@ const canonicalBrewery: Brewery = {
 describe('Sanity Repositories with Canonical Dataset Injection', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    process.env.NEXT_PUBLIC_SANITY_PROJECT_ID = 'test-sanity-project-id';
   });
 
   describe('SanityBreweryRepository', () => {

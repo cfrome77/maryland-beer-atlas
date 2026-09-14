@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TravelGuide, Brewery } from '../../types';
 import { IGuideRepository } from '../interfaces';
-import { sanityClient } from '../../sanity/client';
+import { sanityClient, isSanityConfigured } from '../../sanity/client';
 import { validateTravelGuide, validateTravelGuideList } from '../../validations/schemas';
 import { mergeSanityEditorialWithCanonical } from './brewery';
 
@@ -117,6 +117,15 @@ export class SanityGuideRepository implements IGuideRepository {
 
   constructor(private canonicalBreweries: Brewery[] = []) {}
 
+  private ensureConfigured(): void {
+    if (!isSanityConfigured()) {
+      throw new Error(
+        'Sanity CMS configuration is missing or invalid (NEXT_PUBLIC_SANITY_PROJECT_ID is unconfigured). ' +
+        'Set valid Sanity environment variables or set USE_MOCK_DATA=true for development mock data.'
+      );
+    }
+  }
+
   private mapGuideReferences(guideRecord: any): unknown {
     if (!guideRecord) return null;
     const stops = Array.isArray(guideRecord.recommendedStops)
@@ -148,6 +157,7 @@ export class SanityGuideRepository implements IGuideRepository {
   }
 
   async getAll(): Promise<TravelGuide[]> {
+    this.ensureConfigured();
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "guide"] { ${this.baseProjection} }`
     );
@@ -157,6 +167,7 @@ export class SanityGuideRepository implements IGuideRepository {
   }
 
   async getBySlug(slug: string): Promise<TravelGuide | null> {
+    this.ensureConfigured();
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "guide" && slug.current == $slug] { ${this.baseProjection} }`,
       { slug }
