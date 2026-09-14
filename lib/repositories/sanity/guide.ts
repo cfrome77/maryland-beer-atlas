@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TravelGuide } from '../../types';
+import { TravelGuide, Brewery } from '../../types';
 import { IGuideRepository } from '../interfaces';
 import { sanityClient } from '../../sanity/client';
 import { validateTravelGuide, validateTravelGuideList } from '../../validations/schemas';
@@ -115,17 +115,23 @@ export class SanityGuideRepository implements IGuideRepository {
     }
   `;
 
+  constructor(private canonicalBreweries: Brewery[] = []) {}
+
   private mapGuideReferences(guideRecord: any): unknown {
     if (!guideRecord) return null;
     const stops = Array.isArray(guideRecord.recommendedStops)
-      ? guideRecord.recommendedStops.map((stop: any) => mergeSanityEditorialWithCanonical(stop)).filter(Boolean)
+      ? guideRecord.recommendedStops
+          .map((stop: any) => mergeSanityEditorialWithCanonical(stop, this.canonicalBreweries))
+          .filter(Boolean)
       : [];
 
     const trails = Array.isArray(guideRecord.relatedTrails)
       ? guideRecord.relatedTrails.map((trail: any) => ({
           ...trail,
           breweries: Array.isArray(trail.breweries)
-            ? trail.breweries.map((b: any) => mergeSanityEditorialWithCanonical(b)).filter(Boolean)
+            ? trail.breweries
+                .map((b: any) => mergeSanityEditorialWithCanonical(b, this.canonicalBreweries))
+                .filter(Boolean)
             : [],
         }))
       : undefined;

@@ -3,28 +3,30 @@ import { Brewery } from '../../types';
 import { IBreweryRepository } from '../interfaces';
 import { sanityClient } from '../../sanity/client';
 import { normalizeAndValidateBrewery, normalizeAndValidateBreweryList } from '../../validations/schemas';
-import { mockBreweries } from '../../data/mock-data';
 
 /**
  * Resolves and merges Sanity brewery editorial content with canonical brewery domain facts.
  * Avoids copying canonical facts into Sanity while ensuring stable identity linking via breweryId or slug.
+ *
+ * Does NOT import mockBreweries or fabricate values for missing canonical facts.
  */
-export function mergeSanityEditorialWithCanonical(sanityRecord: any): unknown {
+export function mergeSanityEditorialWithCanonical(
+  sanityRecord: any,
+  canonicalDataset: Brewery[] = []
+): Brewery | null {
   if (!sanityRecord) return null;
 
-  // Look up canonical brewery by breweryId, id, or slug
-  const canonical = mockBreweries.find(
+  // Look up canonical brewery by breweryId, id, or slug from provided canonical dataset
+  const canonical = canonicalDataset.find(
     (b) =>
       (sanityRecord.breweryId && b.id === sanityRecord.breweryId) ||
       (sanityRecord.id && b.id === sanityRecord.id) ||
       (sanityRecord.slug && b.slug === sanityRecord.slug)
   );
 
-  const canonicalRecord = canonical as any;
-
   if (canonical) {
-    // Complement canonical domain facts with Sanity editorial content
-    return {
+    const canonicalRecord = canonical as any;
+    const merged = {
       ...canonical,
       description: sanityRecord.description || canonical.description,
       image: sanityRecord.image || canonical.image,
@@ -35,40 +37,16 @@ export function mergeSanityEditorialWithCanonical(sanityRecord: any): unknown {
       curatedContent: sanityRecord.curatedContent || null,
       relatedGuides: sanityRecord.relatedGuides || [],
     };
+    return normalizeAndValidateBrewery(merged);
   }
 
-  // Fallback defaults for canonical facts if record exists in Sanity but not in canonical dataset
-  return {
-    id: sanityRecord.breweryId || sanityRecord.id || 'sanity-brewery',
-    slug: sanityRecord.slug || 'sanity-brewery',
-    name: sanityRecord.name || 'Sanity Editorial Brewery',
-    type: 'Microbrewery',
-    region: 'Central',
-    status: 'Open',
-    address: 'Unknown',
-    city: 'Unknown',
-    county: 'Unknown',
-    state: 'MD',
-    zipCode: '00000',
-    phone: '',
-    website: '',
-    socialLinks: {},
-    coordinates: { lat: 39.0458, lng: -76.6413 },
-    hours: [],
-    beerStyles: [],
-    amenities: [],
-    featured: Boolean(sanityRecord.featured),
-    lastVerified: new Date().toISOString().split('T')[0],
-    verificationSource: 'Sanity CMS',
-    verificationStatus: 'Needs Review',
-    description: sanityRecord.description || '',
-    image: sanityRecord.image || 'https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800',
-    highlights: sanityRecord.highlights || [],
-    atmosphere: sanityRecord.atmosphere || [],
-    editorialRecommendations: sanityRecord.editorialRecommendations || [],
-    curatedContent: sanityRecord.curatedContent || null,
-    relatedGuides: sanityRecord.relatedGuides || [],
-  };
+  // If sanityRecord itself contains all required canonical facts, normalize & validate it.
+  // Returns null if required canonical domain facts are missing, avoiding fabricated values.
+  try {
+    return normalizeAndValidateBrewery(sanityRecord);
+  } catch {
+    return null;
+  }
 }
 
 export class SanityBreweryRepository implements IBreweryRepository {
@@ -87,12 +65,16 @@ export class SanityBreweryRepository implements IBreweryRepository {
     featured
   `;
 
+  constructor(private canonicalBreweries: Brewery[] = []) {}
+
   async getAll(): Promise<Brewery[]> {
     const results = await sanityClient.fetch<unknown[]>(
       `*[_type == "brewery"] { ${this.baseProjection} }`
     );
     if (!results || results.length === 0) return [];
-    const merged = results.map((item) => mergeSanityEditorialWithCanonical(item)).filter(Boolean);
+    const merged = results
+      .map((item) => mergeSanityEditorialWithCanonical(item, this.canonicalBreweries))
+      .filter((item): item is Brewery => item !== null);
     return normalizeAndValidateBreweryList(merged);
   }
 
@@ -102,7 +84,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
       { slug }
     );
     if (!results || !results[0]) return null;
-    const merged = mergeSanityEditorialWithCanonical(results[0]);
+    const merged = mergeSanityEditorialWithCanonical(results[0], this.canonicalBreweries);
     return merged ? normalizeAndValidateBrewery(merged) : null;
   }
 
@@ -112,7 +94,7 @@ export class SanityBreweryRepository implements IBreweryRepository {
       { id }
     );
     if (!results || !results[0]) return null;
-    const merged = mergeSanityEditorialWithCanonical(results[0]);
+    const merged = mergeSanityEditorialWithCanonical(results[0], this.canonicalBreweries);
     return merged ? normalizeAndValidateBrewery(merged) : null;
   }
 
@@ -121,7 +103,9 @@ export class SanityBreweryRepository implements IBreweryRepository {
       `*[_type == "brewery" && featured == true] { ${this.baseProjection} }`
     );
     if (!results || results.length === 0) return [];
-    const merged = results.map((item) => mergeSanityEditorialWithCanonical(item)).filter(Boolean);
+    const merged = results
+      .map((item) => mergeSanityEditorialWithCanonical(item, this.canonicalBreweries))
+      .filter((item): item is Brewery => item !== null);
     return normalizeAndValidateBreweryList(merged);
   }
 }

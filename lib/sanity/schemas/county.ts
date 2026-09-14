@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export const countySchema = {
   name: 'county',
   title: 'County',
@@ -10,7 +12,7 @@ export const countySchema = {
       title: 'County Name',
       type: 'string',
       description: 'e.g. Anne Arundel County, Baltimore City',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.required().min(2).max(80),
     },
     {
       name: 'slug',
@@ -20,7 +22,15 @@ export const countySchema = {
         source: 'name',
         maxLength: 96,
       },
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) =>
+        Rule.required().custom((slug: any) => {
+          const value = typeof slug === 'string' ? slug : slug?.current;
+          if (!value) return 'Slug is required';
+          if (!SLUG_REGEX.test(value)) {
+            return 'Slug must be lower-case alphanumeric separated by single hyphens';
+          }
+          return true;
+        }),
     },
     {
       name: 'region',
