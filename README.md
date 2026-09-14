@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maryland Beer Atlas
+
+Maryland Beer Atlas is a Next.js web application for discovering craft breweries, beer trails, and curated local travel guides across Maryland.
+
+## Map Provider & Architecture Configuration
+
+### Map Engine & Tile Provider
+- **Map Library**: [MapLibre GL JS](https://maplibre.org/) (`maplibre-gl` v6).
+- **Base Tile Provider**: High-DPI **CARTO Voyager** raster tiles derived from OpenStreetMap data (`https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png`).
+- **API Keys / Tokens Required**: **NONE**. MapLibre GL JS renders open CARTO Voyager raster map tiles directly via WebGL, eliminating dependencies on Mapbox, MapTiler, or proprietary map API keys/access tokens.
+
+### Map Components & Routes
+1. **Interactive Maryland Beer Map (`/map`)**:
+   - Component: `components/ui/map-view.tsx` (rendered via `components/ui/interactive-map-content.tsx`).
+   - Features: Multi-select filtering (regions, counties, brewery types, amenities), interactive marker pins, taproom popups, and layer toggling.
+2. **Brewery Detail Map (`/breweries/[slug]`)**:
+   - Component: `components/ui/brewery-detail-map.tsx`.
+   - Features: Highlighting single taproom location, zoom level 14 view, directions links to Google Maps & Apple Maps.
+3. **Beer Trail Itinerary Map (`/trails/[slug]`)**:
+   - Component: `components/ui/trail-map-view.tsx` (dynamic wrapper around `MapView`).
+   - Features: Connected sequence route layer (`GeoJSON` LineString) mapping trail stops in order and auto-fitting map bounds (`fitBounds`).
+
+### Graceful Fallback & Error Handling
+All map components perform client-side WebGL2 context checks on mount and handle missing or invalid geographic coordinates gracefully:
+- **Disabled/Unsupported WebGL2**: Displays a styled, high-contrast fallback banner (`AlertTriangle` icon) explaining hardware acceleration requirements along with troubleshooting steps, preventing application crashes.
+- **Missing or Invalid Coordinates (`NaN`, out-of-bounds `lat`/`lng`)**: Renders location cards with direct text addresses and instant direction links to Google Maps and Apple Maps without breaking map initialization.
+
+## Environment Variables Configuration
+
+The application operates seamlessly in mock mode or connected to Sanity CMS.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `USE_MOCK_DATA` | Optional | `false` | When set to `true`, the application uses local mock data (`lib/data/mock-data.ts`) instead of querying Sanity CMS. Useful for local development and build verification. |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | Required (if `USE_MOCK_DATA` is not `true`) | `placeholder-project-id` | Sanity CMS project ID. |
+| `NEXT_PUBLIC_SANITY_DATASET` | Optional | `production` | Sanity CMS dataset name. |
+| `NEXT_PUBLIC_SANITY_API_VERSION` | Optional | `2023-05-03` | Sanity CMS API version. |
+| `SANITY_API_TOKEN` | Optional | - | Server-side Sanity API token for authenticated queries. |
+
+*Note: No `NEXT_PUBLIC_MAPBOX_TOKEN`, `MAPTILER_KEY`, or map API keys are required.*
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To run in local development mode using mock data:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+USE_MOCK_DATA=true npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+## Testing & Verification
 
-To learn more about Next.js, take a look at the following resources:
+Run Vitest unit and integration test suite:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Perform production build verification:
 
-## Deploy on Vercel
+```bash
+USE_MOCK_DATA=true npm run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Run linter:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+```
