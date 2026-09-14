@@ -4,9 +4,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { Brewery, BeerTrail } from '@/lib/types';
 import { isValidImageSrc, DEFAULT_PLACEHOLDER } from '@/components/ui/safe-image';
-import { createRoot, Root } from 'react-dom/client';
-import { ArrowRight, AlertTriangle } from 'lucide-react';
-import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
+import { AlertTriangle } from 'lucide-react';
+import { isBreweryOpenNow } from '@/lib/utils/hours';
+import { getDataFreshnessInfo } from '@/lib/utils/freshness';
 
 interface MapViewProps {
   breweries: Brewery[];
@@ -15,6 +15,76 @@ interface MapViewProps {
   trails?: BeerTrail[];
   activeTrailId?: string | null;
   className?: string;
+}
+
+export interface BreweryCluster {
+  id: string;
+  isCluster: boolean;
+  breweries: Brewery[];
+  center: { lat: number; lng: number };
+}
+
+export function clusterBreweries(breweries: Brewery[], zoom: number): BreweryCluster[] {
+  const valid = breweries.filter(
+    (b) =>
+      b.coordinates &&
+      typeof b.coordinates.lat === 'number' &&
+      typeof b.coordinates.lng === 'number' &&
+      !isNaN(b.coordinates.lat) &&
+      !isNaN(b.coordinates.lng) &&
+      b.coordinates.lat >= -90 &&
+      b.coordinates.lat <= 90 &&
+      b.coordinates.lng >= -180 &&
+      b.coordinates.lng <= 180
+  );
+
+  if (zoom >= 12 || valid.length <= 1) {
+    return valid.map((b) => ({
+      id: b.id,
+      isCluster: false,
+      breweries: [b],
+      center: { lat: b.coordinates.lat, lng: b.coordinates.lng },
+    }));
+  }
+
+  const threshold = Math.max(0.015, 1.2 / Math.pow(2, zoom - 5));
+
+  const clusters: BreweryCluster[] = [];
+  const visited = new Set<string>();
+
+  for (let i = 0; i < valid.length; i++) {
+    const current = valid[i];
+    if (visited.has(current.id)) continue;
+
+    visited.add(current.id);
+    const clusterMembers: Brewery[] = [current];
+
+    for (let j = i + 1; j < valid.length; j++) {
+      const candidate = valid[j];
+      if (visited.has(candidate.id)) continue;
+
+      const dLat = current.coordinates.lat - candidate.coordinates.lat;
+      const dLng = current.coordinates.lng - candidate.coordinates.lng;
+      const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+
+      if (dist <= threshold) {
+        visited.add(candidate.id);
+        clusterMembers.push(candidate);
+      }
+    }
+
+    const avgLat = clusterMembers.reduce((sum, b) => sum + b.coordinates.lat, 0) / clusterMembers.length;
+    const avgLng = clusterMembers.reduce((sum, b) => sum + b.coordinates.lng, 0) / clusterMembers.length;
+
+    clusters.push({
+      id: clusterMembers.length > 1 ? `cluster-${clusterMembers.map((b) => b.id).join('-')}` : current.id,
+      isCluster: clusterMembers.length > 1,
+      breweries: clusterMembers,
+      center: { lat: avgLat, lng: avgLng },
+    });
+  }
+
+  return clusters;
 }
 
 export default function MapView({
@@ -28,7 +98,7 @@ export default function MapView({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
-  const popupRootsRef = useRef<{ [id: string]: Root }>({});
+  const [currentZoom, setCurrentZoom] = useState<number>(7.5);
 
   const [webglSupported] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
@@ -101,12 +171,17 @@ export default function MapView({
     // Add navigation controls (zoom, compass)
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
 
-    // Explicitly trigger a resize on load and style load, and after a short timeout to ensure container has settled
+    // Explicitly trigger a resize on load and style load, and track zoom level changes
     map.on('load', () => {
       map.resize();
     });
     map.on('style.load', () => {
       map.resize();
+    });
+    map.on('zoomend', () => {
+      if (mapRef.current) {
+        setCurrentZoom(mapRef.current.getZoom());
+      }
     });
 
     const resizeTimer = setTimeout(() => {
@@ -129,7 +204,7 @@ export default function MapView({
     };
   }, [defaultZoom, webglSupported]);
 
-  // Sync Markers
+  // Sync Markers & Dense-Area Clusters
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -138,20 +213,6 @@ export default function MapView({
     Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
 
-    // Unmount existing popup React roots asynchronously to prevent synchronous unmount warnings during React rendering
-    const existingRoots = Object.values(popupRootsRef.current);
-    if (existingRoots.length > 0) {
-      queueMicrotask(() => {
-        existingRoots.forEach((root) => {
-          try {
-            root.unmount();
-          } catch {
-            // Safe to ignore
-          }
-        });
-      });
-    }
-    popupRootsRef.current = {};
 
     // Helper for coloring based on brewery type
     const getColorForType = (type: string) => {
@@ -164,137 +225,138 @@ export default function MapView({
       }
     };
 
-    // Add new markers
-    breweries.forEach((brewery) => {
-      if (
-        !brewery.coordinates ||
-        typeof brewery.coordinates.lng !== 'number' ||
-        typeof brewery.coordinates.lat !== 'number' ||
-        isNaN(brewery.coordinates.lng) ||
-        isNaN(brewery.coordinates.lat) ||
-        brewery.coordinates.lat < -90 ||
-        brewery.coordinates.lat > 90 ||
-        brewery.coordinates.lng < -180 ||
-        brewery.coordinates.lng > 180
-      ) {
-        return;
-      }
+    const clusters = clusterBreweries(breweries, currentZoom);
 
-      const color = getColorForType(brewery.type);
+    clusters.forEach((item) => {
+      if (item.isCluster) {
+        // Render Dense-Area Cluster Badge Marker
+        const el = document.createElement('div');
+        el.className = 'cursor-pointer group';
+        el.setAttribute('aria-label', `${item.breweries.length} breweries in this area`);
+        el.innerHTML = `
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 font-black text-xs border-2 border-white shadow-lg shadow-amber-500/30 transition-all duration-200 group-hover:scale-110">
+            <span class="z-10">${item.breweries.length}</span>
+            <span class="absolute -inset-1 rounded-full bg-amber-500/20 animate-ping pointer-events-none"></span>
+          </div>
+        `;
 
-      // Create a custom marker element
-      const el = document.createElement('div');
-      el.className = 'cursor-pointer';
+        el.addEventListener('click', () => {
+          if (mapRef.current) {
+            mapRef.current.flyTo({
+              center: [item.center.lng, item.center.lat],
+              zoom: Math.min(14, currentZoom + 2.5),
+              essential: true,
+              duration: 800,
+            });
+          }
+        });
 
-      // Marker HTML template using SVG for crisp mapping dots
-      // We apply hover animations only on the inner elements to avoid conflicting with MapLibre's internal CSS transforms
-      el.innerHTML = `
-        <div class="relative flex items-center justify-center transition-all duration-300 ease-out hover:scale-120 hover:-translate-y-1 group">
-          <!-- Modern premium marker shape (drop pin) -->
-          <div class="relative w-9 h-11 flex items-center justify-center drop-shadow-md">
-            <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${color}" stroke="#ffffff" stroke-width="2"/>
-            </svg>
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([item.center.lng, item.center.lat])
+          .addTo(map);
 
-            <!-- Crisp Inner White Circle containing a modern beer mug icon -->
-            <div class="relative z-10 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-inner">
-              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17 11h1a3 3 0 0 1 0 6h-1"/>
-                <path d="M9 12v6"/>
-                <path d="M13 12v6"/>
-                <path d="M6 8h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/>
-                <path d="M18 5H6"/>
+        markersRef.current[item.id] = marker;
+      } else {
+        // Render Individual Brewery Marker
+        const brewery = item.breweries[0];
+        const color = getColorForType(brewery.type);
+
+        const el = document.createElement('div');
+        el.className = 'cursor-pointer';
+
+        el.innerHTML = `
+          <div class="relative flex items-center justify-center transition-all duration-300 ease-out hover:scale-120 hover:-translate-y-1 group">
+            <div class="relative w-9 h-11 flex items-center justify-center drop-shadow-md">
+              <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${color}" stroke="#ffffff" stroke-width="2"/>
               </svg>
+
+              <div class="relative z-10 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-inner">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 11h1a3 3 0 0 1 0 6h-1"/>
+                  <path d="M9 12v6"/>
+                  <path d="M13 12v6"/>
+                  <path d="M6 8h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/>
+                  <path d="M18 5H6"/>
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
 
-      // Create Popup for this marker
-      const popupContent = document.createElement('div');
-      popupContent.className = 'p-3 max-w-[280px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-lg shadow-xl text-xs space-y-2';
+        const popupContent = document.createElement('div');
+        popupContent.className = 'p-3 max-w-[280px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-lg shadow-xl text-xs space-y-2 font-sans';
 
-      const root = createRoot(popupContent);
-      const popupImgSrc = isValidImageSrc(brewery.image) ? (brewery.image as string).trim() : DEFAULT_PLACEHOLDER;
+        const popupImgSrc = isValidImageSrc(brewery.image) ? (brewery.image as string).trim() : DEFAULT_PLACEHOLDER;
+        const openStatus = isBreweryOpenNow(brewery);
+        const freshness = getDataFreshnessInfo(brewery);
 
-      root.render(
-        <div className="space-y-2 font-sans">
-          <div className="relative h-20 w-full overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={popupImgSrc}
-              alt={brewery.name}
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                const target = e.currentTarget;
-                if (!target.src.endsWith(DEFAULT_PLACEHOLDER)) {
-                  target.src = DEFAULT_PLACEHOLDER;
-                }
-              }}
-            />
-            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-900/80 text-white backdrop-blur-xs">
-              {brewery.type}
-            </span>
+        const statusBadgeHtml = openStatus.isOpen
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Open Now</span>`
+          : openStatus.category === 'permanently_closed'
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Closed Permanently</span>`
+          : openStatus.category === 'temporarily_closed'
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Temporarily Closed</span>`
+          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Closed Now</span>`;
+
+        const freshnessBadgeHtml = freshness.isFresh
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Verified Fresh</span>`
+          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Verified ${brewery.lastVerified || 'recently'}</span>`;
+
+        popupContent.innerHTML = `
+          <div class="space-y-2">
+            <div class="relative h-20 w-full overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
+              <img
+                src="${popupImgSrc}"
+                alt="${brewery.name.replace(/"/g, '&quot;')}"
+                class="object-cover w-full h-full"
+                onerror="if (!this.src.endsWith('${DEFAULT_PLACEHOLDER}')) this.src='${DEFAULT_PLACEHOLDER}';"
+              />
+              <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-900/80 text-white backdrop-blur-xs">
+                ${brewery.type}
+              </span>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">${brewery.name}</h4>
+              <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">${brewery.city} • ${brewery.region} Region</p>
+            </div>
+            <div class="flex flex-col gap-1 py-1 border-y border-zinc-100 dark:border-zinc-800">
+              ${statusBadgeHtml}
+              ${freshnessBadgeHtml}
+            </div>
+            <p class="text-zinc-600 dark:text-zinc-300 text-[11px] line-clamp-2 leading-snug">
+              ${brewery.description || ''}
+            </p>
+            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+              <a
+                href="/breweries/${brewery.slug}"
+                class="text-amber-600 dark:text-amber-400 font-bold hover:underline inline-flex items-center gap-0.5 text-[10px]"
+              >
+                Visit Profile &rarr;
+              </a>
+              <span class="text-[9px] text-zinc-400">MD ${brewery.zipCode}</span>
+            </div>
           </div>
-          <div>
-            <h4 className="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">{brewery.name}</h4>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">{brewery.city} • {brewery.region} Region</p>
-          </div>
+        `;
 
-          <div className="flex flex-col gap-1 py-1 border-y border-zinc-100 dark:border-zinc-850">
-            <BreweryStatusBadge brewery={brewery} size="sm" showDetail={true} />
-            <BreweryFreshnessBadge brewery={brewery} size="sm" />
-          </div>
+        const popup = new maplibregl.Popup({ offset: 15, closeButton: true })
+          .setDOMContent(popupContent);
 
-          <p className="text-zinc-600 dark:text-zinc-300 text-[11px] line-clamp-2 leading-snug">
-            {brewery.description}
-          </p>
-          <div className="pt-2 border-t border-zinc-100 dark:border-zinc-850 flex items-center justify-between gap-2">
-            <a
-              href={`/breweries/${brewery.slug}`}
-              className="text-amber-600 dark:text-amber-400 font-bold hover:underline inline-flex items-center gap-0.5 text-[10px]"
-            >
-              Visit Profile <ArrowRight className="w-3 h-3" />
-            </a>
-            <span className="text-[9px] text-zinc-400">MD {brewery.zipCode}</span>
-          </div>
-        </div>
-      );
-      popupRootsRef.current[brewery.id] = root;
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([brewery.coordinates.lng, brewery.coordinates.lat])
+          .setPopup(popup)
+          .addTo(map);
 
-      const popup = new maplibregl.Popup({ offset: 15, closeButton: true })
-        .setDOMContent(popupContent);
+        el.addEventListener('click', () => {
+          onSelectBrewery(brewery);
+        });
 
-      // Create Marker
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([brewery.coordinates.lng, brewery.coordinates.lat])
-        .setPopup(popup)
-        .addTo(map);
-
-      // Handle marker click
-      el.addEventListener('click', () => {
-        onSelectBrewery(brewery);
-      });
-
-      markersRef.current[brewery.id] = marker;
+        markersRef.current[brewery.id] = marker;
+      }
     });
 
-    return () => {
-      const rootsToUnmount = Object.values(popupRootsRef.current);
-      if (rootsToUnmount.length > 0) {
-        queueMicrotask(() => {
-          rootsToUnmount.forEach((root) => {
-            try {
-              root.unmount();
-            } catch {
-              // Safe to ignore
-            }
-          });
-        });
-      }
-      popupRootsRef.current = {};
-    };
-  }, [breweries, onSelectBrewery]);
+    return () => {};
+  }, [breweries, currentZoom, onSelectBrewery]);
 
   // Handle selectedBrewery prop updates (Fly to selected brewery and open its popup)
   useEffect(() => {

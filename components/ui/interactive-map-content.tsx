@@ -4,10 +4,12 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
-import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass } from 'lucide-react';
+import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X } from 'lucide-react';
 import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
+import { getDirectionsUrls } from '@/lib/utils/directions';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
+import { filterBreweries } from '@/lib/utils/filter-breweries';
 
 // Dynamically import the MapView component to disable SSR since MapLibre uses browser APIs (window, self, etc.)
 const MapView = dynamic(
@@ -199,7 +201,9 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
 }
 
 export function InteractiveMapContent({ breweries, trails = [], guides = [] }: InteractiveMapContentProps) {
-  // Multi-Select Filters State
+  // Search & Filters State
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
@@ -211,35 +215,48 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   // Lists of options dynamically pulled/hardcoded
   const regions: string[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
   const types: string[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];
+  const statusOptions = [
+    { label: 'All Statuses', value: '' },
+    { label: 'Open Now', value: 'open' },
+    { label: 'Temporarily Closed', value: 'temporarily_closed' },
+    { label: 'Hours Unavailable', value: 'hours_unavailable' },
+    { label: 'Permanently Closed', value: 'permanently_closed' },
+  ];
   const counties = useMemo(() => Array.from(new Set(breweries.map(b => b.county))).sort(), [breweries]);
   const amenities = useMemo(() => Array.from(new Set(breweries.flatMap(b => b.amenities))).sort(), [breweries]);
 
-  // Filter breweries based on regions, types, counties, and amenities selection
+  // Filter breweries using canonical filter Breweries pure function
   const visibleBreweries = useMemo(() => {
-    return breweries.filter((b) => {
+    const filtered = filterBreweries(breweries, {
+      search: searchQuery,
+      status: selectedStatus || undefined,
+      amenities: selectedAmenities,
+    });
+
+    return filtered.filter((b) => {
       const regionMatch = selectedRegions.length === 0 || selectedRegions.includes(b.region);
       const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(b.type);
       const countyMatch = selectedCounties.length === 0 || selectedCounties.includes(b.county);
-      const amenityMatch = selectedAmenities.length === 0 || selectedAmenities.every(amenity => b.amenities.includes(amenity));
 
-      // If a trail is active, restrict visibility to the trail's breweries
       if (activeTrailId) {
         const trail = trails.find((t) => t.id === activeTrailId);
         if (trail) {
           const inTrail = trail.breweries.some((tb) => tb.id === b.id);
-          return inTrail && regionMatch && typeMatch && countyMatch && amenityMatch;
+          return inTrail && regionMatch && typeMatch && countyMatch;
         }
       }
 
-      return regionMatch && typeMatch && countyMatch && amenityMatch;
+      return regionMatch && typeMatch && countyMatch;
     });
-  }, [breweries, selectedRegions, selectedTypes, selectedCounties, selectedAmenities, activeTrailId, trails]);
+  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails]);
 
   const handleSelectBrewery = (brewery: Brewery) => {
     setSelectedBrewery(brewery);
   };
 
   const handleClearAllFilters = () => {
+    setSearchQuery('');
+    setSelectedStatus('');
     setSelectedRegions([]);
     setSelectedTypes([]);
     setSelectedCounties([]);
@@ -282,7 +299,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId) && (
+              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId) && (
                 <button
                   onClick={handleClearAllFilters}
                   className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -293,7 +310,49 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
             </div>
 
             <div className="space-y-4">
-              {/* Multi-Select Dropdowns grid - adjusted to 4 columns to fit card perfectly */}
+              {/* Search & Operational Status Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                {/* Search Input */}
+                <div className="sm:col-span-7 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by brewery, city, or style..."
+                    className="w-full pl-10 pr-9 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      aria-label="Clear search input"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Status / Open Now Filter Dropdown */}
+                <div className="sm:col-span-5 relative">
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    aria-label="Filter by operational status"
+                    className="w-full py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                  >
+                    {statusOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Multi-Select Dropdowns grid - 4 columns */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <MultiSelectDropdown
                   label="Regions"
@@ -480,20 +539,10 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                       <span>{selectedBrewery.address}, {selectedBrewery.city}, MD {selectedBrewery.zipCode}</span>
                     </div>
                     {(() => {
-                      const hasValidCoords =
-                        selectedBrewery.coordinates &&
-                        typeof selectedBrewery.coordinates.lat === 'number' &&
-                        typeof selectedBrewery.coordinates.lng === 'number' &&
-                        !isNaN(selectedBrewery.coordinates.lat) &&
-                        !isNaN(selectedBrewery.coordinates.lng);
-
-                      const googleDirectionsUrl = hasValidCoords
-                        ? `https://www.google.com/maps/search/?api=1&query=${selectedBrewery.coordinates.lat},${selectedBrewery.coordinates.lng}`
-                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedBrewery.name}, ${selectedBrewery.address}, ${selectedBrewery.city}, MD ${selectedBrewery.zipCode}`)}`;
-
+                      const { googleMapsUrl } = getDirectionsUrls(selectedBrewery);
                       return (
                         <a
-                          href={googleDirectionsUrl}
+                          href={googleMapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-[11px] shrink-0 transition-colors inline-flex items-center gap-1"
