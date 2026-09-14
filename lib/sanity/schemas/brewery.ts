@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export const brewerySchema = {
   name: 'brewery',
   title: 'Brewery Editorial Content',
@@ -18,7 +20,7 @@ export const brewerySchema = {
       type: 'string',
       group: 'identity',
       description: 'The display name of the brewery for Sanity Studio reference.',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.required().min(2).max(100),
     },
     {
       name: 'slug',
@@ -30,7 +32,15 @@ export const brewerySchema = {
         source: 'name',
         maxLength: 96,
       },
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) =>
+        Rule.required().custom((slug: any) => {
+          const value = typeof slug === 'string' ? slug : slug?.current;
+          if (!value) return 'Slug is required';
+          if (!SLUG_REGEX.test(value)) {
+            return 'Slug must be lower-case alphanumeric separated by single hyphens (e.g. "flying-dog-brewery")';
+          }
+          return true;
+        }),
     },
     {
       name: 'breweryId',
@@ -38,7 +48,10 @@ export const brewerySchema = {
       type: 'string',
       group: 'identity',
       description: 'Unique stable identifier matching the canonical brewery domain record.',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) =>
+        Rule.required()
+          .regex(/^[a-z0-9-]+$/, { name: 'lowercase-hyphenated' })
+          .error('Canonical Brewery ID must be lower-case alphanumeric with hyphens'),
     },
 
     // Editorial & Storytelling Group
@@ -48,7 +61,7 @@ export const brewerySchema = {
       type: 'text',
       group: 'editorial',
       description: 'Curated narrative description highlighting history, craft, and visitor experience.',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.required().min(10).max(2000),
     },
     {
       name: 'highlights',
@@ -56,7 +69,8 @@ export const brewerySchema = {
       type: 'array',
       group: 'editorial',
       description: 'Key highlights and unique features (e.g. Scenic beer garden, Historic timber barn).',
-      of: [{ type: 'string' }],
+      of: [{ type: 'string', validation: (Rule: any) => Rule.required().min(2) }],
+      validation: (Rule: any) => Rule.max(10),
     },
     {
       name: 'atmosphere',
@@ -64,7 +78,8 @@ export const brewerySchema = {
       type: 'array',
       group: 'editorial',
       description: 'Descriptive ambiance and style tags (e.g. Industrial Chic, Family Friendly).',
-      of: [{ type: 'string' }],
+      of: [{ type: 'string', validation: (Rule: any) => Rule.required().min(2) }],
+      validation: (Rule: any) => Rule.max(10),
     },
     {
       name: 'image',
@@ -116,7 +131,7 @@ export const brewerySchema = {
               name: 'title',
               title: 'Title / Item',
               type: 'string',
-              validation: (Rule: any) => Rule.required(),
+              validation: (Rule: any) => Rule.required().min(2),
             },
             {
               name: 'notes',

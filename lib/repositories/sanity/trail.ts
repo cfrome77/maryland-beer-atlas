@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BeerTrail } from '../../types';
+import { BeerTrail, Brewery } from '../../types';
 import { ITrailRepository } from '../interfaces';
 import { sanityClient } from '../../sanity/client';
 import { validateBeerTrail, validateBeerTrailList } from '../../validations/schemas';
@@ -37,10 +37,14 @@ export class SanityTrailRepository implements ITrailRepository {
     }
   `;
 
+  constructor(private canonicalBreweries: Brewery[] = []) {}
+
   private mapTrailReferences(trailRecord: any): unknown {
     if (!trailRecord) return null;
     const breweries = Array.isArray(trailRecord.breweries)
-      ? trailRecord.breweries.map((brewery: any) => mergeSanityEditorialWithCanonical(brewery)).filter(Boolean)
+      ? trailRecord.breweries
+          .map((brewery: any) => mergeSanityEditorialWithCanonical(brewery, this.canonicalBreweries))
+          .filter(Boolean)
       : [];
 
     return {

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export const guideSchema = {
   name: 'guide',
   title: 'Travel Guide & Editorial Article',
@@ -16,7 +18,7 @@ export const guideSchema = {
       title: 'Guide Title',
       type: 'string',
       group: 'identity',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.required().min(5).max(120),
     },
     {
       name: 'slug',
@@ -27,7 +29,15 @@ export const guideSchema = {
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) =>
+        Rule.required().custom((slug: any) => {
+          const value = typeof slug === 'string' ? slug : slug?.current;
+          if (!value) return 'Slug is required';
+          if (!SLUG_REGEX.test(value)) {
+            return 'Slug must be lower-case alphanumeric separated by single hyphens';
+          }
+          return true;
+        }),
     },
     {
       name: 'guideType',
@@ -52,14 +62,14 @@ export const guideSchema = {
       title: 'Summary / Meta Description',
       type: 'text',
       group: 'identity',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.required().min(10).max(500),
     },
     {
       name: 'author',
       title: 'Author Name',
       type: 'string',
       group: 'identity',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.required().min(2),
     },
     {
       name: 'publishDate',
@@ -117,6 +127,7 @@ export const guideSchema = {
                     name: 'href',
                     type: 'url',
                     title: 'URL',
+                    validation: (Rule: any) => Rule.required().uri({ scheme: ['http', 'https'] }),
                   },
                 ],
               },
@@ -140,6 +151,7 @@ export const guideSchema = {
           ],
         },
       ],
+      validation: (Rule: any) => Rule.required().min(1).error('Guide content must contain at least one content block'),
     },
     {
       name: 'gallery',
@@ -163,7 +175,7 @@ export const guideSchema = {
       title: 'Expert Advice / Tips',
       type: 'array',
       group: 'editorial',
-      of: [{ type: 'string' }],
+      of: [{ type: 'string', validation: (Rule: any) => Rule.required().min(3) }],
     },
 
     // --- RELATIONSHIPS & CURATION ---

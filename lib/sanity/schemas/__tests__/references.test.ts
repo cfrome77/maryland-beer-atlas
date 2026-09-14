@@ -7,6 +7,34 @@ import { trailSchema } from '../trail';
 import { categorySchema } from '../category';
 import { countySchema } from '../county';
 import { mergeSanityEditorialWithCanonical } from '../../../repositories/sanity/brewery';
+import { Brewery } from '../../../types';
+
+const sampleCanonicalBrewery: Brewery = {
+  id: 'flying-dog',
+  slug: 'flying-dog-brewery',
+  name: 'Flying Dog Brewery',
+  type: 'Microbrewery',
+  region: 'Central',
+  status: 'Open',
+  address: '4607 Wedgewood Blvd',
+  city: 'Frederick',
+  county: 'Frederick County',
+  state: 'MD',
+  zipCode: '21703',
+  phone: '301-694-7899',
+  website: 'https://www.flyingdogbrewery.com',
+  socialLinks: { facebook: 'https://facebook.com/flyingdog' },
+  coordinates: { lat: 39.3621, lng: -77.4245 },
+  hours: [{ day: 'Mon', hours: '12pm-8pm' }],
+  beerStyles: ['IPA', 'Stout'],
+  amenities: ['Tasting Room', 'Patio'],
+  featured: true,
+  lastVerified: '2025-05-01',
+  verificationSource: 'Official Website',
+  verificationStatus: 'Verified',
+  description: 'Canonical Frederick brewery description.',
+  image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
+};
 
 describe('Sanity Schema Types and References', () => {
   it('should export all required schema types and omit events', () => {
@@ -20,16 +48,22 @@ describe('Sanity Schema Types and References', () => {
     expect(names).not.toContain('events');
   });
 
-  it('should define brewerySchema correctly', () => {
+  it('should define brewerySchema correctly with strict field rules', () => {
     expect(brewerySchema.name).toBe('brewery');
     expect(brewerySchema.type).toBe('document');
     const fieldNames = brewerySchema.fields.map((f) => f.name);
     expect(fieldNames).toContain('breweryId');
     expect(fieldNames).toContain('categories');
     expect(fieldNames).toContain('county');
+
+    const slugField = brewerySchema.fields.find((f) => f.name === 'slug') as any;
+    expect(slugField.validation).toBeDefined();
+
+    const idField = brewerySchema.fields.find((f) => f.name === 'breweryId') as any;
+    expect(idField.validation).toBeDefined();
   });
 
-  it('should define categorySchema correctly', () => {
+  it('should define categorySchema correctly with enum options', () => {
     expect(categorySchema.name).toBe('category');
     expect(categorySchema.type).toBe('document');
     const fieldNames = categorySchema.fields.map((f) => f.name);
@@ -37,9 +71,13 @@ describe('Sanity Schema Types and References', () => {
     expect(fieldNames).toContain('slug');
     expect(fieldNames).toContain('type');
     expect(fieldNames).toContain('description');
+
+    const typeField = categorySchema.fields.find((f) => f.name === 'type') as any;
+    const enumValues = typeField.options.list.map((l: any) => l.value);
+    expect(enumValues).toEqual(['amenity', 'style', 'experience']);
   });
 
-  it('should define countySchema correctly', () => {
+  it('should define countySchema correctly with region enum options', () => {
     expect(countySchema.name).toBe('county');
     expect(countySchema.type).toBe('document');
     const fieldNames = countySchema.fields.map((f) => f.name);
@@ -47,6 +85,10 @@ describe('Sanity Schema Types and References', () => {
     expect(fieldNames).toContain('slug');
     expect(fieldNames).toContain('region');
     expect(fieldNames).toContain('description');
+
+    const regionField = countySchema.fields.find((f) => f.name === 'region') as any;
+    const regionValues = regionField.options.list.map((l: any) => l.value);
+    expect(regionValues).toEqual(['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western']);
   });
 
   it('should structure references cleanly in guideSchema and trailSchema', () => {
@@ -77,7 +119,7 @@ describe('Sanity Schema Types and References', () => {
       expect(mergeSanityEditorialWithCanonical(undefined)).toBeNull();
     });
 
-    it('should merge Sanity editorial data with canonical facts when matching by breweryId', () => {
+    it('should merge Sanity editorial data with canonical facts when matching by breweryId in canonical dataset', () => {
       const sanityBrewery = {
         breweryId: 'flying-dog',
         slug: 'flying-dog-brewery',
@@ -87,7 +129,7 @@ describe('Sanity Schema Types and References', () => {
         atmosphere: ['Custom Vibe'],
       };
 
-      const result = mergeSanityEditorialWithCanonical(sanityBrewery) as any;
+      const result = mergeSanityEditorialWithCanonical(sanityBrewery, [sampleCanonicalBrewery]) as any;
 
       expect(result).not.toBeNull();
       expect(result.id).toBe('flying-dog');
@@ -101,24 +143,34 @@ describe('Sanity Schema Types and References', () => {
       expect(result.state).toBe('MD');
       expect(result.phone).toBe('301-694-7899');
       expect(result.coordinates).toEqual({ lat: 39.3621, lng: -77.4245 });
-      expect(result.hours).toHaveLength(4);
     });
 
-    it('should handle fallbacks gracefully when Sanity record is not in canonical dataset', () => {
-      const newSanityBrewery = {
-        breweryId: 'new-unknown-brewery',
-        slug: 'new-unknown-brewery',
-        name: 'New Unknown Brewery',
-        description: 'A brand new editorial brewery.',
+    it('should return null without fabricating fake values when Sanity record is missing from dataset and incomplete', () => {
+      const incompleteSanityBrewery = {
+        breweryId: 'unmatched-brewery',
+        slug: 'unmatched-brewery',
+        name: 'Unmatched Brewery',
+        description: 'An unlinked editorial record with missing address, coordinates, etc.',
       };
 
-      const result = mergeSanityEditorialWithCanonical(newSanityBrewery) as any;
+      const result = mergeSanityEditorialWithCanonical(incompleteSanityBrewery, [sampleCanonicalBrewery]);
+
+      expect(result).toBeNull();
+    });
+
+    it('should validate and return complete brewery records directly if full domain facts are provided', () => {
+      const completeSanityBrewery = {
+        ...sampleCanonicalBrewery,
+        id: 'standalone-brewery',
+        slug: 'standalone-brewery',
+        name: 'Standalone Brewery',
+      };
+
+      const result = mergeSanityEditorialWithCanonical(completeSanityBrewery, []);
 
       expect(result).not.toBeNull();
-      expect(result.id).toBe('new-unknown-brewery');
-      expect(result.name).toBe('New Unknown Brewery');
-      expect(result.state).toBe('MD');
-      expect(result.verificationStatus).toBe('Needs Review');
+      expect(result?.id).toBe('standalone-brewery');
+      expect(result?.name).toBe('Standalone Brewery');
     });
   });
 });
