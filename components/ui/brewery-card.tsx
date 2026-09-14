@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +16,7 @@ export function BreweryCard({ brewery }: BreweryCardProps) {
     <Card className="group overflow-hidden rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 hover:shadow-lg transition-all flex flex-col h-full">
       {/* Image container */}
       <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
-        <Image
+        <SafeImage
           src={brewery.image}
           alt={brewery.name}
           fill

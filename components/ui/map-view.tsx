@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { Brewery, BeerTrail } from '@/lib/types';
+import { isValidImageSrc, DEFAULT_PLACEHOLDER } from '@/components/ui/safe-image';
 import { createRoot, Root } from 'react-dom/client';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
@@ -209,14 +210,22 @@ export default function MapView({
       popupContent.className = 'p-3 max-w-[280px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-lg shadow-xl text-xs space-y-2';
 
       const root = createRoot(popupContent);
+      const popupImgSrc = isValidImageSrc(brewery.image) ? (brewery.image as string).trim() : DEFAULT_PLACEHOLDER;
+
       root.render(
         <div className="space-y-2 font-sans">
           <div className="relative h-20 w-full overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={brewery.image}
+              src={popupImgSrc}
               alt={brewery.name}
               className="object-cover w-full h-full"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.src.endsWith(DEFAULT_PLACEHOLDER)) {
+                  target.src = DEFAULT_PLACEHOLDER;
+                }
+              }}
             />
             <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-900/80 text-white backdrop-blur-xs">
               {brewery.type}

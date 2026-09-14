@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -118,7 +118,7 @@ export default async function GuideDetailPage({ params }: GuideDetailPageProps) 
         <article className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-850 overflow-hidden shadow-sm mb-10">
           {/* Cover Photo */}
           <div className="relative aspect-[21/9] w-full bg-zinc-100 dark:bg-zinc-900">
-            <Image
+            <SafeImage
               src={guide.image}
               alt={guide.title}
               fill
@@ -193,7 +193,7 @@ export default async function GuideDetailPage({ params }: GuideDetailPageProps) 
                       {guide.gallery.map((photo, idx) => (
                         <figure key={idx} className="space-y-1.5">
                           <div className="relative aspect-video rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                            <Image
+                            <SafeImage
                               src={photo.url}
                               alt={photo.alt || `Photo ${idx + 1}`}
                               fill

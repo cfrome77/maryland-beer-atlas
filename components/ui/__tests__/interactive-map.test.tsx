@@ -63,7 +63,7 @@ const mockBreweries: Brewery[] = [
     socialLinks: {},
     coordinates: { lat: 38.3228, lng: -75.2215 },
     description: 'Burley Oak in Berlin.',
-    image: 'https://images.unsplash.com/photo-1608270176050-12ec057de8d8',
+    image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
     hours: [],
     structuredHours: [],
     beerStyles: ['Sour'],

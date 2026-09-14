@@ -490,7 +490,7 @@ export const mockBreweries: Brewery[] = [
     },
     coordinates: { lat: 38.3228, lng: -75.2215 },
     description: 'Situated in the charming town of Berlin, Maryland near Ocean City, Burley Oak is internationally known for its legendary "J.R.E.A.M." sour series and its deep commitment to sustainable, local ingredients.',
-    image: 'https://images.unsplash.com/photo-1608270176050-12ec057de8d8?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658?auto=format&fit=crop&q=80&w=800',
     featured: true,
     hours: [
       { day: 'Monday', hours: '11:00 AM - 11:00 PM' },
@@ -624,7 +624,7 @@ export const mockTrails: BeerTrail[] = [
     region: 'Capital',
     distance: '1.2 miles',
     duration: '3-4 Hours',
-    image: 'https://images.unsplash.com/photo-1505075119208-fb6348b57729?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
     highlight: 'Walk between Prince George\'s first microbrewery and a vibrant Deaf-owned neighbourhood taproom.',
     highlights: [
       'Walk between Prince George\'s first microbrewery and a vibrant Deaf-owned neighbourhood taproom',

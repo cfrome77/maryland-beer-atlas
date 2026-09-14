@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass } from 'lucide-react';
 import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
@@ -425,7 +425,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
             <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-850 overflow-hidden shadow-lg sticky top-24 flex flex-col h-[calc(100vh-140px)] max-h-[660px]">
               {/* Photo Header */}
               <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900 shrink-0">
-                <Image
+                <SafeImage
                   src={selectedBrewery.image}
                   alt={selectedBrewery.name}
                   fill
@@ -588,7 +588,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 >
                   <div className="flex gap-4 items-start">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
-                      <Image
+                      <SafeImage
                         src={guide.image}
                         alt={guide.title}
                         fill

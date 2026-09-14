@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import type { Metadata } from 'next';
 import { Beer, Map, Compass, BookOpen, ArrowRight, Star, MapPin } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
@@ -292,7 +292,7 @@ export default async function Home() {
             {featuredTrail && (
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 overflow-hidden flex flex-col justify-between">
                 <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
-                  <Image
+                  <SafeImage
                     src={featuredTrail.image}
                     alt={featuredTrail.name}
                     fill
@@ -328,7 +328,7 @@ export default async function Home() {
             {latestGuide && (
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 overflow-hidden flex flex-col justify-between">
                 <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
-                  <Image
+                  <SafeImage
                     src={latestGuide.image}
                     alt={latestGuide.title}
                     fill
