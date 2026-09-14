@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -178,20 +178,15 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
         {/* Hero Card Area */}
         <header className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-md">
           <div className="relative aspect-[16/9] md:aspect-[21/9] w-full bg-zinc-900">
-            {brewery.image ? (
-              <Image
-                src={brewery.image}
-                alt={brewery.name}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 1024px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-950 text-zinc-500">
-                <Building2 className="w-16 h-16 opacity-30" />
-              </div>
-            )}
+            <SafeImage
+              src={brewery.image}
+              alt={brewery.name}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+              showIconFallbackOnFailure
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
 
             {/* Badges and Main Title */}

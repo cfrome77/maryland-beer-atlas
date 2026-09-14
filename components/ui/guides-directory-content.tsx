@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { TravelGuide, GuideType } from '@/lib/types';
 import {
   BookOpen,
@@ -176,7 +176,7 @@ export function GuidesDirectoryContent({ initialGuides }: GuidesDirectoryContent
               <div>
                 {/* Photo banner */}
                 <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-900">
-                  <Image
+                  <SafeImage
                     src={guide.image}
                     alt={guide.title}
                     fill

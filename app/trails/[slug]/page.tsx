@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Navigation, ExternalLink, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
@@ -92,7 +92,7 @@ function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
         {/* Photo */}
         <div className="md:col-span-4 relative aspect-video md:aspect-auto rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 min-h-[160px]">
-          <Image
+          <SafeImage
             src={brewery.image}
             alt={brewery.name}
             fill
@@ -261,7 +261,7 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
         {/* Trail Banner */}
         <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-850 overflow-hidden shadow-sm mb-10">
           <div className="relative aspect-[21/9] w-full bg-zinc-100 dark:bg-zinc-900">
-            <Image
+            <SafeImage
               src={trail.image}
               alt={trail.name}
               fill

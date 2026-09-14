@@ -8,7 +8,7 @@ import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
 import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 import { Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { Recommendation } from '@/lib/services/recommendation.service';
@@ -677,7 +677,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
               >
                 <div className="flex gap-4 items-start">
                   <div className="relative w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
-                    <Image
+                    <SafeImage
                       src={guide.image}
                       alt={guide.title}
                       fill
