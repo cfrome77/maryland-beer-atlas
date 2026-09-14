@@ -46,14 +46,14 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Belgian IPA', 'Imperial IPA', 'IPA', 'Pale Ale', 'Stout'],
     amenities: ['Tasting Room', 'Brewery Tours', 'Outdoor Seating', 'Food Trucks', 'Merch Shop'],
-    lastVerified: '2025-05-10',
+    lastVerified: '2026-08-15',
     verificationSource: 'Official Website & Socials',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com', checkedAt: '2025-05-10', confidence: 'High' },
-      hours: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com/visit', checkedAt: '2025-05-10', confidence: 'High' },
-      address: { verified: true, sourceType: 'Official Website', checkedAt: '2025-05-10', confidence: 'High' },
-      amenities: { verified: true, sourceType: 'Social Media', sourceUrl: 'https://instagram.com/flyingdogbrewery', checkedAt: '2025-05-09', confidence: 'Medium' }
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com', checkedAt: '2026-08-15', confidence: 'High' },
+      hours: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.flyingdogbrewery.com/visit', checkedAt: '2026-08-15', confidence: 'High' },
+      address: { verified: true, sourceType: 'Official Website', checkedAt: '2026-08-15', confidence: 'High' },
+      amenities: { verified: true, sourceType: 'Social Media', sourceUrl: 'https://instagram.com/flyingdogbrewery', checkedAt: '2026-08-14', confidence: 'Medium' }
     },
     highlights: ['Ralph Steadman Label Art Gallery', 'Expansive Outdoor Beer Garden', 'Small-Batch Experimental Brewhouse'],
     atmosphere: ['Industrial Chic', 'Artistic & Edgy', 'Lively Social Hub'],
@@ -111,12 +111,12 @@ export const mockBreweries: Brewery[] = [
     holidayExceptions: [],
     beerStyles: ['Pilsner', 'Hazy IPA', 'Red Ale', 'Stout'],
     amenities: ['Tasting Room', 'Outdoor Seating', 'Kid Friendly', 'Dog Friendly'],
-    lastVerified: '2025-06-15',
+    lastVerified: '2026-08-15',
     verificationSource: 'Official Website',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://monocacybrewing.com', checkedAt: '2025-06-15', confidence: 'High' },
-      hours: { verified: true, sourceType: 'Official Website', checkedAt: '2025-06-15', confidence: 'High' }
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://monocacybrewing.com', checkedAt: '2026-08-15', confidence: 'High' },
+      hours: { verified: true, sourceType: 'Official Website', checkedAt: '2026-08-15', confidence: 'High' }
     },
     highlights: ['Historic Warehouse Setting', 'Local Maryland Grown Ingredients', 'Family & Pet Friendly Patio'],
     atmosphere: ['Welcoming Neighborhood Spot', 'Rustic & Historic', 'Relaxed Outdoors'],
@@ -171,11 +171,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Double IPA', 'Czech Pilsner', 'Fruited Sour', 'Lager', 'Hazy IPA', 'Wild Ale'],
     amenities: ['Dog Friendly', 'Outdoor Pine Grove', 'Food Trucks', 'Kid Friendly', 'Cans To-Go'],
-    lastVerified: '2025-06-01',
+    lastVerified: '2026-08-15',
     verificationSource: 'Brewery Management',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2025-06-01', confidence: 'High', notes: 'Verified via representative email.' }
+      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2026-08-15', confidence: 'High', notes: 'Verified via representative email.' }
     }
   },
   {
@@ -219,11 +219,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Belgian Witbier', 'Saison', 'IPA', 'Dry Stout'],
     amenities: ['Outdoor Seating', 'Deaf-Friendly / ASL', 'Kid Friendly', 'Dog Friendly', 'Food Trucks'],
-    lastVerified: '2025-06-20',
+    lastVerified: '2026-08-15',
     verificationSource: 'Official Website',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.streetcar82brewing.com', checkedAt: '2025-06-20', confidence: 'High' }
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.streetcar82brewing.com', checkedAt: '2026-08-15', confidence: 'High' }
     }
   },
   {
@@ -269,11 +269,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Stout', 'Lager', 'Porter', 'Sour'],
     amenities: ['Full Food Menu', 'General Store / Toy Shop', 'Kid Friendly', 'Tasting Flight', 'Togo Cans'],
-    lastVerified: '2025-06-21',
+    lastVerified: '2026-08-15',
     verificationSource: 'Brewery Management',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2025-06-21', confidence: 'High' }
+      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2026-08-15', confidence: 'High' }
     }
   },
   {
@@ -316,11 +316,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['American IPA', 'Double IPA', 'Imperial Stout', 'English Pale Ale'],
     amenities: ['Tasting Room', 'Merchandise', 'Outdoor Seating', 'Weekly Events'],
-    lastVerified: '2025-04-18',
+    lastVerified: '2026-08-15',
     verificationSource: 'Community Report',
     verificationStatus: 'Community Submitted',
     verification: {
-      general: { verified: true, sourceType: 'Community Report', checkedAt: '2025-04-18', confidence: 'Low' }
+      general: { verified: true, sourceType: 'Community Report', checkedAt: '2026-08-15', confidence: 'Low' }
     }
   },
   {
@@ -364,11 +364,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Pale Ale', 'IPA', 'Altbier', 'Lager', 'Gose'],
     amenities: ['Large Beer Hall', 'Outdoor Plaza', 'Kid Friendly', 'Shared Collective Spaces', 'Food Vendors'],
-    lastVerified: '2025-05-22',
+    lastVerified: '2026-08-15',
     verificationSource: 'Official Website & Socials',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.unioncraftbrewing.com', checkedAt: '2025-05-22', confidence: 'High' }
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://www.unioncraftbrewing.com', checkedAt: '2026-08-15', confidence: 'High' }
     }
   },
   {
@@ -412,11 +412,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Lager', 'Sour', 'Stout', 'Pilsner'],
     amenities: ['Tasting Room', 'Spacious Beer Garden', 'Kid Friendly', 'Arcade Games', 'Historic Memorabilia'],
-    lastVerified: '2025-06-18',
+    lastVerified: '2026-08-15',
     verificationSource: 'Official Website',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://peabodyheightsbrewery.com', checkedAt: '2025-06-18', confidence: 'High' }
+      general: { verified: true, sourceType: 'Official Website', sourceUrl: 'https://peabodyheightsbrewery.com', checkedAt: '2026-08-15', confidence: 'High' }
     }
   },
   {
@@ -462,11 +462,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['Hazy IPA', 'Pilsner', 'Fruited Sour', 'Stout', 'Lager'],
     amenities: ['Pizza Kitchen', 'C&O Canal Proximity', 'Outdoor Seating', 'Tasting Room'],
-    lastVerified: '2025-06-03',
+    lastVerified: '2026-08-15',
     verificationSource: 'Outdated Info Alert',
     verificationStatus: 'Needs Review',
     verification: {
-      general: { verified: false, sourceType: 'Community Report', checkedAt: '2025-06-03', confidence: 'Medium', notes: 'Community members flagged hours changed.' }
+      general: { verified: false, sourceType: 'Community Report', checkedAt: '2026-08-15', confidence: 'Medium', notes: 'Community members flagged hours changed.' }
     }
   },
   {
@@ -512,11 +512,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['American Pilsner', 'Fruited Sour', 'IPA', 'Lager', 'Stout'],
     amenities: ['Live Music', 'Rustic Taproom', 'Outdoor Patio', 'Sustainable Focus', 'Local Taproom Specials'],
-    lastVerified: '2025-05-15',
+    lastVerified: '2026-08-15',
     verificationSource: 'Brewery Representative',
     verificationStatus: 'Verified',
     verification: {
-      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2025-05-15', confidence: 'High' }
+      general: { verified: true, sourceType: 'Direct Communication', checkedAt: '2026-08-15', confidence: 'High' }
     }
   },
   {
@@ -560,11 +560,11 @@ export const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Amber Ale', 'Spiced Ale', 'Lager', 'Stout'],
     amenities: ['Spacious Taproom', 'Food Trucks', 'Trivia Nights', 'Huge Outdoor Seating Area'],
-    lastVerified: '2025-04-30',
+    lastVerified: '2026-08-15',
     verificationSource: 'Community Submission Forum',
     verificationStatus: 'Community Submitted',
     verification: {
-      general: { verified: true, sourceType: 'Community Report', checkedAt: '2025-04-30', confidence: 'Medium' }
+      general: { verified: true, sourceType: 'Community Report', checkedAt: '2026-08-15', confidence: 'Medium' }
     }
   }
 ];

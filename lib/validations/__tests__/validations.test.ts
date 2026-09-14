@@ -151,7 +151,7 @@ describe('Zod Validation Layer', () => {
     });
 
     it('identifies stale verified data when verification date is old', () => {
-      const brewery = mockBreweries[0];
+      const brewery = { ...mockBreweries[0], lastVerified: '2025-05-10' };
       // Target date > 180 days after 2025-05-10
       const targetDate = new Date('2026-01-01');
       const derived = getDerivedBreweryFields(brewery, targetDate);
