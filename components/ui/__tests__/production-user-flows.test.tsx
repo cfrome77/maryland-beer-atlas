@@ -104,6 +104,13 @@ const testTrails: BeerTrail[] = [
     duration: '1 day',
     difficulty: 'Easy',
     image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
+    stops: [
+      {
+        order: 1,
+        brewery: testBreweries[0],
+        isOptional: false,
+      },
+    ],
     breweries: [testBreweries[0]],
     nearbyAttractions: ['Downtown Frederick', 'Carroll Creek Park'],
     highlight: 'Historic downtown strolls and open taprooms.',

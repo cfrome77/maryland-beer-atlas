@@ -113,6 +113,13 @@ const mockTrails: BeerTrail[] = [
     duration: 'Half Day',
     image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e',
     highlight: 'Flying dog trail',
+    stops: [
+      {
+        order: 1,
+        brewery: mockBreweries[0],
+        isOptional: false,
+      },
+    ],
     breweries: [mockBreweries[0]],
     nearbyAttractions: ['Downtown Frederick'],
     difficulty: 'Easy',
