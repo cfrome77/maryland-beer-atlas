@@ -204,4 +204,62 @@ describe('Map Provider & Configuration Tests', () => {
     const legend = await screen.findByText('Legend');
     expect(legend).toBeInTheDocument();
   });
+
+  it('does not trigger React root unmount warnings on render, brewery list changes, selection changes, or unmounts', async () => {
+    enableWebGL2Mock();
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const secondBrewery: Brewery = {
+      ...sampleBrewery,
+      id: 'b2',
+      slug: 'heavy-seas-beer',
+      name: 'Heavy Seas Beer',
+      coordinates: { lat: 39.215, lng: -76.687 },
+    };
+
+    const { rerender, unmount } = render(
+      <MapView
+        breweries={[sampleBrewery]}
+        selectedBrewery={null}
+        onSelectBrewery={() => {}}
+      />
+    );
+
+    // Rerender with expanded brewery list
+    rerender(
+      <MapView
+        breweries={[sampleBrewery, secondBrewery]}
+        selectedBrewery={sampleBrewery}
+        onSelectBrewery={() => {}}
+      />
+    );
+
+    // Rerender with filtered brewery list
+    rerender(
+      <MapView
+        breweries={[secondBrewery]}
+        selectedBrewery={null}
+        onSelectBrewery={() => {}}
+      />
+    );
+
+    // Unmount component
+    unmount();
+
+    // Give queued microtasks time to execute
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Assert zero unmount race warnings were logged to console.error
+    const unmountWarningCalls = consoleErrorSpy.mock.calls.filter((args) =>
+      args.some(
+        (arg) =>
+          typeof arg === 'string' &&
+          arg.includes('Attempted to synchronously unmount a root while React was already rendering')
+      )
+    );
+
+    expect(unmountWarningCalls).toHaveLength(0);
+    consoleErrorSpy.mockRestore();
+  });
 });

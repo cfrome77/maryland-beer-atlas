@@ -164,13 +164,13 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
     return () => {
       const rootToUnmount = popupRootRef.current;
       if (rootToUnmount) {
-        setTimeout(() => {
+        queueMicrotask(() => {
           try {
             rootToUnmount.unmount();
           } catch {
             // ignore
           }
-        }, 0);
+        });
         popupRootRef.current = null;
       }
       if (map) {
