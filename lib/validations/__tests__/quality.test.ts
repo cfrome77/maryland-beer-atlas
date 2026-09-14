@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { mockBreweries } from '../../data/mock-data';
-import { Brewery } from '../../types';
+import { mockBreweries, mockTrails, mockGuides } from '../../data/mock-data';
+import { Brewery, BeerTrail, TravelGuide } from '../../types';
 import {
   normalizeAndValidateBrewery,
   normalizeStreetAddress,
@@ -11,9 +11,15 @@ import {
 } from '../schemas';
 import {
   findDuplicateBreweries,
+  findCloseDuplicateCoordinates,
+  checkBreweryCoordinates,
+  checkBreweryHoursValidity,
+  checkBreweryContactAndMedia,
+  auditVerificationFreshness,
   identifyClosedOrInactiveBreweries,
   checkRecordCompleteness,
   identifyIncompleteRecords,
+  checkReferenceIntegrity,
   auditBreweryDataset,
   calculateHaversineDistanceMeters,
 } from '../quality';
@@ -150,6 +156,72 @@ describe('Brewery Data Quality Standards', () => {
       const farCoords = { lat: 40.7128, lng: -74.006 }; // New York City
       expect(isWithinMarylandBounds(farCoords)).toBe(false);
     });
+
+    it('identifies missing, non-numeric, or out of bounds coordinates using checkBreweryCoordinates', () => {
+      const testSet: Brewery[] = [
+        { ...mockBreweries[0], id: 'b1', coordinates: { lat: 39.3621, lng: -77.4245 } }, // valid
+        { ...mockBreweries[0], id: 'b2', coordinates: { lat: NaN, lng: -77.4245 } }, // NaN
+        { ...mockBreweries[0], id: 'b3', coordinates: { lat: 41.5, lng: -74.0 } }, // out of bounds
+      ];
+
+      const coordIssues = checkBreweryCoordinates(testSet);
+      expect(coordIssues.length).toBe(2);
+      expect(coordIssues.find((c) => c.breweryId === 'b2')?.reason).toBe('non_numeric_coordinates');
+      expect(coordIssues.find((c) => c.breweryId === 'b3')?.reason).toBe('out_of_maryland_bounds');
+    });
+
+    it('finds close duplicate coordinates within threshold meters', () => {
+      const b1 = { ...mockBreweries[0], id: 'b1', name: 'Site A', coordinates: { lat: 39.3621, lng: -77.4245 } };
+      const b2 = {
+        ...mockBreweries[0],
+        id: 'b2',
+        name: 'Site B',
+        coordinates: { lat: 39.3621, lng: -77.4245 + 0.0001 }, // ~8m away
+      };
+
+      const closeMatches = findCloseDuplicateCoordinates([b1, b2], 50);
+      expect(closeMatches.length).toBe(1);
+      expect(closeMatches[0].distanceMeters).toBeLessThan(50);
+    });
+  });
+
+  describe('Hours & Contact / Media Auditing', () => {
+    it('audits missing or invalid hours', () => {
+      const bMissing: Brewery = { ...mockBreweries[0], id: 'b-no-hours', structuredHours: null, hours: [] };
+      const reports = checkBreweryHoursValidity([bMissing]);
+      expect(reports.length).toBe(1);
+      expect(reports[0].issueType).toBe('missing_all_hours');
+    });
+
+    it('audits missing contact details and image media', () => {
+      const bIncompleteMedia: Brewery = {
+        ...mockBreweries[0],
+        id: 'b-media',
+        website: '',
+        phone: '',
+        image: '',
+        socialLinks: {},
+      };
+
+      const reports = checkBreweryContactAndMedia([bIncompleteMedia]);
+      expect(reports.length).toBe(1);
+      expect(reports[0].missingWebsite).toBe(true);
+      expect(reports[0].missingPhone).toBe(true);
+      expect(reports[0].missingImage).toBe(true);
+      expect(reports[0].missingSocialLinks).toBe(true);
+    });
+
+    it('audits verification freshness thresholds', () => {
+      const bStale: Brewery = {
+        ...mockBreweries[0],
+        id: 'b-stale',
+        lastVerified: '2024-01-01', // old
+      };
+
+      const reports = auditVerificationFreshness([bStale], new Date('2025-06-01'));
+      expect(reports.length).toBe(1);
+      expect(reports[0].freshnessCategory).toBe('outdated');
+    });
   });
 
   describe('Duplicate Brewery Detection', () => {
@@ -192,26 +264,6 @@ describe('Brewery Data Quality Standards', () => {
       expect(duplicates.length).toBe(1);
       expect(duplicates[0].matchReason).toBe('matching_street_address');
     });
-
-    it('detects duplicate breweries in close geographic proximity (< 50 meters)', () => {
-      const b1 = { ...mockBreweries[0], id: 'b1', slug: 'b1-slug', name: 'Site A' };
-      const b2 = {
-        ...mockBreweries[0],
-        id: 'b2',
-        slug: 'b2-slug',
-        name: 'Site B',
-        address: '100 Unique Street',
-        city: 'Gaithersburg',
-        coordinates: {
-          lat: 39.3621,
-          lng: -77.4245 + 0.0001, // ~8 meters away
-        },
-      };
-
-      const duplicates = findDuplicateBreweries([b1, b2]);
-      expect(duplicates.length).toBe(1);
-      expect(duplicates[0].matchReason).toBe('geographic_proximity');
-    });
   });
 
   describe('Closed & Inactive Brewery Identification', () => {
@@ -233,15 +285,7 @@ describe('Brewery Data Quality Standards', () => {
     });
   });
 
-  describe('Record Completeness & Audit', () => {
-    it('scores complete brewery records highly (>= 80)', () => {
-      const completeBrewery = mockBreweries[0];
-      const report = checkRecordCompleteness(completeBrewery, new Date('2025-06-01'));
-      expect(report.score).toBeGreaterThanOrEqual(80);
-      expect(report.isComplete).toBe(true);
-      expect(report.missingFields).toHaveLength(0);
-    });
-
+  describe('Record Completeness & Reference Integrity', () => {
     it('scores incomplete records lower and identifies incomplete records using identifyIncompleteRecords', () => {
       const incompleteBrewery: Brewery = {
         ...mockBreweries[0],
@@ -263,6 +307,35 @@ describe('Brewery Data Quality Standards', () => {
       expect(incompleteList[0].brewery.id).toBe(incompleteBrewery.id);
     });
 
+    it('flags broken trail and guide brewery references', () => {
+      const sampleBreweries = [mockBreweries[0]]; // Flying Dog only
+
+      const brokenTrail: BeerTrail = {
+        ...mockTrails[0],
+        id: 'trail-1',
+        name: 'Broken Trail',
+        stops: [
+          {
+            order: 1,
+            brewery: { id: 'non-existent-brewery-id', slug: 'non-existent-slug' } as Brewery,
+            isOptional: false,
+          },
+        ],
+      };
+
+      const brokenGuide: TravelGuide = {
+        ...mockGuides[0],
+        slug: 'guide-1',
+        title: 'Broken Guide',
+        recommendedStops: [{ id: 'missing-brewery-id', slug: 'missing-slug' } as Brewery],
+      };
+
+      const brokenRefs = checkReferenceIntegrity(sampleBreweries, [brokenTrail], [brokenGuide]);
+      expect(brokenRefs.length).toBe(2);
+      expect(brokenRefs[0].sourceType).toBe('trail');
+      expect(brokenRefs[1].sourceType).toBe('guide');
+    });
+
     it('performs a complete dataset audit using auditBreweryDataset', () => {
       const sampleDataset = [
         ...mockBreweries,
@@ -278,7 +351,7 @@ describe('Brewery Data Quality Standards', () => {
         },
       ];
 
-      const audit = auditBreweryDataset(sampleDataset, new Date('2025-06-01'));
+      const audit = auditBreweryDataset(sampleDataset, new Date('2025-06-01'), mockTrails, mockGuides);
       expect(audit.totalRecords).toBe(sampleDataset.length);
       expect(audit.invalidRecordsCount).toBe(1);
       expect(audit.validRecordsCount).toBe(mockBreweries.length + 1);

@@ -74,3 +74,15 @@ Run linter:
 ```bash
 npm run lint
 ```
+
+## Production Data Audit
+
+Run repeatable data quality audits against the canonical production dataset (Sanity CMS) before releases to identify missing/invalid schema fields, duplicate breweries, close duplicate coordinates (<50m), missing/invalid hours, stale/missing verification, incomplete records, closed/inactive status, missing website/contact/image details, and broken trail/guide references:
+
+```bash
+npm run audit:breweries
+```
+
+CLI options:
+- `npm run audit:breweries -- --strict`: Exit with code 1 if critical schema, duplicate, or reference errors are found.
+- `npm run audit:breweries -- --json`: Output structured JSON audit report for CI/CD pipelines.

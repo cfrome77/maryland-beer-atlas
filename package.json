@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "audit:breweries": "tsx -r ./scripts/setup-env.js scripts/audit-brewery-data.ts",
+    "audit:data": "tsx -r ./scripts/setup-env.js scripts/audit-brewery-data.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -36,7 +38,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "jsdom": "^29.1.1",
+    "server-only": "^0.0.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }
