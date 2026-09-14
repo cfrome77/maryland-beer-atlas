@@ -138,14 +138,19 @@ export default function MapView({
     Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
 
-    // Unmount existing popup React roots to prevent memory leaks
-    Object.values(popupRootsRef.current).forEach((root) => {
-      try {
-        root.unmount();
-      } catch {
-        // Safe to ignore
-      }
-    });
+    // Unmount existing popup React roots asynchronously to prevent synchronous unmount warnings during React rendering
+    const existingRoots = Object.values(popupRootsRef.current);
+    if (existingRoots.length > 0) {
+      queueMicrotask(() => {
+        existingRoots.forEach((root) => {
+          try {
+            root.unmount();
+          } catch {
+            // Safe to ignore
+          }
+        });
+      });
+    }
     popupRootsRef.current = {};
 
     // Helper for coloring based on brewery type
@@ -275,13 +280,18 @@ export default function MapView({
     });
 
     return () => {
-      Object.values(popupRootsRef.current).forEach((root) => {
-        try {
-          root.unmount();
-        } catch {
-          // Safe to ignore
-        }
-      });
+      const rootsToUnmount = Object.values(popupRootsRef.current);
+      if (rootsToUnmount.length > 0) {
+        queueMicrotask(() => {
+          rootsToUnmount.forEach((root) => {
+            try {
+              root.unmount();
+            } catch {
+              // Safe to ignore
+            }
+          });
+        });
+      }
       popupRootsRef.current = {};
     };
   }, [breweries, onSelectBrewery]);

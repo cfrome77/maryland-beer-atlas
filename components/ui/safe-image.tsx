@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
 import { Building2 } from 'lucide-react';
 
@@ -33,12 +33,14 @@ export function SafeImage({
   onError,
   ...rest
 }: SafeImageProps) {
+  const [prevSrc, setPrevSrc] = useState<string | null | undefined>(src);
   const [imgSrc, setImgSrc] = useState<string>(() => {
     return isValidImageSrc(src) ? (src as string).trim() : fallbackSrc;
   });
   const [hasError, setHasError] = useState<boolean>(!isValidImageSrc(src));
 
-  useEffect(() => {
+  if (src !== prevSrc) {
+    setPrevSrc(src);
     if (isValidImageSrc(src)) {
       setImgSrc((src as string).trim());
       setHasError(false);
@@ -46,7 +48,7 @@ export function SafeImage({
       setImgSrc(fallbackSrc);
       setHasError(true);
     }
-  }, [src, fallbackSrc]);
+  }
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (!hasError) {
