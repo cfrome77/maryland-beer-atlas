@@ -1,8 +1,8 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { SafeImage } from '@/components/ui/safe-image';
-import { notFound } from 'next/navigation';
+import React from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { SafeImage } from "@/components/ui/safe-image";
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -22,13 +22,16 @@ import {
   Bookmark,
   ChevronRight,
   Tag,
-} from 'lucide-react';
-import { contentService } from '@/lib/services/content.service';
-import { getDataFreshnessInfo } from '@/lib/utils/freshness';
-import { isBreweryOpenNow } from '@/lib/utils/hours';
-import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
-import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
-import BreweryDetailMap from '@/components/ui/brewery-detail-map';
+} from "lucide-react";
+import { contentService } from "@/lib/services/content.service";
+import { getDataFreshnessInfo } from "@/lib/utils/freshness";
+import { isBreweryOpenNow } from "@/lib/utils/hours";
+import {
+  BreweryStatusBadge,
+  BreweryFreshnessBadge,
+} from "@/components/ui/brewery-status-badge";
+import { BreweryDirectionsAction } from "@/components/ui/brewery-directions-action";
+import BreweryDetailMap from "@/components/ui/brewery-detail-map";
 
 interface BreweryDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -37,24 +40,30 @@ interface BreweryDetailPageProps {
 function slugifyCounty(countyName: string): string {
   return countyName
     .toLowerCase()
-    .replace(/'/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
+    .replace(/'/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
 }
 
-export async function generateMetadata({ params }: BreweryDetailPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: BreweryDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const brewery = await contentService.breweries.getBySlug(slug);
 
   if (!brewery) {
     return {
-      title: 'Brewery Not Found | Maryland Beer Atlas',
+      title: "Brewery Not Found | Maryland Beer Atlas",
     };
   }
 
-  const isDogFriendly = brewery.amenities?.some((a) => a.toLowerCase().includes('dog friendly'));
-  const dogFriendlyText = isDogFriendly ? 'Dog-friendly taproom. ' : '';
-  const stylesText = brewery.beerStyles?.length ? `Specialty styles: ${brewery.beerStyles.join(', ')}. ` : '';
+  const isDogFriendly = brewery.amenities?.some((a) =>
+    a.toLowerCase().includes("dog friendly"),
+  );
+  const dogFriendlyText = isDogFriendly ? "Dog-friendly taproom. " : "";
+  const stylesText = brewery.beerStyles?.length
+    ? `Specialty styles: ${brewery.beerStyles.join(", ")}. `
+    : "";
 
   return {
     title: `${brewery.name} | ${brewery.city}, MD Craft Brewery Details`,
@@ -65,7 +74,7 @@ export async function generateMetadata({ params }: BreweryDetailPageProps): Prom
     openGraph: {
       title: `${brewery.name} | ${brewery.city}, MD Brewery`,
       description: brewery.description,
-      type: 'article',
+      type: "article",
       url: `https://marylandbeeratlas.com/breweries/${slug}`,
       images: brewery.image
         ? [
@@ -79,7 +88,9 @@ export async function generateMetadata({ params }: BreweryDetailPageProps): Prom
   };
 }
 
-export default async function BreweryDetailPage({ params }: BreweryDetailPageProps) {
+export default async function BreweryDetailPage({
+  params,
+}: BreweryDetailPageProps) {
   const { slug } = await params;
   const brewery = await contentService.breweries.getBySlug(slug);
 
@@ -93,14 +104,18 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
   // Social links filter
   const socialSameAs: string[] = [];
-  if (brewery.socialLinks?.facebook) socialSameAs.push(brewery.socialLinks.facebook);
-  if (brewery.socialLinks?.instagram) socialSameAs.push(brewery.socialLinks.instagram);
-  if (brewery.socialLinks?.twitter) socialSameAs.push(brewery.socialLinks.twitter);
+  if (brewery.socialLinks?.facebook)
+    socialSameAs.push(brewery.socialLinks.facebook);
+  if (brewery.socialLinks?.instagram)
+    socialSameAs.push(brewery.socialLinks.instagram);
+  if (brewery.socialLinks?.twitter)
+    socialSameAs.push(brewery.socialLinks.twitter);
 
   // Schema.org JSON-LD
   const brewerySchema = {
-    '@context': 'https://schema.org',
-    '@type': brewery.type === 'Brewpub' ? 'Brewery' : ['Brewery', 'LocalBusiness'],
+    "@context": "https://schema.org",
+    "@type":
+      brewery.type === "Brewpub" ? "Brewery" : ["Brewery", "LocalBusiness"],
     name: brewery.name,
     description: brewery.description,
     image: brewery.image || undefined,
@@ -108,35 +123,35 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
     url: brewery.website || undefined,
     sameAs: socialSameAs.length > 0 ? socialSameAs : undefined,
     address: {
-      '@type': 'PostalAddress',
+      "@type": "PostalAddress",
       streetAddress: brewery.address,
       addressLocality: brewery.city,
-      addressRegion: brewery.state || 'MD',
+      addressRegion: brewery.state || "MD",
       postalCode: brewery.zipCode,
-      addressCountry: 'US',
+      addressCountry: "US",
     },
     geo: brewery.coordinates
       ? {
-          '@type': 'GeoCoordinates',
+          "@type": "GeoCoordinates",
           latitude: brewery.coordinates.lat,
           longitude: brewery.coordinates.lng,
         }
       : undefined,
     openingHoursSpecification: brewery.hours
       ? brewery.hours.map((item) => {
-          const parts = item.hours.split(' - ');
+          const parts = item.hours.split(" - ");
           return {
-            '@type': 'OpeningHoursSpecification',
+            "@type": "OpeningHoursSpecification",
             dayOfWeek: item.day,
-            opens: parts[0] || '',
-            closes: parts[1] || '',
+            opens: parts[0] || "",
+            closes: parts[1] || "",
           };
         })
       : [],
-    servesCuisine: 'Craft Beer',
+    servesCuisine: "Craft Beer",
     amenityFeature: brewery.amenities
       ? brewery.amenities.map((a) => ({
-          '@type': 'LocationFeatureSpecification',
+          "@type": "LocationFeatureSpecification",
           name: a,
           value: true,
         }))
@@ -151,7 +166,10 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
       />
       <div className="container mx-auto px-4 max-w-5xl space-y-6">
         {/* Navigation / Breadcrumbs */}
-        <nav aria-label="Breadcrumb" className="flex items-center justify-between">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center justify-between"
+        >
           <Link
             href="/breweries"
             className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors py-1 cursor-pointer"
@@ -165,7 +183,10 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
               Breweries
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/breweries/county/${countySlug}`} className="hover:underline">
+            <Link
+              href={`/breweries/county/${countySlug}`}
+              className="hover:underline"
+            >
               {brewery.county} County
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -177,7 +198,7 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
         {/* Hero Card Area */}
         <header className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-md">
-          <div className="relative aspect-[16/9] md:aspect-[21/9] w-full bg-zinc-900">
+          <div className="relative w-full bg-zinc-900 flex flex-col items-center justify-between p-6 md:p-8 gap-12 text-center">
             <SafeImage
               src={brewery.image}
               alt={brewery.name}
@@ -187,42 +208,51 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
               className="object-cover"
               showIconFallbackOnFailure
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
 
-            {/* Badges and Main Title */}
-            <div className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="space-y-3 max-w-3xl">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-zinc-950 shadow-sm">
-                    {brewery.type}
-                  </span>
-                  <BreweryStatusBadge brewery={brewery} size="md" showDetail={true} />
+            {/* Top Group: Chips & Name */}
+            <div className="relative z-10 flex flex-col items-center gap-3 w-full">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-zinc-950 shadow-sm shrink-0">
+                  {brewery.type}
+                </span>
+                <div className="shrink-0">
+                  <BreweryStatusBadge
+                    brewery={brewery}
+                    size="md"
+                    showDetail={false}
+                  />
+                </div>
+                <div className="shrink-0">
                   <BreweryFreshnessBadge brewery={brewery} size="md" />
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white backdrop-blur-md border border-white/20">
-                    {brewery.region} Region
-                  </span>
-                  <Link
-                    href={`/breweries/county/${countySlug}`}
-                    className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/40 backdrop-blur-md border border-emerald-500/30 transition-colors"
-                  >
-                    {brewery.county} County
-                  </Link>
                 </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white backdrop-blur-md border border-white/20 shrink-0">
+                  {brewery.region} Region
+                </span>
+                <Link
+                  href={`/breweries/county/${countySlug}`}
+                  className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/40 backdrop-blur-md border border-emerald-500/30 transition-colors shrink-0"
+                >
+                  {brewery.county} County
+                </Link>
+              </div>
 
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                  {brewery.name}
-                </h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+                {brewery.name}
+              </h1>
+            </div>
 
-                <div className="flex items-center gap-2 text-zinc-300 text-xs sm:text-sm font-medium">
-                  <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>
-                    {brewery.address}, {brewery.city}, MD {brewery.zipCode}
-                  </span>
-                </div>
+            {/* Bottom Group: Address & Action Buttons */}
+            <div className="relative z-10 flex flex-col items-center justify-center gap-4 pt-8 w-full">
+              <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs sm:text-sm font-medium">
+                <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>
+                  {brewery.address}, {brewery.city}, MD {brewery.zipCode}
+                </span>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center justify-center gap-2 shrink-0">
                 <BreweryDirectionsAction
                   brewery={brewery}
                   variant="primary"
@@ -244,7 +274,7 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
                 {brewery.phone && (
                   <a
-                    href={`tel:${brewery.phone.replace(/\D/g, '')}`}
+                    href={`tel:${brewery.phone.replace(/\D/g, "")}`}
                     className="px-4 py-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white font-semibold text-sm border border-zinc-700/60 transition-all backdrop-blur-md flex items-center gap-1.5 active:scale-95"
                   >
                     <Phone className="w-4 h-4 text-amber-400" />
@@ -331,14 +361,14 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
           {/* Main Column */}
           <div className="lg:col-span-8 space-y-8">
             {/* Operating Notice Banner */}
-            {openStatus.category !== 'open' && (
+            {openStatus.category !== "open" && (
               <div
                 className={`p-5 rounded-2xl border space-y-2 ${
-                  openStatus.category === 'permanently_closed'
-                    ? 'bg-rose-500/10 border-rose-500/25 text-rose-900 dark:text-rose-300'
-                    : openStatus.category === 'temporarily_closed'
-                    ? 'bg-amber-500/10 border-amber-500/25 text-amber-900 dark:text-amber-300'
-                    : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-800 dark:text-zinc-300'
+                  openStatus.category === "permanently_closed"
+                    ? "bg-rose-500/10 border-rose-500/25 text-rose-900 dark:text-rose-300"
+                    : openStatus.category === "temporarily_closed"
+                      ? "bg-amber-500/10 border-amber-500/25 text-amber-900 dark:text-amber-300"
+                      : "bg-zinc-500/10 border-zinc-500/25 text-zinc-800 dark:text-zinc-300"
                 }`}
               >
                 <div className="flex items-center gap-2 font-bold text-sm">
@@ -346,8 +376,8 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                   <span>Operating Notice</span>
                 </div>
                 <p className="text-sm leading-relaxed">
-                  {openStatus.category === 'hours_unavailable'
-                    ? 'Structured operating hours for this location are currently unverified. Re-verification directly with official brewery channels is recommended before visiting.'
+                  {openStatus.category === "hours_unavailable"
+                    ? "Structured operating hours for this location are currently unverified. Re-verification directly with official brewery channels is recommended before visiting."
                     : brewery.statusNotes || openStatus.reason}
                 </p>
                 {brewery.statusUpdatedAt && (
@@ -366,7 +396,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                 </h2>
                 <div className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                   <Calendar className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Last Verified: {brewery.lastVerified || 'Unverified'}</span>
+                  <span>
+                    Last Verified: {brewery.lastVerified || "Unverified"}
+                  </span>
                 </div>
               </div>
 
@@ -376,7 +408,8 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                 </p>
               ) : (
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm italic">
-                  Editorial narrative description for {brewery.name} is currently being updated by our editors.
+                  Editorial narrative description for {brewery.name} is
+                  currently being updated by our editors.
                 </p>
               )}
 
@@ -392,18 +425,19 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                       &ldquo;{brewery.curatedContent.editorNotes}&rdquo;
                     </p>
                   )}
-                  {brewery.curatedContent.curatedTags && brewery.curatedContent.curatedTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {brewery.curatedContent.curatedTags.map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-500/25"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {brewery.curatedContent.curatedTags &&
+                    brewery.curatedContent.curatedTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {brewery.curatedContent.curatedTags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-500/25"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                 </div>
               )}
             </section>
@@ -462,61 +496,68 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
             )}
 
             {/* Staff Recommendations / Editorial Picks Section */}
-            {brewery.editorialRecommendations && brewery.editorialRecommendations.length > 0 && (
-              <section className="p-6 md:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
-                <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight flex items-center gap-2">
-                  <Compass className="w-5 h-5 text-amber-500" />
-                  Editorial Recommendations &amp; Staff Picks
-                </h2>
+            {brewery.editorialRecommendations &&
+              brewery.editorialRecommendations.length > 0 && (
+                <section className="p-6 md:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
+                  <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight flex items-center gap-2">
+                    <Compass className="w-5 h-5 text-amber-500" />
+                    Editorial Recommendations &amp; Staff Picks
+                  </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {brewery.editorialRecommendations.map((rec, idx) => {
-                    const isBeer = rec.category === 'beer';
-                    const isFood = rec.category === 'food';
-                    const isTiming = rec.category === 'timing';
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {brewery.editorialRecommendations.map((rec, idx) => {
+                      const isBeer = rec.category === "beer";
+                      const isFood = rec.category === "food";
+                      const isTiming = rec.category === "timing";
 
-                    return (
-                      <div
-                        key={idx}
-                        className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`p-1.5 rounded-lg shrink-0 ${
-                              isBeer
-                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                                : isFood
-                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                : isTiming
-                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400'
-                                : 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
-                            }`}
-                          >
-                            {isBeer && <BeerIcon className="w-4 h-4" />}
-                            {isFood && <Utensils className="w-4 h-4" />}
-                            {isTiming && <Clock className="w-4 h-4" />}
-                            {!isBeer && !isFood && !isTiming && <Lightbulb className="w-4 h-4" />}
-                          </span>
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
-                            {rec.category === 'beer'
-                              ? 'Must-Try Draft'
-                              : rec.category === 'food'
-                              ? 'Food & Bite'
-                              : rec.category === 'timing'
-                              ? 'Best Time to Visit'
-                              : 'Local Tip'}
-                          </span>
+                      return (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`p-1.5 rounded-lg shrink-0 ${
+                                isBeer
+                                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                  : isFood
+                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                    : isTiming
+                                      ? "bg-blue-500/15 text-blue-600 dark:text-blue-400"
+                                      : "bg-purple-500/15 text-purple-600 dark:text-purple-400"
+                              }`}
+                            >
+                              {isBeer && <BeerIcon className="w-4 h-4" />}
+                              {isFood && <Utensils className="w-4 h-4" />}
+                              {isTiming && <Clock className="w-4 h-4" />}
+                              {!isBeer && !isFood && !isTiming && (
+                                <Lightbulb className="w-4 h-4" />
+                              )}
+                            </span>
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
+                              {rec.category === "beer"
+                                ? "Must-Try Draft"
+                                : rec.category === "food"
+                                  ? "Food & Bite"
+                                  : rec.category === "timing"
+                                    ? "Best Time to Visit"
+                                    : "Local Tip"}
+                            </span>
+                          </div>
+                          <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                            {rec.title}
+                          </h3>
+                          {rec.notes && (
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                              {rec.notes}
+                            </p>
+                          )}
                         </div>
-                        <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{rec.title}</h3>
-                        {rec.notes && (
-                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{rec.notes}</p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
 
             {/* Live Tap List CTA */}
             <section className="p-6 rounded-3xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-zinc-900/10 dark:from-amber-500/10 dark:to-zinc-950 border border-amber-500/20 space-y-4 shadow-sm">
@@ -529,7 +570,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     Looking for what&apos;s on tap today?
                   </h2>
                   <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Tap lists rotate rapidly. Check {brewery.name}&apos;s official channels for up-to-the-minute draft, bottle, and can releases!
+                    Tap lists rotate rapidly. Check {brewery.name}&apos;s
+                    official channels for up-to-the-minute draft, bottle, and
+                    can releases!
                   </p>
                 </div>
               </div>
@@ -563,7 +606,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Beer Styles */}
               <div className="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Specialty Beer Styles</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                  Specialty Beer Styles
+                </h2>
                 {brewery.beerStyles && brewery.beerStyles.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {brewery.beerStyles.map((style, idx) => (
@@ -576,13 +621,17 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-zinc-500 italic">No specific specialty styles recorded.</p>
+                  <p className="text-xs text-zinc-500 italic">
+                    No specific specialty styles recorded.
+                  </p>
                 )}
               </div>
 
               {/* Taproom Amenities */}
               <div className="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Taproom Amenities</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                  Taproom Amenities
+                </h2>
                 {brewery.amenities && brewery.amenities.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {brewery.amenities.map((amenity, idx) => (
@@ -595,7 +644,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-zinc-500 italic">No amenities specified for this location.</p>
+                  <p className="text-xs text-zinc-500 italic">
+                    No amenities specified for this location.
+                  </p>
                 )}
               </div>
             </section>
@@ -614,7 +665,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
               <div className="space-y-2.5 text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-850">
                 <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">County</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+                    County
+                  </span>
                   <Link
                     href={`/breweries/county/${countySlug}`}
                     className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
@@ -625,9 +678,11 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
                 {brewery.phone && (
                   <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">Phone</span>
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+                      Phone
+                    </span>
                     <a
-                      href={`tel:${brewery.phone.replace(/\D/g, '')}`}
+                      href={`tel:${brewery.phone.replace(/\D/g, "")}`}
                       className="font-bold text-amber-600 dark:text-amber-400 hover:underline"
                     >
                       {brewery.phone}
@@ -637,7 +692,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
                 {brewery.website && (
                   <div className="flex justify-between py-1">
-                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">Website</span>
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+                      Website
+                    </span>
                     <a
                       href={brewery.website}
                       target="_blank"
@@ -665,9 +722,9 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                 <div className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
                   {brewery.structuredHours.map((item, idx) => {
                     const formatTime = (t: string) => {
-                      const [h, m] = t.split(':');
+                      const [h, m] = t.split(":");
                       const hour = parseInt(h, 10);
-                      const ampm = hour >= 12 ? 'PM' : 'AM';
+                      const ampm = hour >= 12 ? "PM" : "AM";
                       const formattedHour = hour % 12 || 12;
                       return `${formattedHour}:${m} ${ampm}`;
                     };
@@ -677,13 +734,20 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                         key={idx}
                         className="flex justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-850 last:border-0"
                       >
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-300">{item.day}</span>
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+                          {item.day}
+                        </span>
                         <span className="text-right">
                           {item.isClosed ? (
-                            <span className="text-rose-600 dark:text-rose-400 font-bold">Closed</span>
+                            <span className="text-rose-600 dark:text-rose-400 font-bold">
+                              Closed
+                            </span>
                           ) : item.periods && item.periods.length > 0 ? (
                             item.periods.map((p, pIdx) => (
-                              <span key={pIdx} className="block font-medium text-zinc-900 dark:text-zinc-100">
+                              <span
+                                key={pIdx}
+                                className="block font-medium text-zinc-900 dark:text-zinc-100"
+                              >
                                 {formatTime(p.opens)} - {formatTime(p.closes)}
                               </span>
                             ))
@@ -695,29 +759,36 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     );
                   })}
 
-                  {brewery.holidayExceptions && brewery.holidayExceptions.length > 0 && (
-                    <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
-                      <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                        Upcoming Holiday Schedule
-                      </span>
-                      {brewery.holidayExceptions.map((ex, exIdx) => (
-                        <div key={exIdx} className="text-xs text-zinc-500 dark:text-zinc-400 flex justify-between py-0.5">
-                          <span>
-                            {ex.date} {ex.notes && `(${ex.notes})`}
-                          </span>
-                          <span className="font-bold text-rose-600 dark:text-rose-400">
-                            {ex.isClosed ? 'Closed' : 'Special Hours'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {brewery.holidayExceptions &&
+                    brewery.holidayExceptions.length > 0 && (
+                      <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                        <span className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                          Upcoming Holiday Schedule
+                        </span>
+                        {brewery.holidayExceptions.map((ex, exIdx) => (
+                          <div
+                            key={exIdx}
+                            className="text-xs text-zinc-500 dark:text-zinc-400 flex justify-between py-0.5"
+                          >
+                            <span>
+                              {ex.date} {ex.notes && `(${ex.notes})`}
+                            </span>
+                            <span className="font-bold text-rose-600 dark:text-rose-400">
+                              {ex.isClosed ? "Closed" : "Special Hours"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-300 space-y-2">
-                  <p className="font-bold">Structured hours are not recorded for this location.</p>
+                  <p className="font-bold">
+                    Structured hours are not recorded for this location.
+                  </p>
                   <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                    Please check the brewery&apos;s website or call ahead to verify current hours before visiting.
+                    Please check the brewery&apos;s website or call ahead to
+                    verify current hours before visiting.
                   </p>
                 </div>
               )}
@@ -726,29 +797,30 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
             {/* Data Verification & Freshness Sidebar Card */}
             <section
               className={`p-6 rounded-3xl border space-y-4 shadow-sm ${
-                freshness.freshnessCategory === 'fresh'
-                  ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20'
-                  : freshness.freshnessCategory === 'stale'
-                  ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20'
-                  : freshness.freshnessCategory === 'outdated'
-                  ? 'bg-rose-500/5 dark:bg-rose-950/10 border-rose-500/20'
-                  : 'bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20'
+                freshness.freshnessCategory === "fresh"
+                  ? "bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20"
+                  : freshness.freshnessCategory === "stale"
+                    ? "bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/20"
+                    : freshness.freshnessCategory === "outdated"
+                      ? "bg-rose-500/5 dark:bg-rose-950/10 border-rose-500/20"
+                      : "bg-indigo-500/5 dark:bg-indigo-950/10 border-indigo-500/20"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                {freshness.freshnessCategory === 'fresh' && (
+                {freshness.freshnessCategory === "fresh" && (
                   <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 )}
-                {(freshness.freshnessCategory === 'stale' || freshness.freshnessCategory === 'outdated') && (
+                {(freshness.freshnessCategory === "stale" ||
+                  freshness.freshnessCategory === "outdated") && (
                   <AlertTriangle
                     className={`w-5 h-5 shrink-0 ${
-                      freshness.freshnessCategory === 'outdated'
-                        ? 'text-rose-600 dark:text-rose-400'
-                        : 'text-amber-600 dark:text-amber-400'
+                      freshness.freshnessCategory === "outdated"
+                        ? "text-rose-600 dark:text-rose-400"
+                        : "text-amber-600 dark:text-amber-400"
                     }`}
                   />
                 )}
-                {freshness.freshnessCategory === 'unverified' && (
+                {freshness.freshnessCategory === "unverified" && (
                   <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                 )}
                 <h2 className="font-extrabold text-base text-zinc-900 dark:text-zinc-50">
@@ -758,16 +830,18 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
 
               <div className="space-y-2.5 text-xs text-zinc-600 dark:text-zinc-400">
                 <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="font-medium text-zinc-800 dark:text-zinc-300">Verification Badge</span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-300">
+                    Verification Badge
+                  </span>
                   <span
                     className={`font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${
-                      freshness.freshnessCategory === 'fresh'
-                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                        : freshness.freshnessCategory === 'stale'
-                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
-                        : freshness.freshnessCategory === 'outdated'
-                        ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
-                        : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
+                      freshness.freshnessCategory === "fresh"
+                        ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300"
+                        : freshness.freshnessCategory === "stale"
+                          ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
+                          : freshness.freshnessCategory === "outdated"
+                            ? "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300"
+                            : "bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300"
                     }`}
                   >
                     {freshness.verificationBadge.label}
@@ -775,26 +849,32 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="font-medium text-zinc-800 dark:text-zinc-300">Status</span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-300">
+                    Status
+                  </span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                    {brewery.verificationStatus || 'Community Submitted'}
+                    {brewery.verificationStatus || "Community Submitted"}
                   </span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="font-medium text-zinc-800 dark:text-zinc-300">Last Verified</span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-300">
+                    Last Verified
+                  </span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                    {brewery.lastVerified || 'None Recorded'}
+                    {brewery.lastVerified || "None Recorded"}
                   </span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="font-medium text-zinc-800 dark:text-zinc-300">Source</span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-300">
+                    Source
+                  </span>
                   <span
                     className="text-zinc-950 dark:text-zinc-200 truncate max-w-[150px] font-medium"
-                    title={brewery.verificationSource || 'Community submission'}
+                    title={brewery.verificationSource || "Community submission"}
                   >
-                    {brewery.verificationSource || 'Community submission'}
+                    {brewery.verificationSource || "Community submission"}
                   </span>
                 </div>
               </div>
@@ -811,33 +891,59 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
                     Field-Level Verification
                   </span>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center gap-1.5" title={`Hours: ${brewery.verification.hours?.sourceType || 'N/A'}`}>
+                    <div
+                      className="flex items-center gap-1.5"
+                      title={`Hours: ${brewery.verification.hours?.sourceType || "N/A"}`}
+                    >
                       <ShieldCheck
                         className={`w-3.5 h-3.5 shrink-0 ${
-                          brewery.verification.hours?.verified ? 'text-emerald-500' : 'text-zinc-400'
+                          brewery.verification.hours?.verified
+                            ? "text-emerald-500"
+                            : "text-zinc-400"
                         }`}
                       />
-                      <span className="text-zinc-600 dark:text-zinc-400">Hours</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Hours
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5" title={`Address: ${brewery.verification.address?.sourceType || 'N/A'}`}>
+                    <div
+                      className="flex items-center gap-1.5"
+                      title={`Address: ${brewery.verification.address?.sourceType || "N/A"}`}
+                    >
                       <ShieldCheck
                         className={`w-3.5 h-3.5 shrink-0 ${
-                          brewery.verification.address?.verified ? 'text-emerald-500' : 'text-zinc-400'
+                          brewery.verification.address?.verified
+                            ? "text-emerald-500"
+                            : "text-zinc-400"
                         }`}
                       />
-                      <span className="text-zinc-600 dark:text-zinc-400">Address</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Address
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5" title={`Amenities: ${brewery.verification.amenities?.sourceType || 'N/A'}`}>
+                    <div
+                      className="flex items-center gap-1.5"
+                      title={`Amenities: ${brewery.verification.amenities?.sourceType || "N/A"}`}
+                    >
                       <ShieldCheck
                         className={`w-3.5 h-3.5 shrink-0 ${
-                          brewery.verification.amenities?.verified ? 'text-emerald-500' : 'text-zinc-400'
+                          brewery.verification.amenities?.verified
+                            ? "text-emerald-500"
+                            : "text-zinc-400"
                         }`}
                       />
-                      <span className="text-zinc-600 dark:text-zinc-400">Amenities</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Amenities
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5" title="General info verified">
+                    <div
+                      className="flex items-center gap-1.5"
+                      title="General info verified"
+                    >
                       <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
-                      <span className="text-zinc-600 dark:text-zinc-400">General</span>
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        General
+                      </span>
                     </div>
                   </div>
 
@@ -868,7 +974,8 @@ export default async function BreweryDetailPage({ params }: BreweryDetailPagePro
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed pt-1 flex gap-1.5 items-start border-t border-zinc-200 dark:border-zinc-800">
                 <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
                 <span>
-                  Hours and operational details are re-verified regularly against official brewery channels.
+                  Hours and operational details are re-verified regularly
+                  against official brewery channels.
                 </span>
               </p>
             </section>
