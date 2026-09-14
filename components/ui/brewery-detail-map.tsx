@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { Brewery } from '@/lib/types';
-import { createRoot, Root } from 'react-dom/client';
 import { MapPin, Navigation, ExternalLink, AlertTriangle } from 'lucide-react';
+import { getDirectionsUrls, hasValidCoordinates } from '@/lib/utils/directions';
 
 interface BreweryDetailMapProps {
   brewery: Brewery;
@@ -14,7 +14,6 @@ interface BreweryDetailMapProps {
 export default function BreweryDetailMap({ brewery, className = '' }: BreweryDetailMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const popupRootRef = useRef<Root | null>(null);
 
   const [webglSupported] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
@@ -28,23 +27,13 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
 
   const [initError, setInitError] = useState<string | null>(null);
 
-  const hasValidCoordinates =
-    brewery.coordinates &&
-    typeof brewery.coordinates.lat === 'number' &&
-    typeof brewery.coordinates.lng === 'number' &&
-    !isNaN(brewery.coordinates.lat) &&
-    !isNaN(brewery.coordinates.lng);
-
-  const googleMapsUrl = hasValidCoordinates
-    ? `https://www.google.com/maps/search/?api=1&query=${brewery.coordinates.lat},${brewery.coordinates.lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${brewery.name}, ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}`)}`;
-
-  const appleMapsUrl = hasValidCoordinates
-    ? `https://maps.apple.com/?daddr=${brewery.coordinates.lat},${brewery.coordinates.lng}`
-    : `https://maps.apple.com/?daddr=${encodeURIComponent(`${brewery.name}, ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}`)}`;
+  const validCoords = hasValidCoordinates(brewery.coordinates);
+  const directions = getDirectionsUrls(brewery);
+  const googleMapsUrl = directions.googleMapsUrl;
+  const appleMapsUrl = directions.appleMapsUrl;
 
   useEffect(() => {
-    if (!webglSupported || !hasValidCoordinates || !mapContainerRef.current) return;
+    if (!webglSupported || !validCoords || !mapContainerRef.current) return;
 
     const mapStyle = {
       version: 8 as const,
@@ -132,27 +121,24 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
     const popupContent = document.createElement('div');
     popupContent.className = 'p-3 max-w-[260px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-xl shadow-xl text-xs space-y-2 font-sans';
 
-    const root = createRoot(popupContent);
-    popupRootRef.current = root;
-    root.render(
-      <div className="space-y-1.5">
-        <h4 className="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">{brewery.name}</h4>
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
-          {brewery.address}, {brewery.city}, MD {brewery.zipCode}
+    popupContent.innerHTML = `
+      <div class="space-y-1.5">
+        <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">${brewery.name}</h4>
+        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
+          ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}
         </p>
-        <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex gap-2">
+        <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex gap-2">
           <a
-            href={googleMapsUrl}
+            href="${googleMapsUrl}"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
+            class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
           >
-            <Navigation className="w-3 h-3" />
             Google Maps
           </a>
         </div>
       </div>
-    );
+    `;
 
     const popup = new maplibregl.Popup({ offset: 15, closeButton: true }).setDOMContent(popupContent);
 
@@ -162,17 +148,6 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
       .addTo(map);
 
     return () => {
-      const rootToUnmount = popupRootRef.current;
-      if (rootToUnmount) {
-        queueMicrotask(() => {
-          try {
-            rootToUnmount.unmount();
-          } catch {
-            // ignore
-          }
-        });
-        popupRootRef.current = null;
-      }
       if (map) {
         try {
           map.remove();
@@ -182,9 +157,9 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
       }
       mapRef.current = null;
     };
-  }, [brewery, googleMapsUrl, hasValidCoordinates, webglSupported]);
+  }, [brewery, googleMapsUrl, validCoords, webglSupported]);
 
-  if (!hasValidCoordinates) {
+  if (!validCoords) {
     return (
       <div className={`p-6 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-4 ${className}`}>
         <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200 font-bold text-sm">

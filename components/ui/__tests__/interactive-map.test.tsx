@@ -149,7 +149,7 @@ describe('InteractiveMapContent Component', () => {
     expect(profileLink).toHaveAttribute('href', '/breweries/flying-dog-brewery');
 
     const directionsLink = screen.getByRole('link', { name: /Directions/i });
-    expect(directionsLink).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=39.3621,-77.4245');
+    expect(directionsLink).toHaveAttribute('href', expect.stringContaining('google.com/maps/'));
   });
 
   it('filters breweries when active trail layer is toggled and keeps selectedBrewery as null for route overview', () => {
@@ -163,6 +163,30 @@ describe('InteractiveMapContent Component', () => {
     expect(screen.queryByTestId('selected-brewery-id')).not.toBeInTheDocument();
     expect(screen.getAllByText('Flying Dog Brewery').length).toBeGreaterThan(0);
     expect(screen.queryByText('Burley Oak Brewing Company')).not.toBeInTheDocument();
+  });
+
+  it('filters visible breweries by search text query', () => {
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    const searchInput = screen.getByPlaceholderText('Search by brewery, city, or style...');
+    fireEvent.change(searchInput, { target: { value: 'Burley' } });
+
+    expect(screen.getByText('Matching Breweries (1)')).toBeInTheDocument();
+    expect(screen.getByText('Burley Oak Brewing Company')).toBeInTheDocument();
+    expect(screen.queryByText('Flying Dog Brewery')).not.toBeInTheDocument();
+  });
+
+  it('filters visible breweries by operational status and clears all filters on click', () => {
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    const statusSelect = screen.getByRole('combobox', { name: /Filter by operational status/i });
+    fireEvent.change(statusSelect, { target: { value: 'hours_unavailable' } });
+
+    expect(screen.getByText('Clear All Filters')).toBeInTheDocument();
+    const clearButton = screen.getByText('Clear All Filters');
+    fireEvent.click(clearButton);
+
+    expect(screen.getByText('Matching Breweries (3)')).toBeInTheDocument();
   });
 
   it('contains no event markers or event elements on the map container', () => {

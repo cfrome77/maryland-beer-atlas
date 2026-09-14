@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import MapView from '@/components/ui/map-view';
+import MapView, { clusterBreweries } from '@/components/ui/map-view';
 import BreweryDetailMap from '@/components/ui/brewery-detail-map';
 import { TrailMapView } from '@/components/ui/trail-map-view';
 import { Brewery, BeerTrail } from '@/lib/types';
+import { getDirectionsUrls } from '@/lib/utils/directions';
 
 // Mock maplibregl for testing DOM initialization without full WebGL context in JSDOM
 vi.mock('maplibre-gl', () => {
@@ -203,6 +204,46 @@ describe('Map Provider & Configuration Tests', () => {
 
     const legend = await screen.findByText('Legend');
     expect(legend).toBeInTheDocument();
+  });
+
+  it('correctly clusters dense breweries at low zoom levels and expands at high zoom levels', () => {
+    const nearbyBrewery1: Brewery = {
+      ...sampleBrewery,
+      id: 'n1',
+      coordinates: { lat: 39.2801, lng: -76.6101 },
+    };
+    const nearbyBrewery2: Brewery = {
+      ...sampleBrewery,
+      id: 'n2',
+      coordinates: { lat: 39.2805, lng: -76.6105 },
+    };
+
+    // Low zoom level (7.5) should cluster nearby points into a single cluster
+    const lowZoomClusters = clusterBreweries([nearbyBrewery1, nearbyBrewery2], 7.5);
+    expect(lowZoomClusters).toHaveLength(1);
+    expect(lowZoomClusters[0].isCluster).toBe(true);
+    expect(lowZoomClusters[0].breweries).toHaveLength(2);
+
+    // High zoom level (13) should expand cluster into individual points
+    const highZoomClusters = clusterBreweries([nearbyBrewery1, nearbyBrewery2], 13);
+    expect(highZoomClusters).toHaveLength(2);
+    expect(highZoomClusters[0].isCluster).toBe(false);
+    expect(highZoomClusters[1].isCluster).toBe(false);
+  });
+
+  it('generates canonical directions URLs for breweries with coordinates and fallback addresses', () => {
+    const validDirections = getDirectionsUrls(sampleBrewery);
+    expect(validDirections.hasValidCoords).toBe(true);
+    expect(validDirections.googleMapsUrl).toContain('google.com/maps/dir/?api=1&destination=39.3621,-77.4245');
+    expect(validDirections.appleMapsUrl).toContain('maps.apple.com/?daddr=39.3621,-77.4245');
+
+    const fallbackBrewery: Brewery = {
+      ...sampleBrewery,
+      coordinates: { lat: NaN, lng: -77.4245 },
+    };
+    const fallbackDirections = getDirectionsUrls(fallbackBrewery);
+    expect(fallbackDirections.hasValidCoords).toBe(false);
+    expect(fallbackDirections.googleMapsUrl).toContain('google.com/maps/dir/?api=1&destination=Flying%20Dog%20Brewery');
   });
 
   it('does not trigger React root unmount warnings on render, brewery list changes, selection changes, or unmounts', async () => {

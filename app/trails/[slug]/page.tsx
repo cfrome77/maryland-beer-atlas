@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Navigation, ExternalLink, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { Brewery } from '@/lib/types';
+import { getDirectionsUrls } from '@/lib/utils/directions';
 import { TrailMapView } from '@/components/ui/trail-map-view';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 
@@ -52,20 +53,9 @@ interface BreweryStopCardProps {
 function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
   const isClosedStatus = brewery.status === 'Permanently closed' || brewery.status === 'Temporarily closed' || brewery.status === 'Closed';
 
-  const hasValidCoords =
-    brewery.coordinates &&
-    typeof brewery.coordinates.lat === 'number' &&
-    typeof brewery.coordinates.lng === 'number' &&
-    !isNaN(brewery.coordinates.lat) &&
-    !isNaN(brewery.coordinates.lng);
-
-  const googleMapsDirectionsUrl = hasValidCoords
-    ? `https://www.google.com/maps/dir/?api=1&destination=${brewery.coordinates.lat},${brewery.coordinates.lng}`
-    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${brewery.name}, ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}`)}`;
-
-  const appleMapsDirectionsUrl = hasValidCoords
-    ? `https://maps.apple.com/?daddr=${brewery.coordinates.lat},${brewery.coordinates.lng}`
-    : `https://maps.apple.com/?daddr=${encodeURIComponent(`${brewery.name}, ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}`)}`;
+  const directions = getDirectionsUrls(brewery);
+  const googleMapsDirectionsUrl = directions.googleMapsUrl;
+  const appleMapsDirectionsUrl = directions.appleMapsUrl;
 
   return (
     <article
