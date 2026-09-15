@@ -51,6 +51,7 @@ export const categorySchema = {
       title: 'Editorial Description',
       type: 'text',
       description: 'Curated overview for category and tag landing pages.',
+      validation: (Rule: any) => Rule.required().min(5).max(500),
     },
   ],
 };
