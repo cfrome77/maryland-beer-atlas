@@ -31,6 +31,7 @@ export function mergeSanityEditorialWithCanonical(
       ...canonical,
       description: sanityRecord.description || canonical.description,
       image: sanityRecord.image || canonical.image,
+      logo: sanityRecord.logo || canonicalRecord?.logo || null,
       featured: sanityRecord.featured !== undefined ? sanityRecord.featured : canonical.featured,
       highlights: sanityRecord.highlights || canonicalRecord?.highlights || [],
       atmosphere: sanityRecord.atmosphere || canonicalRecord?.atmosphere || [],
@@ -62,10 +63,18 @@ export class SanityBreweryRepository implements IBreweryRepository {
     description,
     highlights,
     atmosphere,
-    editorialRecommendations,
-    curatedContent,
+    editorialRecommendations[] {
+      category,
+      title,
+      notes
+    },
+    curatedContent {
+      editorNotes,
+      curatedTags
+    },
     "relatedGuides": *[_type == "guide" && references(^._id)].slug.current,
     "image": image.asset->url,
+    "logo": logo.asset->url,
     featured
   `;
 

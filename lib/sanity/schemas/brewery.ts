@@ -111,7 +111,7 @@ export const brewerySchema = {
     },
     {
       name: 'image',
-      title: 'Editorial Photo',
+      title: 'Exterior / Taproom Photo',
       type: 'image',
       group: 'editorial',
       description: 'Featured high-resolution imagery showcasing the brewery exterior or taproom.',
@@ -119,6 +119,17 @@ export const brewerySchema = {
         hotspot: true,
       },
       validation: (Rule: any) => Rule.required(),
+    },
+    {
+      name: 'logo',
+      title: 'Brewery Logo',
+      type: 'image',
+      group: 'editorial',
+      description: 'Official brewery brand logo image with optional crop and hotspot positioning.',
+      options: {
+        hotspot: true,
+      },
+      validation: (Rule: any) => Rule.optional(),
     },
 
     // Curation & Editorial Recommendations Group

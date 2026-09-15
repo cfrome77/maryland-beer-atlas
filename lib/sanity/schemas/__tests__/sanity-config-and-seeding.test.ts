@@ -6,6 +6,22 @@ import { countySchema } from '../county';
 import { categorySchema } from '../category';
 import { getSanityDataset, getSanityWriteClient } from '../../client';
 import { generateSanitySeedDocuments, seedSanityDataset, htmlStringToPortableText, slugify } from '../../seed';
+import { validateStudioDeploymentConfig, ALLOWED_CORS_ORIGINS } from '../../../../sanity/deployment';
+
+describe('Sanity Studio Deployment & CORS Configuration', () => {
+  it('should export allowed CORS origins for studio and API clients', () => {
+    expect(ALLOWED_CORS_ORIGINS).toContain('http://localhost:3000');
+    expect(ALLOWED_CORS_ORIGINS).toContain('https://marylandbeeratlas.com');
+  });
+
+  it('should validate studio deployment configuration', () => {
+    const config = validateStudioDeploymentConfig();
+    expect(config.studioBasePath).toBe('/studio');
+    expect(config.dataset).toBeDefined();
+    expect(config.apiVersion).toBeDefined();
+    expect(Array.isArray(config.allowedOrigins)).toBe(true);
+  });
+});
 
 describe('Sanity Schema Export & Studio Integration', () => {
   it('should export all 5 core schemas in studio schema definition', () => {

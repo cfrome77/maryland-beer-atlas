@@ -206,6 +206,7 @@ export const brewerySchema = z.object({
   image: urlSchema,
 
   // --- OPTIONAL / NULLABLE DOMAIN FIELDS ---
+  logo: urlSchema.nullish(),
   statusUpdatedAt: dateSchema.nullish(),
   statusNotes: z.string().nullish(),
   structuredHours: z.array(dailyHoursSchema).nullish(),
@@ -485,6 +486,10 @@ export function normalizeBreweryData(raw: unknown): unknown {
 
   if (typeof data.image === 'string') {
     data.image = normalizeUrl(data.image);
+  }
+
+  if (typeof data.logo === 'string') {
+    data.logo = normalizeUrl(data.logo);
   }
 
   if (data.socialLinks && typeof data.socialLinks === 'object') {

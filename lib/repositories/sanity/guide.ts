@@ -57,9 +57,17 @@ export class SanityGuideRepository implements IGuideRepository {
     description,
     highlights,
     atmosphere,
-    editorialRecommendations,
-    curatedContent,
+    editorialRecommendations[] {
+      category,
+      title,
+      notes
+    },
+    curatedContent {
+      editorNotes,
+      curatedTags
+    },
     "image": image.asset->url,
+    "logo": logo.asset->url,
     featured
   `;
 
