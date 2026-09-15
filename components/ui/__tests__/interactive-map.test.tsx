@@ -195,4 +195,29 @@ describe('InteractiveMapContent Component', () => {
     expect(container.innerHTML).not.toContain('event-marker');
     expect(container.innerHTML).not.toContain('Event Schedule');
   });
+
+  it('handles user geolocation and proximity sorting with distance badge displays', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn().mockImplementation((success) =>
+        success({
+          coords: {
+            latitude: 39.3621,
+            longitude: -77.4245,
+          },
+        })
+      ),
+    };
+
+    // @ts-expect-error Mocking browser navigator.geolocation
+    global.navigator.geolocation = mockGeolocation;
+
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    const sortSelect = screen.getByRole('combobox', { name: /Sort breweries by/i });
+    fireEvent.change(sortSelect, { target: { value: 'proximity' } });
+
+    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
+    expect(screen.getByText(/Showing distance relative to your current location/i)).toBeInTheDocument();
+    expect(screen.getByText('0.0 mi')).toBeInTheDocument();
+  });
 });

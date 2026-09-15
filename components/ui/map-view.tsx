@@ -39,7 +39,7 @@ export function clusterBreweries(breweries: Brewery[], zoom: number): BreweryClu
       b.coordinates.lng <= 180
   );
 
-  if (zoom >= 12 || valid.length <= 1) {
+  if (zoom >= 13 || valid.length <= 1) {
     return valid.map((b) => ({
       id: b.id,
       isCluster: false,
@@ -48,7 +48,7 @@ export function clusterBreweries(breweries: Brewery[], zoom: number): BreweryClu
     }));
   }
 
-  const threshold = Math.max(0.015, 1.2 / Math.pow(2, zoom - 5));
+  const threshold = Math.max(0.012, 1.2 / Math.pow(2, Math.max(0, zoom - 5)));
 
   const clusters: BreweryCluster[] = [];
   const visited = new Set<string>();
