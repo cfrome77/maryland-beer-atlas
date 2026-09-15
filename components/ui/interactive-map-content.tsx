@@ -4,12 +4,13 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
-import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X } from 'lucide-react';
+import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X, Locate, Navigation, Loader2 } from 'lucide-react';
 import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
-import { filterBreweries } from '@/lib/utils/filter-breweries';
+import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
+import { calculateHaversineDistance, GeographicCoordinates } from '@/lib/utils/geocoding';
 
 // Dynamically import the MapView component to disable SSR since MapLibre uses browser APIs (window, self, etc.)
 const MapView = dynamic(
@@ -208,6 +209,12 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedSort, setSelectedSort] = useState<BrewerySortOption>('name-asc');
+
+  // Geolocation state
+  const [userLocation, setUserLocation] = useState<GeographicCoordinates | null>(null);
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(null);
   const [activeTrailId, setActiveTrailId] = useState<string | null>(null);
@@ -226,12 +233,51 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const counties = useMemo(() => Array.from(new Set(breweries.map(b => b.county))).sort(), [breweries]);
   const amenities = useMemo(() => Array.from(new Set(breweries.flatMap(b => b.amenities))).sort(), [breweries]);
 
+  const handleGetUserLocation = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsLocating(true);
+    setLocationError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords: GeographicCoordinates = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(coords);
+        setSelectedSort('proximity');
+        setIsLocating(false);
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Location access was denied. Please check your browser permissions.');
+        } else {
+          setLocationError('Unable to retrieve your location. Please try again.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const handleClearUserLocation = () => {
+    setUserLocation(null);
+    setLocationError(null);
+    if (selectedSort === 'proximity') {
+      setSelectedSort('name-asc');
+    }
+  };
+
   // Filter breweries using canonical filter Breweries pure function
   const visibleBreweries = useMemo(() => {
     const filtered = filterBreweries(breweries, {
       search: searchQuery,
       status: selectedStatus || undefined,
       amenities: selectedAmenities,
+      sort: selectedSort,
+      userLocation: userLocation || undefined,
     });
 
     return filtered.filter((b) => {
@@ -249,7 +295,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
       return regionMatch && typeMatch && countyMatch;
     });
-  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails]);
+  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation]);
 
   const handleSelectBrewery = (brewery: Brewery) => {
     setSelectedBrewery(brewery);
@@ -262,6 +308,9 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedTypes([]);
     setSelectedCounties([]);
     setSelectedAmenities([]);
+    setSelectedSort('name-asc');
+    setUserLocation(null);
+    setLocationError(null);
     setActiveTrailId(null);
     setSelectedBrewery(null);
   };
@@ -300,7 +349,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId) && (
+              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId || userLocation || selectedSort !== 'name-asc') && (
                 <button
                   onClick={handleClearAllFilters}
                   className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -311,10 +360,10 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
             </div>
 
             <div className="space-y-4">
-              {/* Search & Operational Status Bar */}
+              {/* Search & Operational Status & Sorting & Geolocation Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                 {/* Search Input */}
-                <div className="sm:col-span-7 relative">
+                <div className="sm:col-span-5 relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                     <Search className="w-4 h-4" />
                   </div>
@@ -337,7 +386,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
 
                 {/* Status / Open Now Filter Dropdown */}
-                <div className="sm:col-span-5 relative">
+                <div className="sm:col-span-3 relative">
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
@@ -351,7 +400,90 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     ))}
                   </select>
                 </div>
+
+                {/* Sort By Dropdown & Near Me button */}
+                <div className="sm:col-span-4 flex gap-2">
+                  <select
+                    value={selectedSort}
+                    onChange={(e) => {
+                      const sortVal = e.target.value as BrewerySortOption;
+                      setSelectedSort(sortVal);
+                      if (sortVal === 'proximity' && !userLocation) {
+                        handleGetUserLocation();
+                      }
+                    }}
+                    aria-label="Sort breweries by"
+                    className="flex-1 py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                  >
+                    <option value="name-asc">Sort: Name (A-Z)</option>
+                    <option value="name-desc">Sort: Name (Z-A)</option>
+                    <option value="proximity">Sort: Distance (Nearest First)</option>
+                    <option value="county-asc">Sort: County</option>
+                    <option value="city-asc">Sort: City</option>
+                    <option value="type-asc">Sort: Brewery Type</option>
+                    <option value="verified-desc">Sort: Recently Verified</option>
+                  </select>
+
+                  {/* Geolocation "Near Me" Button */}
+                  {userLocation ? (
+                    <button
+                      type="button"
+                      onClick={handleClearUserLocation}
+                      aria-label="Clear user location"
+                      title="Clear location"
+                      className="px-3 py-2.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shrink-0 hover:bg-amber-600 transition-colors cursor-pointer"
+                    >
+                      <Navigation className="w-3.5 h-3.5 fill-current" />
+                      <span className="hidden md:inline">Near Me</span>
+                      <X className="w-3 h-3" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleGetUserLocation}
+                      disabled={isLocating}
+                      aria-label="Use my location to find nearby breweries"
+                      title="Use my location"
+                      className="px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 font-semibold text-xs flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {isLocating ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                      ) : (
+                        <Locate className="w-3.5 h-3.5 text-amber-500" />
+                      )}
+                      <span className="hidden md:inline">{isLocating ? 'Locating...' : 'Near Me'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* Location Feedback / Status Callout */}
+              {userLocation && (
+                <div className="flex items-center justify-between text-xs px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Navigation className="w-3.5 h-3.5 text-amber-500 shrink-0 fill-current" />
+                    Showing distance relative to your current location ({userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)})
+                  </span>
+                  <button
+                    onClick={handleClearUserLocation}
+                    className="text-[11px] font-bold underline hover:text-amber-800 dark:hover:text-amber-300 ml-2 cursor-pointer"
+                  >
+                    Clear Location
+                  </button>
+                </div>
+              )}
+
+              {locationError && (
+                <div className="flex items-center justify-between text-xs px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+                  <span>{locationError}</span>
+                  <button
+                    onClick={() => setLocationError(null)}
+                    className="text-[11px] font-bold underline ml-2 cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
 
               {/* Multi-Select Dropdowns grid - 4 columns */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -403,7 +535,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                         <button
                           key={trail.id}
                           onClick={() => handleTrailToggle(trail.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                             activeTrailId === trail.id
                               ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
                               : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
@@ -447,6 +579,22 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
                 {visibleBreweries.map((brewery) => {
                   const isActive = selectedBrewery?.id === brewery.id;
+
+                  const distanceMiles =
+                    userLocation &&
+                    typeof brewery.coordinates?.lat === 'number' &&
+                    typeof brewery.coordinates?.lng === 'number' &&
+                    !isNaN(brewery.coordinates.lat) &&
+                    !isNaN(brewery.coordinates.lng)
+                      ? calculateHaversineDistance(
+                          userLocation.lat,
+                          userLocation.lng,
+                          brewery.coordinates.lat,
+                          brewery.coordinates.lng,
+                          'miles'
+                        )
+                      : null;
+
                   return (
                     <button
                       key={brewery.id}
@@ -458,8 +606,14 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                       }`}
                     >
                       <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 justify-between">
                           <span className="font-bold text-sm truncate">{brewery.name}</span>
+                          {distanceMiles !== null && distanceMiles !== Infinity && (
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded flex items-center gap-0.5 shrink-0">
+                              <Navigation className="w-2.5 h-2.5 fill-current shrink-0" />
+                              {distanceMiles.toFixed(1)} mi
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{brewery.city} • {brewery.type}</span>
@@ -505,7 +659,32 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               {/* Details Scroll */}
               <div className="p-6 space-y-5 overflow-y-auto flex-1">
                 <div>
-                  <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{selectedBrewery.region} Region</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{selectedBrewery.region} Region</span>
+                    {(() => {
+                      const dist =
+                        userLocation &&
+                        typeof selectedBrewery.coordinates?.lat === 'number' &&
+                        typeof selectedBrewery.coordinates?.lng === 'number' &&
+                        !isNaN(selectedBrewery.coordinates.lat) &&
+                        !isNaN(selectedBrewery.coordinates.lng)
+                          ? calculateHaversineDistance(
+                              userLocation.lat,
+                              userLocation.lng,
+                              selectedBrewery.coordinates.lat,
+                              selectedBrewery.coordinates.lng,
+                              'miles'
+                            )
+                          : null;
+                      if (dist === null || dist === Infinity) return null;
+                      return (
+                        <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                          <Navigation className="w-3 h-3 fill-current shrink-0" />
+                          {dist.toFixed(1)} miles away
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mt-1">{selectedBrewery.name}</h2>
                   <p className="text-zinc-600 dark:text-zinc-400 text-xs mt-2 leading-relaxed">
                     {selectedBrewery.description}
