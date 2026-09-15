@@ -23,6 +23,9 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).toContain('name');
     expect(fieldNames).toContain('slug');
     expect(fieldNames).toContain('breweryId');
+    expect(fieldNames).toContain('postalCode');
+    expect(fieldNames).toContain('latitude');
+    expect(fieldNames).toContain('longitude');
 
     // Editorial storytelling
     expect(fieldNames).toContain('description');

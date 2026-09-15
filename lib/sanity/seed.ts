@@ -145,6 +145,9 @@ export function generateSanitySeedDocuments(): any[] {
       name: b.name,
       slug: { _type: 'slug', current: b.slug },
       breweryId: b.id,
+      postalCode: b.zipCode,
+      latitude: b.coordinates?.lat,
+      longitude: b.coordinates?.lng,
       description: b.description,
       highlights: b.highlights || ['Local Maryland Craft Brewery', 'Tasting Room Experience'],
       atmosphere: b.atmosphere || ['Welcoming Taproom', 'Community Hub'],
@@ -177,6 +180,8 @@ export function generateSanitySeedDocuments(): any[] {
       _ref: `brewery-${b.id}`,
     }));
 
+    // Pick postalCode and coordinates from the first stop's brewery if available
+    const firstStopBrewery = t.stops?.[0]?.brewery;
     documents.push({
       _id: `trail-${t.id}`,
       _type: 'trail',
@@ -184,6 +189,9 @@ export function generateSanitySeedDocuments(): any[] {
       slug: { _type: 'slug', current: t.slug },
       description: t.description,
       region: t.region,
+      postalCode: firstStopBrewery?.zipCode,
+      latitude: firstStopBrewery?.coordinates?.lat,
+      longitude: firstStopBrewery?.coordinates?.lng,
       distance: t.distance,
       duration: t.duration,
       difficulty: t.difficulty,

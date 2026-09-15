@@ -60,6 +60,31 @@ export const trailSchema = {
       to: [{ type: 'county' }],
     },
     {
+      name: 'postalCode',
+      title: 'Postal Code',
+      type: 'string',
+      description: 'Optional postal / ZIP code for primary starting location or region.',
+      validation: (Rule: any) =>
+        Rule.custom((postalCode: any) => {
+          if (!postalCode) return true;
+          return /^\d{5}(-\d{4})?$/.test(postalCode) || 'Postal code must be a valid 5-digit or 9-digit US ZIP code';
+        }),
+    },
+    {
+      name: 'latitude',
+      title: 'Latitude',
+      type: 'number',
+      description: 'Starting or central latitude coordinate (-90 to 90).',
+      validation: (Rule: any) => Rule.min(-90).max(90),
+    },
+    {
+      name: 'longitude',
+      title: 'Longitude',
+      type: 'number',
+      description: 'Starting or central longitude coordinate (-180 to 180).',
+      validation: (Rule: any) => Rule.min(-180).max(180),
+    },
+    {
       name: 'categories',
       title: 'Trail Categories / Themes',
       type: 'array',
