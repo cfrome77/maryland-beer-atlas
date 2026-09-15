@@ -125,4 +125,22 @@ describe('clusterBreweries function', () => {
     const clusters = clusterBreweries(breweriesWithInvalid, 13);
     expect(clusters.length).toBe(3);
   });
+
+  it('handles zoom boundary transitions smoothly (12.9 vs 13.0)', () => {
+    const clustersAt12_9 = clusterBreweries(testBreweries, 12.9);
+    expect(clustersAt12_9.some((c) => c.isCluster)).toBe(true);
+
+    const clustersAt13_0 = clusterBreweries(testBreweries, 13.0);
+    expect(clustersAt13_0.every((c) => !c.isCluster)).toBe(true);
+  });
+
+  it('handles empty brewery arrays and single brewery arrays cleanly', () => {
+    const emptyClusters = clusterBreweries([], 8);
+    expect(emptyClusters).toEqual([]);
+
+    const singleClusters = clusterBreweries([testBreweries[0]], 8);
+    expect(singleClusters.length).toBe(1);
+    expect(singleClusters[0].isCluster).toBe(false);
+    expect(singleClusters[0].breweries[0].id).toBe('b1');
+  });
 });

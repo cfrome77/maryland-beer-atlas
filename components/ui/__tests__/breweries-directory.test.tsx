@@ -191,4 +191,32 @@ describe('BreweriesDirectoryContent', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/breweries?sort=county-asc');
   });
+
+  it('filters breweries using multi-criteria filter combinations simultaneously', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    // Apply Region = Central
+    const regionSelect = screen.getByDisplayValue('All Regions');
+    fireEvent.change(regionSelect, { target: { value: 'Central' } });
+
+    // Apply Amenity = Dog Friendly
+    const amenitySelect = screen.getByDisplayValue('All Amenities');
+    fireEvent.change(amenitySelect, { target: { value: 'Dog Friendly' } });
+
+    // Apply Search text = Baltimore
+    const searchInput = screen.getByPlaceholderText('Search by name, style, city...');
+    fireEvent.change(searchInput, { target: { value: 'Baltimore' } });
+
+    expect(screen.getByText('Brewery One')).toBeInTheDocument();
+    expect(screen.queryByText('Brewery Two')).not.toBeInTheDocument();
+
+    // Now change type to Brewpub (which conflicts with Brewery One which is Microbrewery)
+    const typeSelect = screen.getByDisplayValue('All Brewery Types');
+    fireEvent.change(typeSelect, { target: { value: 'Brewpub' } });
+
+    // Expect 0 results state
+    expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
+    expect(screen.queryByText('Brewery Two')).not.toBeInTheDocument();
+    expect(screen.getByText('No Breweries Found')).toBeInTheDocument();
+  });
 });
