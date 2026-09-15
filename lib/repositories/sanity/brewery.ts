@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Brewery } from '../../types';
 import { IBreweryRepository } from '../interfaces';
+import { MockBreweryRepository } from '../mock';
 import { sanityClient, isSanityConfigured } from '../../sanity/client';
 import { normalizeAndValidateBrewery, normalizeAndValidateBreweryList } from '../../validations/schemas';
 
@@ -68,60 +69,89 @@ export class SanityBreweryRepository implements IBreweryRepository {
     featured
   `;
 
-  constructor(private canonicalBreweries: Brewery[] = []) {}
+  private fallbackRepo: MockBreweryRepository;
 
-  private ensureConfigured(): void {
-    if (!isSanityConfigured()) {
-      throw new Error(
-        'Sanity CMS configuration is missing or invalid (NEXT_PUBLIC_SANITY_PROJECT_ID is unconfigured). ' +
-        'Set valid Sanity environment variables or set USE_MOCK_DATA=true for development mock data.'
-      );
-    }
+  constructor(private canonicalBreweries: Brewery[] = []) {
+    this.fallbackRepo = new MockBreweryRepository(
+      canonicalBreweries.length > 0 ? canonicalBreweries : undefined
+    );
   }
 
   async getAll(): Promise<Brewery[]> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "brewery"] { ${this.baseProjection} }`
-    );
-    if (!results || results.length === 0) return [];
-    const merged = results
-      .map((item) => mergeSanityEditorialWithCanonical(item, this.canonicalBreweries))
-      .filter((item): item is Brewery => item !== null);
-    return normalizeAndValidateBreweryList(merged);
+    if (!isSanityConfigured()) {
+      console.warn('[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.');
+      return this.fallbackRepo.getAll();
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "brewery"] { ${this.baseProjection} }`
+      );
+      if (!results || results.length === 0) return [];
+      const merged = results
+        .map((item) => mergeSanityEditorialWithCanonical(item, this.canonicalBreweries))
+        .filter((item): item is Brewery => item !== null);
+      return normalizeAndValidateBreweryList(merged);
+    } catch (error) {
+      console.warn('[SanityBreweryRepository] Sanity fetch error, falling back to MockBreweryRepository:', error);
+      return this.fallbackRepo.getAll();
+    }
   }
 
   async getBySlug(slug: string): Promise<Brewery | null> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "brewery" && slug.current == $slug] { ${this.baseProjection} }`,
-      { slug }
-    );
-    if (!results || !results[0]) return null;
-    const merged = mergeSanityEditorialWithCanonical(results[0], this.canonicalBreweries);
-    return merged ? normalizeAndValidateBrewery(merged) : null;
+    if (!isSanityConfigured()) {
+      console.warn('[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.');
+      return this.fallbackRepo.getBySlug(slug);
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "brewery" && slug.current == $slug] { ${this.baseProjection} }`,
+        { slug }
+      );
+      if (!results || !results[0]) return null;
+      const merged = mergeSanityEditorialWithCanonical(results[0], this.canonicalBreweries);
+      return merged ? normalizeAndValidateBrewery(merged) : null;
+    } catch (error) {
+      console.warn('[SanityBreweryRepository] Sanity fetch error, falling back to MockBreweryRepository:', error);
+      return this.fallbackRepo.getBySlug(slug);
+    }
   }
 
   async getById(id: string): Promise<Brewery | null> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "brewery" && (_id == $id || breweryId == $id)] { ${this.baseProjection} }`,
-      { id }
-    );
-    if (!results || !results[0]) return null;
-    const merged = mergeSanityEditorialWithCanonical(results[0], this.canonicalBreweries);
-    return merged ? normalizeAndValidateBrewery(merged) : null;
+    if (!isSanityConfigured()) {
+      console.warn('[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.');
+      return this.fallbackRepo.getById(id);
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "brewery" && (_id == $id || breweryId == $id)] { ${this.baseProjection} }`,
+        { id }
+      );
+      if (!results || !results[0]) return null;
+      const merged = mergeSanityEditorialWithCanonical(results[0], this.canonicalBreweries);
+      return merged ? normalizeAndValidateBrewery(merged) : null;
+    } catch (error) {
+      console.warn('[SanityBreweryRepository] Sanity fetch error, falling back to MockBreweryRepository:', error);
+      return this.fallbackRepo.getById(id);
+    }
   }
 
   async getFeatured(): Promise<Brewery[]> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "brewery" && featured == true] { ${this.baseProjection} }`
-    );
-    if (!results || results.length === 0) return [];
-    const merged = results
-      .map((item) => mergeSanityEditorialWithCanonical(item, this.canonicalBreweries))
-      .filter((item): item is Brewery => item !== null);
-    return normalizeAndValidateBreweryList(merged);
+    if (!isSanityConfigured()) {
+      console.warn('[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.');
+      return this.fallbackRepo.getFeatured();
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "brewery" && featured == true] { ${this.baseProjection} }`
+      );
+      if (!results || results.length === 0) return [];
+      const merged = results
+        .map((item) => mergeSanityEditorialWithCanonical(item, this.canonicalBreweries))
+        .filter((item): item is Brewery => item !== null);
+      return normalizeAndValidateBreweryList(merged);
+    } catch (error) {
+      console.warn('[SanityBreweryRepository] Sanity fetch error, falling back to MockBreweryRepository:', error);
+      return this.fallbackRepo.getFeatured();
+    }
   }
 }

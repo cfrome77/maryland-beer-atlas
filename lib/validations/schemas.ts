@@ -561,6 +561,26 @@ export function validateBrewery(data: unknown): z.infer<typeof brewerySchema> {
 }
 
 /**
+ * Safely validates raw data as a BeerTrail.
+ */
+export function safeValidateBeerTrail(data: unknown) {
+  const normalized = normalizeTrailData(data);
+  const result = beerTrailSchema.safeParse(normalized);
+  if (!result.success) {
+    const context = (data && typeof data === 'object' && 'name' in data) ? `Beer Trail "${(data as { name: unknown }).name}"` : 'Beer Trail';
+    return {
+      success: false as const,
+      formattedError: formatZodError(result.error, context),
+      error: result.error,
+    };
+  }
+  return {
+    success: true as const,
+    data: result.data,
+  };
+}
+
+/**
  * Safely validates raw data as a Brewery.
  */
 export function safeValidateBrewery(data: unknown) {
@@ -704,6 +724,25 @@ export function validateBeerTrail(data: unknown): z.infer<typeof beerTrailSchema
     throw new Error(formatZodError(result.error, context));
   }
   return result.data;
+}
+
+/**
+ * Safely validates raw data as a TravelGuide.
+ */
+export function safeValidateTravelGuide(data: unknown) {
+  const result = travelGuideSchema.safeParse(data);
+  if (!result.success) {
+    const context = (data && typeof data === 'object' && 'title' in data) ? `Travel Guide "${(data as { title: unknown }).title}"` : 'Travel Guide';
+    return {
+      success: false as const,
+      formattedError: formatZodError(result.error, context),
+      error: result.error,
+    };
+  }
+  return {
+    success: true as const,
+    data: result.data,
+  };
 }
 
 /**
