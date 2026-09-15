@@ -52,6 +52,7 @@ export const countySchema = {
       title: 'County Beer Overview',
       type: 'text',
       description: 'Editorial overview of the craft beer culture and history in this county.',
+      validation: (Rule: any) => Rule.required().min(10).max(1000),
     },
   ],
 };

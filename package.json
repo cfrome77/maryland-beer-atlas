@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "seed:sanity": "tsx -r ./scripts/setup-env.js scripts/seed-sanity.ts",
     "audit:breweries": "tsx -r ./scripts/setup-env.js scripts/audit-brewery-data.ts",
     "audit:data": "tsx -r ./scripts/setup-env.js scripts/audit-brewery-data.ts"
   },
