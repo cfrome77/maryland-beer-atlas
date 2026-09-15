@@ -10,6 +10,7 @@ import { Brewery } from '@/lib/types';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { TrailMapView } from '@/components/ui/trail-map-view';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
+import { getNearbyBreweriesForTrail } from '@/lib/utils/geocoding';
 
 interface TrailDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -201,6 +202,10 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
   }
   const trail = validationResult.data;
 
+  // Query nearby craft breweries within 5 miles of trail stops
+  const allBreweries = await contentService.breweries.getAll();
+  const nearbyBreweries = getNearbyBreweriesForTrail(trail, allBreweries, 5.0);
+
   const trailSchema = {
     "@context": "https://schema.org",
     "@type": "TouristRoute",
@@ -385,6 +390,95 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
                 ))}
               </div>
             </div>
+
+            {/* Dynamically Queried Nearby Craft Breweries within 5 Miles */}
+            {nearbyBreweries.length > 0 && (
+              <div className="space-y-6 pt-10 border-t border-zinc-200 dark:border-zinc-800" data-testid="nearby-breweries-section">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      Extended Route Exploration
+                    </span>
+                    <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                      5-Mile Radius
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mt-1 flex items-center gap-2">
+                    <BeerIcon className="w-6 h-6 text-amber-500" />
+                    Nearby Craft Breweries Along the Trail ({nearbyBreweries.length})
+                  </h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                    Expand your itinerary with additional craft breweries located within 5 miles of this trail&apos;s stops.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {nearbyBreweries.map(({ brewery, distanceMiles }) => (
+                    <article
+                      key={brewery.id}
+                      aria-label={`Nearby brewery: ${brewery.name}`}
+                      className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-1">
+                              {distanceMiles} miles from trail
+                            </span>
+                            <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-100 leading-snug">
+                              <Link
+                                href={`/breweries/${brewery.slug}`}
+                                className="hover:text-amber-500 transition-colors"
+                              >
+                                {brewery.name}
+                              </Link>
+                            </h3>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>{brewery.city}, MD ({brewery.county} Co.)</span>
+                            </p>
+                          </div>
+                          <BreweryStatusBadge brewery={brewery} size="sm" />
+                        </div>
+
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-normal">
+                          {brewery.description}
+                        </p>
+
+                        {brewery.beerStyles && brewery.beerStyles.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {brewery.beerStyles.slice(0, 3).map((style, idx) => (
+                              <span
+                                key={idx}
+                                className="text-[9px] font-semibold bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded-md"
+                              >
+                                {style}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-850">
+                        <BreweryDirectionsAction
+                          brewery={brewery}
+                          variant="secondary"
+                          size="sm"
+                          preferredApp="both"
+                          label="Directions"
+                        />
+                        <Link
+                          href={`/breweries/${brewery.slug}`}
+                          className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold text-[11px] inline-flex items-center gap-1 transition-colors min-h-[32px]"
+                        >
+                          View Details &rarr;
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
