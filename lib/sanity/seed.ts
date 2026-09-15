@@ -159,6 +159,7 @@ export function generateSanitySeedDocuments(): any[] {
       },
       county: countySlug ? { _type: 'reference', _ref: `county-${countySlug}` } : undefined,
       categories: breweryCategories,
+      ...(b.logo ? { logo: { _type: 'image', asset: { _type: 'reference', _ref: `image-logo-${b.id}` } } } : {}),
     });
   }
 

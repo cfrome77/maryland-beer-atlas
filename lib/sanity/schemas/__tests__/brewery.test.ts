@@ -32,6 +32,11 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).toContain('highlights');
     expect(fieldNames).toContain('atmosphere');
     expect(fieldNames).toContain('image');
+    expect(fieldNames).toContain('logo');
+
+    const logoField = brewerySchema.fields.find((f) => f.name === 'logo') as any;
+    expect(logoField?.type).toBe('image');
+    expect(logoField?.options?.hotspot).toBe(true);
 
     // Curation & recommendations
     expect(fieldNames).toContain('featured');
