@@ -99,6 +99,26 @@ describe('Sanity Repositories with Canonical Dataset Injection', () => {
       expect(result?.slug).toBe('guinness-open-gate-brewery');
       expect(result?.city).toBe('Halethorpe');
     });
+
+    it('should query breweries by id and featured flags', async () => {
+      (vi.spyOn(sanityClient, 'fetch') as any).mockResolvedValue([
+        {
+          id: 'guinness-open-gate',
+          breweryId: 'guinness-open-gate',
+          slug: 'guinness-open-gate-brewery',
+          name: 'Guinness Open Gate Brewery',
+        },
+      ]);
+
+      const repo = new SanityBreweryRepository([canonicalBrewery]);
+
+      const byId = await repo.getById('guinness-open-gate');
+      expect(byId).not.toBeNull();
+      expect(byId?.id).toBe('guinness-open-gate');
+
+      const featured = await repo.getFeatured();
+      expect(featured).toHaveLength(1);
+    });
   });
 
   describe('SanityTrailRepository', () => {

@@ -77,6 +77,23 @@ describe('Sanity Repository Fallbacks and Zod Schema Validation', () => {
       const single = await repo.getBySlug(breweries[0].slug);
       expect(single).not.toBeNull();
       expect(single?.slug).toBe(breweries[0].slug);
+
+      const byId = await repo.getById(breweries[0].id);
+      expect(byId).not.toBeNull();
+
+      const featured = await repo.getFeatured();
+      expect(featured.length).toBeGreaterThan(0);
+    });
+
+    it('SanityBreweryRepository handles null or non-array API responses gracefully', async () => {
+      vi.spyOn(sanityClient, 'fetch').mockResolvedValue(null);
+
+      const repo = new SanityBreweryRepository();
+      const breweries = await repo.getAll();
+      expect(breweries).toEqual([]);
+
+      const single = await repo.getBySlug('non-existent');
+      expect(single).toBeNull();
     });
 
     it('SanityTrailRepository falls back to mock data when sanityClient.fetch throws an error', async () => {

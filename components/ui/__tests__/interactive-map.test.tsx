@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { InteractiveMapContent } from '@/components/ui/interactive-map-content';
 import { Brewery, BeerTrail } from '@/lib/types';
@@ -219,5 +219,113 @@ describe('InteractiveMapContent Component', () => {
     expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
     expect(screen.getByText(/Showing distance relative to your current location/i)).toBeInTheDocument();
     expect(screen.getByText('0.0 mi')).toBeInTheDocument();
+  });
+
+  it('supports multi-select dropdown ARIA listbox attributes and keyboard navigation', () => {
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    // Find the button for Regions multi-select dropdown
+    const regionsBtn = screen.getByRole('button', { name: /All Regions/i });
+    expect(regionsBtn).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(regionsBtn).toHaveAttribute('aria-expanded', 'false');
+
+    // Click to open listbox
+    fireEvent.click(regionsBtn);
+    expect(regionsBtn).toHaveAttribute('aria-expanded', 'true');
+
+    const listbox = screen.getByRole('listbox', { name: 'Regions' });
+    expect(listbox).toBeInTheDocument();
+
+    const options = screen.getAllByRole('option');
+    expect(options.length).toBeGreaterThan(0);
+
+    // Option Central
+    const centralOption = screen.getByRole('option', { name: /Central/i });
+    expect(centralOption).toHaveAttribute('aria-selected', 'false');
+
+    // Toggle Central using Space key
+    fireEvent.keyDown(centralOption, { key: ' ' });
+    expect(centralOption).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('Matching Breweries (2)')).toBeInTheDocument();
+
+    // Close listbox with Escape key
+    fireEvent.keyDown(listbox, { key: 'Escape' });
+    expect(screen.queryByRole('listbox', { name: 'Regions' })).not.toBeInTheDocument();
+  });
+
+  it('filters map results using multi-criteria filter combinations simultaneously', () => {
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    // Filter by Region = Central
+    const regionsBtn = screen.getByRole('button', { name: /All Regions/i });
+    fireEvent.click(regionsBtn);
+    const centralOption = screen.getByRole('option', { name: /Central/i });
+    fireEvent.click(centralOption);
+
+    // Filter by Amenities = Outdoor Seating
+    const amenitiesBtn = screen.getByRole('button', { name: /All Amenities/i });
+    fireEvent.click(amenitiesBtn);
+    const outdoorOption = screen.getByRole('option', { name: /Outdoor Seating/i });
+    fireEvent.click(outdoorOption);
+
+    // Enter Search query = Flying
+    const searchInput = screen.getByPlaceholderText('Search by brewery, city, or style...');
+    fireEvent.change(searchInput, { target: { value: 'Flying' } });
+
+    expect(screen.getByText('Matching Breweries (1)')).toBeInTheDocument();
+    expect(screen.getAllByText('Flying Dog Brewery').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Burley Oak Brewing Company')).not.toBeInTheDocument();
+  });
+
+  it('deselects selectedBrewery when filter change removes the brewery from visible list', async () => {
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    // Select Burley Oak Brewing Company (b2)
+    const burleyBtn = screen.getByText('Burley Oak Brewing Company');
+    fireEvent.click(burleyBtn);
+
+    expect(screen.getByTestId('selected-brewery-id')).toHaveTextContent('b2');
+
+    // Filter by Region = Central (which hides Burley Oak which is Eastern Shore)
+    const regionsBtn = screen.getByRole('button', { name: /All Regions/i });
+    fireEvent.click(regionsBtn);
+    const centralOption = screen.getByRole('option', { name: /Central/i });
+    fireEvent.click(centralOption);
+
+    // selectedBrewery should automatically reset to null (async timeout sync)
+    await waitFor(() => {
+      expect(screen.queryByTestId('selected-brewery-id')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('No Brewery Selected')).toBeInTheDocument();
+  });
+
+  it('allows clearing user location and resetting location error message', async () => {
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn().mockImplementation((success) =>
+        success({
+          coords: {
+            latitude: 39.3621,
+            longitude: -77.4245,
+          },
+        })
+      ),
+    };
+
+    // @ts-expect-error Mocking browser navigator.geolocation
+    global.navigator.geolocation = mockGeolocation;
+
+    render(<InteractiveMapContent breweries={mockBreweries} trails={mockTrails} />);
+
+    // Click Near Me button
+    const nearMeBtn = screen.getByRole('button', { name: /Use my location to find nearby breweries/i });
+    fireEvent.click(nearMeBtn);
+
+    expect(screen.getByText(/Showing distance relative to your current location/i)).toBeInTheDocument();
+
+    // Click Clear Location button
+    const clearLocBtn = screen.getByRole('button', { name: /Clear Location/i });
+    fireEvent.click(clearLocBtn);
+
+    expect(screen.queryByText(/Showing distance relative to your current location/i)).not.toBeInTheDocument();
   });
 });
