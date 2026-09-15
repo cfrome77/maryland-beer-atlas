@@ -23,6 +23,34 @@ export const brewerySchema = {
       validation: (Rule: any) => Rule.required().min(2).max(100),
     },
     {
+      name: 'postalCode',
+      title: 'Postal Code',
+      type: 'string',
+      group: 'identity',
+      description: '5-digit or 9-digit postal / ZIP code for geocoding and proximity searching.',
+      validation: (Rule: any) =>
+        Rule.custom((postalCode: any) => {
+          if (!postalCode) return true;
+          return /^\d{5}(-\d{4})?$/.test(postalCode) || 'Postal code must be a valid 5-digit or 9-digit US ZIP code';
+        }),
+    },
+    {
+      name: 'latitude',
+      title: 'Latitude',
+      type: 'number',
+      group: 'identity',
+      description: 'Geographic latitude coordinate (-90 to 90).',
+      validation: (Rule: any) => Rule.min(-90).max(90),
+    },
+    {
+      name: 'longitude',
+      title: 'Longitude',
+      type: 'number',
+      group: 'identity',
+      description: 'Geographic longitude coordinate (-180 to 180).',
+      validation: (Rule: any) => Rule.min(-180).max(180),
+    },
+    {
       name: 'slug',
       title: 'Slug',
       type: 'slug',

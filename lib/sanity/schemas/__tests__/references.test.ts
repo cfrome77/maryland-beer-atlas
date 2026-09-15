@@ -106,6 +106,9 @@ describe('Sanity Schema Types and References', () => {
     expect(trailFields).toContain('stops');
     expect(trailFields).toContain('breweries');
     expect(trailFields).toContain('county');
+    expect(trailFields).toContain('postalCode');
+    expect(trailFields).toContain('latitude');
+    expect(trailFields).toContain('longitude');
     expect(trailFields).toContain('categories');
     expect(trailFields).toContain('notes');
 

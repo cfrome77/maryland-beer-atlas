@@ -220,6 +220,12 @@ describe('filterBreweries', () => {
     expect(result[0].name).toBe('Flying Dog Brewery');
   });
 
+  it('filters by postalCode', () => {
+    const result = filterBreweries(sampleBreweries, { postalCode: '21703' });
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Flying Dog Brewery');
+  });
+
   it('combines multiple filter parameters correctly', () => {
     const result = filterBreweries(sampleBreweries, {
       region: 'Western',
@@ -311,6 +317,25 @@ describe('filterBreweries', () => {
         { lastVerified: '2026-06-10', name: 'Station Brewpub' },
         { lastVerified: '2025-12-01', name: 'Old Craft Co' },
       ]);
+    });
+
+    it('sorts by postalCode-asc', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'postalCode-asc' });
+      expect(result.map((b) => b.zipCode)).toEqual(['21201', '21227', '21401', '21703', '21842']);
+    });
+
+    it('sorts by postalCode-desc', () => {
+      const result = filterBreweries(sampleBreweries, { sort: 'postalCode-desc' });
+      expect(result.map((b) => b.zipCode)).toEqual(['21842', '21703', '21401', '21227', '21201']);
+    });
+
+    it('sorts by proximity when userLocation is provided', () => {
+      // Near Baltimore Charles St (39.2904, -76.6122) -> Station Brewpub is closest
+      const result = filterBreweries(sampleBreweries, {
+        sort: 'proximity',
+        userLocation: { lat: 39.2904, lng: -76.6122 },
+      });
+      expect(result[0].name).toBe('Station Brewpub');
     });
   });
 });

@@ -1,6 +1,12 @@
 import { Brewery, MarylandRegion, BreweryType, OperationalCategory } from '../types';
 import { getOperationalCategory, isBreweryOpenNow } from './hours';
 
+import {
+  sortBreweriesByPostalCode,
+  sortBreweriesByProximity,
+  GeographicCoordinates,
+} from './geocoding';
+
 export type BrewerySortOption =
   | 'name-asc'
   | 'name-desc'
@@ -8,12 +14,17 @@ export type BrewerySortOption =
   | 'city-asc'
   | 'region-asc'
   | 'type-asc'
-  | 'verified-desc';
+  | 'verified-desc'
+  | 'postalCode-asc'
+  | 'postalCode-desc'
+  | 'proximity';
 
 export interface BreweryFilterParams {
   search?: string;
   region?: MarylandRegion | string;
   county?: string;
+  postalCode?: string;
+  userLocation?: GeographicCoordinates;
   type?: BreweryType | string;
   status?: OperationalCategory | string;
   amenity?: string;
@@ -33,8 +44,19 @@ const CANONICAL_OPERATIONAL_CATEGORIES: OperationalCategory[] = [
  */
 export function sortBreweries(
   breweries: Brewery[],
-  sortOption: BrewerySortOption = 'name-asc'
+  sortOption: BrewerySortOption = 'name-asc',
+  userLocation?: GeographicCoordinates
 ): Brewery[] {
+  if (sortOption === 'postalCode-asc') {
+    return sortBreweriesByPostalCode(breweries, true);
+  }
+  if (sortOption === 'postalCode-desc') {
+    return sortBreweriesByPostalCode(breweries, false);
+  }
+  if (sortOption === 'proximity' && userLocation) {
+    return sortBreweriesByProximity(breweries, userLocation);
+  }
+
   const sorted = [...breweries];
 
   sorted.sort((a, b) => {
@@ -101,22 +123,24 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
   const searchQuery = (filters.search || '').trim().toLowerCase();
   const targetRegion = filters.region || '';
   const targetCounty = filters.county || '';
+  const targetPostalCode = (filters.postalCode || '').trim().toLowerCase();
   const targetType = filters.type || '';
   const targetStatus = filters.status || '';
   const singleAmenity = filters.amenity || '';
   const selectedAmenities = filters.amenities || [];
 
   const filtered = breweries.filter((brewery) => {
-    // 1. Search Query Filter (name, city, description, beer styles)
+    // 1. Search Query Filter (name, city, zipCode, description, beer styles)
     if (searchQuery) {
       const matchesName = brewery.name.toLowerCase().includes(searchQuery);
       const matchesCity = brewery.city.toLowerCase().includes(searchQuery);
+      const matchesZip = (brewery.zipCode || '').toLowerCase().includes(searchQuery);
       const matchesDescription = (brewery.description || '').toLowerCase().includes(searchQuery);
       const matchesStyle = brewery.beerStyles.some((style) =>
         style.toLowerCase().includes(searchQuery)
       );
 
-      if (!matchesName && !matchesCity && !matchesDescription && !matchesStyle) {
+      if (!matchesName && !matchesCity && !matchesZip && !matchesDescription && !matchesStyle) {
         return false;
       }
     }
@@ -129,6 +153,14 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
     // 3. County Filter
     if (targetCounty && brewery.county !== targetCounty) {
       return false;
+    }
+
+    // 3b. Postal Code Filter (exact or prefix match)
+    if (targetPostalCode) {
+      const bZip = (brewery.zipCode || '').toLowerCase();
+      if (!bZip.startsWith(targetPostalCode)) {
+        return false;
+      }
     }
 
     // 4. Brewery Type Filter
@@ -175,5 +207,5 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
     return true;
   });
 
-  return sortBreweries(filtered, filters.sort || 'name-asc');
+  return sortBreweries(filtered, filters.sort || 'name-asc', filters.userLocation);
 }
