@@ -5,6 +5,13 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Tag, Dog, Beer, Utensils, Factory, Trees } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
+import { formatSanityOgImageUrl } from '@/lib/utils/og-image';
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return Object.keys(CATEGORY_MAP).map((slug) => ({ slug }));
+}
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Brewery } from '@/lib/types';
@@ -91,6 +98,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   }
 
   const countText = `${data.breweries.length} ${data.breweries.length === 1 ? 'brewery' : 'breweries'}`;
+  const firstImage = data.breweries.find((b) => b.image)?.image;
+  const ogImageUrl = formatSanityOgImageUrl(firstImage);
 
   return {
     title: `${data.title} (${data.breweries.length}) | Maryland Beer Atlas`,
@@ -103,6 +112,20 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description: data.desc,
       url: `https://marylandbeeratlas.com/breweries/category/${slug}`,
       type: 'website',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: data.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${data.title} (${data.breweries.length}) | Maryland Beer Atlas`,
+      description: data.desc,
+      images: [ogImageUrl],
     },
   };
 }

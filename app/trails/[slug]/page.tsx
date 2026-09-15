@@ -6,6 +6,16 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { safeValidateBeerTrail } from '@/lib/validations/schemas';
+import { formatSanityOgImageUrl } from '@/lib/utils/og-image';
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const trails = await contentService.trails.getAll();
+  return trails.map((trail) => ({
+    slug: trail.slug,
+  }));
+}
 import { Brewery } from '@/lib/types';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { TrailMapView } from '@/components/ui/trail-map-view';
@@ -34,6 +44,8 @@ export async function generateMetadata({ params }: TrailDetailPageProps): Promis
   }
   const trail = validationResult.data;
 
+  const ogImageUrl = formatSanityOgImageUrl(trail.image);
+
   return {
     title: `${trail.name} | Maryland Beer Trail Itinerary`,
     description: `Explore the ${trail.name}. Distance: ${trail.distance} (${trail.duration}). Stop highlights: ${trail.breweries.map(b => b.name).join(', ')}. Get the ultimate self-guided route.`,
@@ -47,11 +59,19 @@ export async function generateMetadata({ params }: TrailDetailPageProps): Promis
       url: `https://marylandbeeratlas.com/trails/${slug}`,
       images: [
         {
-          url: trail.image,
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
           alt: trail.name,
-        }
+        },
       ],
-    }
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${trail.name} | Curated Maryland Beer Trail`,
+      description: trail.description,
+      images: [ogImageUrl],
+    },
   };
 }
 
