@@ -5,6 +5,17 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { PageContainer } from '@/components/layout/page-container';
+import { formatSanityOgImageUrl } from '@/lib/utils/og-image';
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const breweries = await contentService.breweries.getAll();
+  const uniqueCounties = Array.from(new Set(breweries.map((b) => b.county)));
+  return uniqueCounties.map((county) => ({
+    slug: slugifyCounty(county),
+  }));
+}
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -55,6 +66,8 @@ export async function generateMetadata({ params }: CountyPageProps): Promise<Met
   }
 
   const countText = `${data.breweries.length} ${data.breweries.length === 1 ? 'brewery' : 'breweries'}`;
+  const firstImage = data.breweries.find((b) => b.image)?.image;
+  const ogImageUrl = formatSanityOgImageUrl(firstImage);
 
   return {
     title: `Best Breweries in ${data.countyName} County MD (${data.breweries.length}) | Taprooms & Map`,
@@ -67,6 +80,20 @@ export async function generateMetadata({ params }: CountyPageProps): Promise<Met
       description: `Discover ${countText} in ${data.countyName} County, Maryland. Check hours, dog-friendly outdoor seating, and directions.`,
       url: `https://marylandbeeratlas.com/breweries/county/${slug}`,
       type: 'website',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${data.countyName} County Breweries`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Best Breweries in ${data.countyName} County MD | Maryland Beer Atlas`,
+      description: `Discover ${countText} in ${data.countyName} County, Maryland. Check hours, dog-friendly outdoor seating, and directions.`,
+      images: [ogImageUrl],
     },
   };
 }

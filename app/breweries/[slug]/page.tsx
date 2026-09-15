@@ -25,6 +25,16 @@ import {
 } from "lucide-react";
 import { contentService } from "@/lib/services/content.service";
 import { safeValidateBrewery } from "@/lib/validations/schemas";
+import { formatSanityOgImageUrl } from "@/lib/utils/og-image";
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const breweries = await contentService.breweries.getAll();
+  return breweries.map((brewery) => ({
+    slug: brewery.slug,
+  }));
+}
 import { getDataFreshnessInfo } from "@/lib/utils/freshness";
 import { isBreweryOpenNow } from "@/lib/utils/hours";
 import {
@@ -74,6 +84,8 @@ export async function generateMetadata({
     ? `Specialty styles: ${brewery.beerStyles.join(", ")}. `
     : "";
 
+  const ogImageUrl = formatSanityOgImageUrl(brewery.image);
+
   return {
     title: `${brewery.name} | ${brewery.city}, MD Craft Brewery Details`,
     description: `Visit ${brewery.name} in ${brewery.city}, MD (${brewery.county} County). ${dogFriendlyText}${stylesText}View hours, amenities, interactive map, and editorial guide.`,
@@ -85,14 +97,20 @@ export async function generateMetadata({
       description: brewery.description,
       type: "article",
       url: `https://marylandbeeratlas.com/breweries/${slug}`,
-      images: brewery.image
-        ? [
-            {
-              url: brewery.image,
-              alt: brewery.name,
-            },
-          ]
-        : [],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: brewery.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${brewery.name} | ${brewery.city}, MD Brewery`,
+      description: brewery.description,
+      images: [ogImageUrl],
     },
   };
 }

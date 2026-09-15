@@ -16,6 +16,16 @@ import {
 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { safeValidateTravelGuide } from '@/lib/validations/schemas';
+import { formatSanityOgImageUrl } from '@/lib/utils/og-image';
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const guides = await contentService.guides.getAll();
+  return guides.map((guide) => ({
+    slug: guide.slug,
+  }));
+}
 import { BreweryStatusBadge } from '@/components/ui/brewery-status-badge';
 import { GuideTypeBadge } from '@/components/ui/guide-type-badge';
 import { getNearbyBreweriesForGuide } from '@/lib/utils/geocoding';
@@ -45,7 +55,8 @@ export async function generateMetadata({ params }: GuideDetailPageProps): Promis
 
   const title = guide.seo?.metaTitle || `${guide.title} | Maryland Beer Guide`;
   const description = guide.seo?.metaDescription || guide.description;
-  const ogImage = guide.seo?.ogImage || guide.image;
+  const rawOgImage = guide.seo?.ogImage || guide.image;
+  const ogImageUrl = formatSanityOgImageUrl(rawOgImage);
 
   return {
     title,
@@ -62,10 +73,18 @@ export async function generateMetadata({ params }: GuideDetailPageProps): Promis
       url: `https://marylandbeeratlas.com/guides/${slug}`,
       images: [
         {
-          url: ogImage,
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
           alt: guide.title,
         },
       ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImageUrl],
     },
   };
 }
