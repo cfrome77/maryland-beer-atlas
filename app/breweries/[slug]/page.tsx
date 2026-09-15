@@ -24,6 +24,7 @@ import {
   Tag,
 } from "lucide-react";
 import { contentService } from "@/lib/services/content.service";
+import { safeValidateBrewery } from "@/lib/validations/schemas";
 import { getDataFreshnessInfo } from "@/lib/utils/freshness";
 import { isBreweryOpenNow } from "@/lib/utils/hours";
 import {
@@ -49,13 +50,21 @@ export async function generateMetadata({
   params,
 }: BreweryDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const brewery = await contentService.breweries.getBySlug(slug);
+  const rawBrewery = await contentService.breweries.getBySlug(slug);
 
-  if (!brewery) {
+  if (!rawBrewery) {
     return {
       title: "Brewery Not Found | Maryland Beer Atlas",
     };
   }
+
+  const validationResult = safeValidateBrewery(rawBrewery);
+  if (!validationResult.success) {
+    return {
+      title: "Brewery Not Found | Maryland Beer Atlas",
+    };
+  }
+  const brewery = validationResult.data;
 
   const isDogFriendly = brewery.amenities?.some((a) =>
     a.toLowerCase().includes("dog friendly"),
@@ -92,11 +101,21 @@ export default async function BreweryDetailPage({
   params,
 }: BreweryDetailPageProps) {
   const { slug } = await params;
-  const brewery = await contentService.breweries.getBySlug(slug);
+  const rawBrewery = await contentService.breweries.getBySlug(slug);
 
-  if (!brewery) {
+  if (!rawBrewery) {
     notFound();
   }
+
+  const validationResult = safeValidateBrewery(rawBrewery);
+  if (!validationResult.success) {
+    console.error(
+      `[BreweryDetailPage] Invalid brewery data for slug "${slug}":`,
+      validationResult.formattedError
+    );
+    notFound();
+  }
+  const brewery = validationResult.data;
 
   const openStatus = isBreweryOpenNow(brewery);
   const freshness = getDataFreshnessInfo(brewery);

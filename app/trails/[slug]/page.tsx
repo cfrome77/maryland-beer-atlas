@@ -5,6 +5,7 @@ import { SafeImage } from '@/components/ui/safe-image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Compass, MapPin, Star, Beer as BeerIcon, Map as MapIcon, Clock, Route, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
+import { safeValidateBeerTrail } from '@/lib/validations/schemas';
 import { Brewery } from '@/lib/types';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { TrailMapView } from '@/components/ui/trail-map-view';
@@ -16,13 +17,21 @@ interface TrailDetailPageProps {
 
 export async function generateMetadata({ params }: TrailDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const trail = await contentService.trails.getBySlug(slug);
+  const rawTrail = await contentService.trails.getBySlug(slug);
 
-  if (!trail) {
+  if (!rawTrail) {
     return {
       title: 'Trail Not Found | Maryland Beer Atlas',
     };
   }
+
+  const validationResult = safeValidateBeerTrail(rawTrail);
+  if (!validationResult.success) {
+    return {
+      title: 'Trail Not Found | Maryland Beer Atlas',
+    };
+  }
+  const trail = validationResult.data;
 
   return {
     title: `${trail.name} | Maryland Beer Trail Itinerary`,
@@ -179,11 +188,18 @@ function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
 
 export default async function TrailDetailPage({ params }: TrailDetailPageProps) {
   const { slug } = await params;
-  const trail = await contentService.trails.getBySlug(slug);
+  const rawTrail = await contentService.trails.getBySlug(slug);
 
-  if (!trail) {
+  if (!rawTrail) {
     notFound();
   }
+
+  const validationResult = safeValidateBeerTrail(rawTrail);
+  if (!validationResult.success) {
+    console.error(`[TrailDetailPage] Invalid trail data for slug "${slug}":`, validationResult.formattedError);
+    notFound();
+  }
+  const trail = validationResult.data;
 
   const trailSchema = {
     "@context": "https://schema.org",

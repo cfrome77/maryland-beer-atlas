@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BeerTrail, Brewery } from '../../types';
 import { ITrailRepository } from '../interfaces';
+import { MockTrailRepository } from '../mock';
 import { sanityClient, isSanityConfigured } from '../../sanity/client';
 import { validateBeerTrail, validateBeerTrailList } from '../../validations/schemas';
 import { mergeSanityEditorialWithCanonical } from './brewery';
@@ -55,15 +56,10 @@ export class SanityTrailRepository implements ITrailRepository {
     }
   `;
 
-  constructor(private canonicalBreweries: Brewery[] = []) {}
+  private fallbackRepo: MockTrailRepository;
 
-  private ensureConfigured(): void {
-    if (!isSanityConfigured()) {
-      throw new Error(
-        'Sanity CMS configuration is missing or invalid (NEXT_PUBLIC_SANITY_PROJECT_ID is unconfigured). ' +
-        'Set valid Sanity environment variables or set USE_MOCK_DATA=true for development mock data.'
-      );
-    }
+  constructor(private canonicalBreweries: Brewery[] = []) {
+    this.fallbackRepo = new MockTrailRepository();
   }
 
   private mapTrailReferences(trailRecord: any): unknown {
@@ -114,34 +110,58 @@ export class SanityTrailRepository implements ITrailRepository {
   }
 
   async getAll(): Promise<BeerTrail[]> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "trail"] { ${this.baseProjection} }`
-    );
-    if (!results || results.length === 0) return [];
-    const mapped = results.map((t) => this.mapTrailReferences(t)).filter(Boolean);
-    return validateBeerTrailList(mapped);
+    if (!isSanityConfigured()) {
+      console.warn('[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.');
+      return this.fallbackRepo.getAll();
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "trail"] { ${this.baseProjection} }`
+      );
+      if (!results || results.length === 0) return [];
+      const mapped = results.map((t) => this.mapTrailReferences(t)).filter(Boolean);
+      return validateBeerTrailList(mapped);
+    } catch (error) {
+      console.warn('[SanityTrailRepository] Sanity fetch error, falling back to MockTrailRepository:', error);
+      return this.fallbackRepo.getAll();
+    }
   }
 
   async getById(id: string): Promise<BeerTrail | null> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "trail" && _id == $id] { ${this.baseProjection} }`,
-      { id }
-    );
-    if (!results || !results[0]) return null;
-    const mapped = this.mapTrailReferences(results[0]);
-    return mapped ? validateBeerTrail(mapped) : null;
+    if (!isSanityConfigured()) {
+      console.warn('[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.');
+      return this.fallbackRepo.getById(id);
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "trail" && _id == $id] { ${this.baseProjection} }`,
+        { id }
+      );
+      if (!results || !results[0]) return null;
+      const mapped = this.mapTrailReferences(results[0]);
+      return mapped ? validateBeerTrail(mapped) : null;
+    } catch (error) {
+      console.warn('[SanityTrailRepository] Sanity fetch error, falling back to MockTrailRepository:', error);
+      return this.fallbackRepo.getById(id);
+    }
   }
 
   async getBySlug(slug: string): Promise<BeerTrail | null> {
-    this.ensureConfigured();
-    const results = await sanityClient.fetch<unknown[]>(
-      `*[_type == "trail" && slug.current == $slug] { ${this.baseProjection} }`,
-      { slug }
-    );
-    if (!results || !results[0]) return null;
-    const mapped = this.mapTrailReferences(results[0]);
-    return mapped ? validateBeerTrail(mapped) : null;
+    if (!isSanityConfigured()) {
+      console.warn('[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.');
+      return this.fallbackRepo.getBySlug(slug);
+    }
+    try {
+      const results = await sanityClient.fetch<unknown[]>(
+        `*[_type == "trail" && slug.current == $slug] { ${this.baseProjection} }`,
+        { slug }
+      );
+      if (!results || !results[0]) return null;
+      const mapped = this.mapTrailReferences(results[0]);
+      return mapped ? validateBeerTrail(mapped) : null;
+    } catch (error) {
+      console.warn('[SanityTrailRepository] Sanity fetch error, falling back to MockTrailRepository:', error);
+      return this.fallbackRepo.getBySlug(slug);
+    }
   }
 }

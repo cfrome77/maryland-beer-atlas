@@ -14,6 +14,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
+import { safeValidateTravelGuide } from '@/lib/validations/schemas';
 import { BreweryStatusBadge } from '@/components/ui/brewery-status-badge';
 import { getGuideTypeBadge } from '@/components/ui/guides-directory-content';
 
@@ -23,13 +24,21 @@ interface GuideDetailPageProps {
 
 export async function generateMetadata({ params }: GuideDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const guide = await contentService.guides.getBySlug(slug);
+  const rawGuide = await contentService.guides.getBySlug(slug);
 
-  if (!guide) {
+  if (!rawGuide) {
     return {
       title: 'Guide Not Found | Maryland Beer Atlas',
     };
   }
+
+  const validationResult = safeValidateTravelGuide(rawGuide);
+  if (!validationResult.success) {
+    return {
+      title: 'Guide Not Found | Maryland Beer Atlas',
+    };
+  }
+  const guide = validationResult.data;
 
   const title = guide.seo?.metaTitle || `${guide.title} | Maryland Beer Guide`;
   const description = guide.seo?.metaDescription || guide.description;
@@ -60,11 +69,18 @@ export async function generateMetadata({ params }: GuideDetailPageProps): Promis
 
 export default async function GuideDetailPage({ params }: GuideDetailPageProps) {
   const { slug } = await params;
-  const guide = await contentService.guides.getBySlug(slug);
+  const rawGuide = await contentService.guides.getBySlug(slug);
 
-  if (!guide) {
+  if (!rawGuide) {
     notFound();
   }
+
+  const validationResult = safeValidateTravelGuide(rawGuide);
+  if (!validationResult.success) {
+    console.error(`[GuideDetailPage] Invalid guide data for slug "${slug}":`, validationResult.formattedError);
+    notFound();
+  }
+  const guide = validationResult.data;
 
   // Schema.org BlogPosting / Article JSON-LD Schema
   const guideSchema = {
