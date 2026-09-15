@@ -32,15 +32,10 @@ const GUIDE_TYPE_LABELS: Record<GuideType | 'all', { label: string; icon: React.
   education: { label: 'Beer Education', icon: GraduationCap, color: 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/30' },
 };
 
+import { GuideTypeBadge } from './guide-type-badge';
+
 export function getGuideTypeBadge(type?: GuideType) {
-  const meta = GUIDE_TYPE_LABELS[type || 'brewery_guide'] || GUIDE_TYPE_LABELS.brewery_guide;
-  const Icon = meta.icon;
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${meta.color}`}>
-      <Icon className="w-3.5 h-3.5 shrink-0" />
-      {meta.label}
-    </span>
-  );
+  return <GuideTypeBadge type={type} />;
 }
 
 export function GuidesDirectoryContent({ initialGuides }: GuidesDirectoryContentProps) {

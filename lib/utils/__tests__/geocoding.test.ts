@@ -6,8 +6,10 @@ import {
   filterBreweriesByRegion,
   sortBreweriesByProximity,
   sortBreweriesByPostalCode,
+  getNearbyBreweriesForTrail,
+  getNearbyBreweriesForGuide,
 } from '../geocoding';
-import { Brewery } from '../../types';
+import { Brewery, BeerTrail, TravelGuide } from '../../types';
 
 const sampleBreweries: Brewery[] = [
   {
@@ -163,6 +165,92 @@ describe('Geocoding & Geospatial Utility Helpers', () => {
     it('sorts breweries by ZIP code descending', () => {
       const sorted = sortBreweriesByPostalCode(sampleBreweries, false);
       expect(sorted.map((b) => b.zipCode)).toEqual(['21811', '21703', '21701']);
+    });
+  });
+
+  describe('getNearbyBreweriesForTrail', () => {
+    it('queries and returns nearby breweries within 5 miles excluding existing stops', () => {
+      const testTrail: BeerTrail = {
+        id: 'frederick-trail',
+        slug: 'frederick-trail',
+        name: 'Frederick Trail',
+        description: 'Test trail description',
+        region: 'Central',
+        distance: '5 miles',
+        duration: 'Half Day',
+        image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
+        highlight: 'Test highlight',
+        stops: [
+          {
+            order: 1,
+            brewery: sampleBreweries[0], // Flying Dog (21703, ~4.7 miles from Monocacy 21701)
+            isOptional: false,
+          },
+        ],
+        breweries: [sampleBreweries[0]],
+        nearbyAttractions: [],
+        difficulty: 'Easy',
+      };
+
+      const results = getNearbyBreweriesForTrail(testTrail, sampleBreweries, 5.0);
+
+      // Monocacy is within 5 miles of Flying Dog, and Flying Dog itself should be excluded
+      expect(results.length).toBe(1);
+      expect(results[0].brewery.id).toBe('monocacy');
+      expect(results[0].distanceMiles).toBeGreaterThan(0);
+      expect(results[0].distanceMiles).toBeLessThanOrEqual(5.0);
+    });
+
+    it('excludes permanently closed breweries from nearby results', () => {
+      const closedBrewery: Brewery = {
+        ...sampleBreweries[1],
+        id: 'closed-brewery',
+        slug: 'closed-brewery',
+        status: 'Permanently closed',
+      };
+
+      const testTrail: BeerTrail = {
+        id: 'frederick-trail',
+        slug: 'frederick-trail',
+        name: 'Frederick Trail',
+        description: 'Test trail description',
+        region: 'Central',
+        distance: '5 miles',
+        duration: 'Half Day',
+        image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
+        highlight: 'Test highlight',
+        stops: [{ order: 1, brewery: sampleBreweries[0], isOptional: false }],
+        breweries: [sampleBreweries[0]],
+        nearbyAttractions: [],
+        difficulty: 'Easy',
+      };
+
+      const results = getNearbyBreweriesForTrail(testTrail, [sampleBreweries[0], closedBrewery], 5.0);
+      expect(results.length).toBe(0);
+    });
+  });
+
+  describe('getNearbyBreweriesForGuide', () => {
+    it('queries and returns nearby breweries within 5 miles excluding recommended stops', () => {
+      const testGuide: TravelGuide = {
+        slug: 'frederick-guide',
+        title: 'Frederick Guide',
+        guideType: 'brewery_guide',
+        description: 'Test guide description',
+        author: 'Author',
+        publishDate: '2025-05-01',
+        region: 'Central',
+        image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
+        recommendedStops: [sampleBreweries[0]], // Flying Dog
+        tips: [],
+        content: '<p>Content</p>',
+      };
+
+      const results = getNearbyBreweriesForGuide(testGuide, sampleBreweries, 5.0);
+
+      expect(results.length).toBe(1);
+      expect(results[0].brewery.id).toBe('monocacy');
+      expect(results[0].distanceMiles).toBeLessThanOrEqual(5.0);
     });
   });
 });

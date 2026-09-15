@@ -1,4 +1,4 @@
-import { Brewery, MarylandRegion } from '../types';
+import { Brewery, BeerTrail, TravelGuide, MarylandRegion } from '../types';
 
 /**
  * Maryland Postal Code Geocoding & Geospatial Utility Module
@@ -258,6 +258,218 @@ export function sortBreweriesByProximity(
   });
 
   return sorted;
+}
+
+export interface NearbyBreweryResult {
+  brewery: Brewery;
+  distanceMiles: number;
+}
+
+/**
+ * Extracts valid geographic coordinates for a given brewery,
+ * falling back to postal code database if latitude/longitude are missing.
+ */
+export function getBreweryCoordinates(brewery: Brewery): GeographicCoordinates | null {
+  if (
+    brewery.coordinates &&
+    typeof brewery.coordinates.lat === 'number' &&
+    typeof brewery.coordinates.lng === 'number' &&
+    !isNaN(brewery.coordinates.lat) &&
+    !isNaN(brewery.coordinates.lng)
+  ) {
+    return brewery.coordinates;
+  }
+  return getCoordinatesForPostalCode(brewery.zipCode);
+}
+
+/**
+ * Dynamically queries and returns craft breweries within a specified radius (default 5 miles)
+ * of any stop along a beer trail itinerary, excluding breweries already included as stops.
+ */
+export function getNearbyBreweriesForTrail(
+  trail: BeerTrail,
+  allBreweries: Brewery[],
+  maxDistanceMiles: number = 5.0
+): NearbyBreweryResult[] {
+  if (!trail || !allBreweries || allBreweries.length === 0) return [];
+
+  // 1. Gather reference coordinates along the trail
+  const stopBreweries: Brewery[] = [];
+
+  if (Array.isArray(trail.stops) && trail.stops.length > 0) {
+    trail.stops.forEach((s) => {
+      if (s?.brewery) stopBreweries.push(s.brewery);
+    });
+  }
+  if (Array.isArray(trail.breweries)) {
+    trail.breweries.forEach((b) => {
+      if (b) stopBreweries.push(b);
+    });
+  }
+
+  const trailCoordinates: GeographicCoordinates[] = [];
+  const excludedKeys = new Set<string>();
+
+  stopBreweries.forEach((b) => {
+    if (b.id) excludedKeys.add(b.id);
+    if (b.slug) excludedKeys.add(b.slug);
+    const coords = getBreweryCoordinates(b);
+    if (coords) trailCoordinates.push(coords);
+  });
+
+  // Check if trail has standalone coordinates
+  const rawTrailAny = trail as Record<string, unknown>;
+  if (
+    typeof rawTrailAny.latitude === 'number' &&
+    typeof rawTrailAny.longitude === 'number' &&
+    !isNaN(rawTrailAny.latitude as number) &&
+    !isNaN(rawTrailAny.longitude as number)
+  ) {
+    trailCoordinates.push({
+      lat: rawTrailAny.latitude as number,
+      lng: rawTrailAny.longitude as number,
+    });
+  } else if (typeof rawTrailAny.postalCode === 'string') {
+    const pCoords = getCoordinatesForPostalCode(rawTrailAny.postalCode as string);
+    if (pCoords) trailCoordinates.push(pCoords);
+  }
+
+  if (trailCoordinates.length === 0) return [];
+
+  const results: NearbyBreweryResult[] = [];
+
+  allBreweries.forEach((candidate) => {
+    // Exclude permanently closed breweries
+    if (candidate.status === 'Permanently closed') return;
+
+    // Exclude existing trail stops
+    if ((candidate.id && excludedKeys.has(candidate.id)) || (candidate.slug && excludedKeys.has(candidate.slug))) {
+      return;
+    }
+
+    const candidateCoords = getBreweryCoordinates(candidate);
+    if (!candidateCoords) return;
+
+    // Compute minimum distance to any point along the trail
+    let minDistance = Infinity;
+    for (const refCoords of trailCoordinates) {
+      const dist = calculateHaversineDistance(
+        refCoords.lat,
+        refCoords.lng,
+        candidateCoords.lat,
+        candidateCoords.lng,
+        'miles'
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
+    }
+
+    if (minDistance <= maxDistanceMiles) {
+      results.push({
+        brewery: candidate,
+        distanceMiles: Math.round(minDistance * 10) / 10,
+      });
+    }
+  });
+
+  // Sort by proximity ascending
+  results.sort((a, b) => {
+    if (a.distanceMiles !== b.distanceMiles) {
+      return a.distanceMiles - b.distanceMiles;
+    }
+    return a.brewery.name.localeCompare(b.brewery.name, undefined, { sensitivity: 'base' });
+  });
+
+  return results;
+}
+
+/**
+ * Dynamically queries and returns craft breweries within a specified radius (default 5 miles)
+ * of any recommended stop or location featured in a travel guide, excluding already recommended stops.
+ */
+export function getNearbyBreweriesForGuide(
+  guide: TravelGuide,
+  allBreweries: Brewery[],
+  maxDistanceMiles: number = 5.0
+): NearbyBreweryResult[] {
+  if (!guide || !allBreweries || allBreweries.length === 0) return [];
+
+  const guideCoordinates: GeographicCoordinates[] = [];
+  const excludedKeys = new Set<string>();
+
+  if (Array.isArray(guide.recommendedStops)) {
+    guide.recommendedStops.forEach((b) => {
+      if (!b) return;
+      if (b.id) excludedKeys.add(b.id);
+      if (b.slug) excludedKeys.add(b.slug);
+      const coords = getBreweryCoordinates(b);
+      if (coords) guideCoordinates.push(coords);
+    });
+  }
+
+  const rawGuideAny = guide as Record<string, unknown>;
+  if (
+    typeof rawGuideAny.latitude === 'number' &&
+    typeof rawGuideAny.longitude === 'number' &&
+    !isNaN(rawGuideAny.latitude as number) &&
+    !isNaN(rawGuideAny.longitude as number)
+  ) {
+    guideCoordinates.push({
+      lat: rawGuideAny.latitude as number,
+      lng: rawGuideAny.longitude as number,
+    });
+  } else if (typeof rawGuideAny.postalCode === 'string') {
+    const pCoords = getCoordinatesForPostalCode(rawGuideAny.postalCode as string);
+    if (pCoords) guideCoordinates.push(pCoords);
+  }
+
+  if (guideCoordinates.length === 0) return [];
+
+  const results: NearbyBreweryResult[] = [];
+
+  allBreweries.forEach((candidate) => {
+    // Exclude permanently closed breweries
+    if (candidate.status === 'Permanently closed') return;
+
+    // Exclude existing recommended stops
+    if ((candidate.id && excludedKeys.has(candidate.id)) || (candidate.slug && excludedKeys.has(candidate.slug))) {
+      return;
+    }
+
+    const candidateCoords = getBreweryCoordinates(candidate);
+    if (!candidateCoords) return;
+
+    let minDistance = Infinity;
+    for (const refCoords of guideCoordinates) {
+      const dist = calculateHaversineDistance(
+        refCoords.lat,
+        refCoords.lng,
+        candidateCoords.lat,
+        candidateCoords.lng,
+        'miles'
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
+    }
+
+    if (minDistance <= maxDistanceMiles) {
+      results.push({
+        brewery: candidate,
+        distanceMiles: Math.round(minDistance * 10) / 10,
+      });
+    }
+  });
+
+  results.sort((a, b) => {
+    if (a.distanceMiles !== b.distanceMiles) {
+      return a.distanceMiles - b.distanceMiles;
+    }
+    return a.brewery.name.localeCompare(b.brewery.name, undefined, { sensitivity: 'base' });
+  });
+
+  return results;
 }
 
 /**

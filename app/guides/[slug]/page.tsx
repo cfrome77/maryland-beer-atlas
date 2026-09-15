@@ -12,11 +12,14 @@ import {
   MapPin,
   Route,
   Layers,
+  Beer as BeerIcon,
 } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { safeValidateTravelGuide } from '@/lib/validations/schemas';
 import { BreweryStatusBadge } from '@/components/ui/brewery-status-badge';
-import { getGuideTypeBadge } from '@/components/ui/guides-directory-content';
+import { GuideTypeBadge } from '@/components/ui/guide-type-badge';
+import { getNearbyBreweriesForGuide } from '@/lib/utils/geocoding';
+import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 
 interface GuideDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -81,6 +84,10 @@ export default async function GuideDetailPage({ params }: GuideDetailPageProps) 
     notFound();
   }
   const guide = validationResult.data;
+
+  // Query nearby craft breweries within 5 miles of guide stops or location
+  const allBreweries = await contentService.breweries.getAll();
+  const nearbyBreweries = getNearbyBreweriesForGuide(guide, allBreweries, 5.0);
 
   // Schema.org BlogPosting / Article JSON-LD Schema
   const guideSchema = {
@@ -148,7 +155,7 @@ export default async function GuideDetailPage({ params }: GuideDetailPageProps) 
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-zinc-950 shadow-sm inline-block">
                   {guide.region} Region
                 </span>
-                {getGuideTypeBadge(guide.guideType)}
+                <GuideTypeBadge type={guide.guideType} />
                 {guide.county && (
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-zinc-900/90 text-zinc-200 border border-zinc-700 backdrop-blur-sm">
                     {guide.county} County
@@ -340,6 +347,72 @@ export default async function GuideDetailPage({ params }: GuideDetailPageProps) 
                           <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2">
                             {relGuide.description}
                           </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Dynamically Queried Nearby Beverage Stops (Within 5 Miles) */}
+                {nearbyBreweries.length > 0 && (
+                  <div className="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-4" data-testid="guide-nearby-breweries-section">
+                    <div>
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-1">
+                        5-Mile Radius
+                      </span>
+                      <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-50 uppercase tracking-wider flex items-center gap-1.5">
+                        <BeerIcon className="w-4.5 h-4.5 text-amber-500" />
+                        Nearby Beverage Stops ({nearbyBreweries.length})
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        Craft breweries located within 5 miles of this guide&apos;s featured stops.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {nearbyBreweries.map(({ brewery, distanceMiles }) => (
+                        <div
+                          key={brewery.id}
+                          className="p-3.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-2"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 block mb-0.5">
+                                {distanceMiles} miles away
+                              </span>
+                              <Link
+                                href={`/breweries/${brewery.slug}`}
+                                className="font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-amber-500 transition-colors block leading-tight"
+                              >
+                                {brewery.name}
+                              </Link>
+                              <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                <MapPin className="w-3 h-3 text-amber-500 shrink-0" />
+                                <span>{brewery.city}, MD</span>
+                              </div>
+                            </div>
+                            <BreweryStatusBadge brewery={brewery} size="sm" />
+                          </div>
+
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                            {brewery.description}
+                          </p>
+
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-850">
+                            <BreweryDirectionsAction
+                              brewery={brewery}
+                              variant="secondary"
+                              size="sm"
+                              preferredApp="both"
+                              label="Directions"
+                            />
+                            <Link
+                              href={`/breweries/${brewery.slug}`}
+                              className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
+                            >
+                              View Details &rarr;
+                            </Link>
+                          </div>
                         </div>
                       ))}
                     </div>
