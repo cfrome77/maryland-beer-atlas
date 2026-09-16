@@ -208,7 +208,7 @@ export const trailSchema = {
       options: {
         hotspot: true,
       },
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.optional(),
     },
     {
       name: 'highlight',

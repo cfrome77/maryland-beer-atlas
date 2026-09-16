@@ -63,8 +63,8 @@ export const zipCodeSchema = z
 
 export const urlSchema = z
   .string()
-  .refine((val) => val === '' || URL_REGEX.test(val), {
-    message: 'Must be a valid HTTP or HTTPS URL (e.g., "https://www.example.com")',
+  .refine((val) => val === '' || URL_REGEX.test(val) || val.startsWith('/'), {
+    message: 'Must be a valid HTTP or HTTPS URL or relative asset path (e.g., "https://www.example.com" or "/images/brewery-placeholder.svg")',
   });
 
 export const dateSchema = z
@@ -428,6 +428,7 @@ export function normalizeUrl(url: string | null | undefined): string {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
   if (!trimmed) return '';
+  if (trimmed.startsWith('/')) return trimmed;
   if (!/^https?:\/\//i.test(trimmed)) {
     return `https://${trimmed}`;
   }
@@ -485,7 +486,9 @@ export function normalizeBreweryData(raw: unknown): unknown {
   }
 
   if (typeof data.image === 'string') {
-    data.image = normalizeUrl(data.image);
+    data.image = data.image.trim() ? normalizeUrl(data.image) : '/images/brewery-placeholder.svg';
+  } else if (!data.image) {
+    data.image = '/images/brewery-placeholder.svg';
   }
 
   if (typeof data.logo === 'string') {

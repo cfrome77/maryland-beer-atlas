@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "seed:sanity": "tsx -r ./scripts/setup-env.js scripts/seed-sanity.ts",
+    "seed:sanity:dev": "tsx -r ./scripts/setup-env.js scripts/seed-sanity.ts --dev",
+    "seed:sanity:prod": "tsx -r ./scripts/setup-env.js scripts/seed-sanity.ts --prod",
     "audit:breweries": "tsx -r ./scripts/setup-env.js scripts/audit-brewery-data.ts",
     "audit:data": "tsx -r ./scripts/setup-env.js scripts/audit-brewery-data.ts"
   },
