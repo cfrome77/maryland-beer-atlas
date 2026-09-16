@@ -118,7 +118,7 @@ export const brewerySchema = {
       options: {
         hotspot: true,
       },
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.optional(),
     },
     {
       name: 'logo',

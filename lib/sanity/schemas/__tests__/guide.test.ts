@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { guideSchema } from '../guide';
 import { schemaTypes } from '../index';
 
@@ -43,6 +43,14 @@ describe('Sanity Guide Editorial Schema', () => {
     expect(fieldNames).toContain('content');
     expect(fieldNames).toContain('gallery');
     expect(fieldNames).toContain('tips');
+
+    const imageField = guideSchema.fields.find((f) => f.name === 'image') as any;
+    expect(imageField?.type).toBe('image');
+    const mockRule = { optional: vi.fn().mockReturnThis() };
+    if (imageField?.validation) {
+      imageField.validation(mockRule);
+      expect(mockRule.optional).toHaveBeenCalled();
+    }
 
     const contentField = guideSchema.fields.find((f) => f.name === 'content') as any;
     expect(contentField?.type).toBe('array');

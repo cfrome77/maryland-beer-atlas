@@ -106,7 +106,7 @@ describe('Baseline Local Seeding Script & Helpers', () => {
   });
 
   it('should generate baseline Sanity seed documents for counties, categories, breweries, trails, and guides', () => {
-    const docs = generateSanitySeedDocuments();
+    const docs = generateSanitySeedDocuments({ mode: 'production' });
     expect(Array.isArray(docs)).toBe(true);
     expect(docs.length).toBeGreaterThan(50);
 
@@ -142,10 +142,23 @@ describe('Baseline Local Seeding Script & Helpers', () => {
     expect(Array.isArray(easternShoreGuide.content)).toBe(true);
   });
 
+  it('should generate a curated subset in development mode vs full dataset in production mode', () => {
+    const devDocs = generateSanitySeedDocuments({ mode: 'development' });
+    const prodDocs = generateSanitySeedDocuments({ mode: 'production' });
+
+    const devBreweries = devDocs.filter((d) => d._type === 'brewery');
+    const prodBreweries = prodDocs.filter((d) => d._type === 'brewery');
+
+    expect(devBreweries.length).toBe(5);
+    expect(prodBreweries.length).toBe(11);
+    expect(devDocs.length).toBeLessThan(prodDocs.length);
+  });
+
   it('should execute seedSanityDataset in dry-run mode cleanly without mutation', async () => {
-    const result = await seedSanityDataset({ dryRun: true });
+    const result = await seedSanityDataset({ dryRun: true, mode: 'production' });
     expect(result.success).toBe(true);
     expect(result.dryRun).toBe(true);
+    expect(result.mode).toBe('production');
     expect(result.documentCount).toBeGreaterThan(50);
     expect(result.byType.county).toBeGreaterThan(0);
     expect(result.byType.brewery).toBe(11);

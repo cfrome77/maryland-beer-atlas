@@ -194,19 +194,25 @@ The Sanity Studio is embedded directly within the Next.js App Router at `/studio
 ### Dataset Seeding (`scripts/seed-sanity.ts`)
 The repository includes an automated seed script that transforms canonical mock data into fully typed Sanity schema documents (`county`, `category`, `brewery`, `trail`, `guide`).
 
-#### 1. Dry-Run / Schema Verification Mode
-To verify document structures without writing to Sanity (or if `SANITY_API_WRITE_TOKEN` is not set):
-```bash
-npm run seed:sanity -- --dry-run
-```
+#### 1. Optional Images & Fallback Handling
+Image fields in Sanity schemas (`brewery`, `guide`, `trail`) are configured as optional (`Rule.optional()`). During dataset seeding or Sanity Studio content entry, images are not required. When image asset references are omitted, the application automatically falls back to local repository assets (`public/images/brewery-placeholder.svg`), allowing images to be added or swapped at any time.
 
-#### 2. Live Dataset Seeding
-To write baseline documents directly into your target Sanity dataset (`development` or `production`):
+#### 2. Development vs. Production Seeding Modes
+The seeding script supports mode separation to keep local development fast and focused:
+
+- **Development Mode (`npm run seed:sanity:dev`)**: Seeds a curated, representative subset of data (top featured breweries spanning all Maryland regions, along with matching trails and guides) to keep local datasets lightweight.
+- **Production Mode (`npm run seed:sanity:prod`)**: Seeds the complete statewide dataset of all known breweries, beer trails, and travel guides.
+- **Limit Flag (`--limit=N`)**: Allows seeding an explicit maximum count of brewery documents (e.g., `--limit=5`).
+
 ```bash
-NEXT_PUBLIC_SANITY_PROJECT_ID="your_project_id" \
-NEXT_PUBLIC_SANITY_DATASET="development" \
-SANITY_API_WRITE_TOKEN="your_write_token" \
-npm run seed:sanity
+# Seed development dataset (curated subset)
+npm run seed:sanity:dev
+
+# Seed production dataset (full dataset)
+npm run seed:sanity:prod
+
+# Dry-run validation mode (verifies schema documents without writing)
+npm run seed:sanity:dev -- --dry-run
 ```
 
 ---
