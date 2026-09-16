@@ -2,6 +2,12 @@
 import { mockBreweries, mockTrails, mockGuides } from '../data/mock-data';
 import { isSanityConfigured, getSanityWriteClient, getSanityDataset } from './client';
 
+export interface SeedOptions {
+  dryRun?: boolean;
+  mode?: 'development' | 'production' | 'auto';
+  limit?: number;
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -70,12 +76,48 @@ export function htmlStringToPortableText(html: string): any[] {
   return blocks;
 }
 
-export function generateSanitySeedDocuments(): any[] {
+export function resolveSeedMode(options?: SeedOptions): 'development' | 'production' {
+  if (options?.mode && options.mode !== 'auto') {
+    return options.mode;
+  }
+  const envMode = process.env.SEED_MODE?.toLowerCase();
+  if (envMode === 'dev' || envMode === 'development') return 'development';
+  if (envMode === 'prod' || envMode === 'production') return 'production';
+
+  const dataset = getSanityDataset();
+  if (dataset === 'development') return 'development';
+  return 'production';
+}
+
+export function generateSanitySeedDocuments(options?: SeedOptions): any[] {
   const documents: any[] = [];
+  const effectiveMode = resolveSeedMode(options);
+
+  let targetBreweries = mockBreweries;
+
+  if (effectiveMode === 'development' && !options?.limit) {
+    // Select a representative subset of breweries across regions for fast dev testing
+    const devSubsetIds = new Set(['flying-dog', 'elder-pine', 'union-craft', 'burley-oak', 'calvert-brewing']);
+    targetBreweries = mockBreweries.filter((b) => devSubsetIds.has(b.id));
+  } else if (options?.limit && options.limit > 0) {
+    targetBreweries = mockBreweries.slice(0, options.limit);
+  }
+
+  const selectedBreweryIds = new Set(targetBreweries.map((b) => b.id));
+
+  // Filter Trails & Guides to match selected breweries
+  const targetTrails = mockTrails.filter((t) =>
+    (t.stops || []).some((s) => selectedBreweryIds.has(s.brewery?.id)) ||
+    (t.breweries || []).some((b) => selectedBreweryIds.has(b.id))
+  );
+
+  const targetGuides = mockGuides.filter((g) =>
+    (g.recommendedStops || []).some((b) => selectedBreweryIds.has(b.id))
+  );
 
   // 1. County Documents
   const countyMap = new Map<string, { name: string; region: string }>();
-  for (const b of mockBreweries) {
+  for (const b of targetBreweries) {
     if (b.county) {
       const countySlug = slugify(b.county.endsWith('County') || b.county.endsWith('City') ? b.county : `${b.county} County`);
       if (!countyMap.has(countySlug)) {
@@ -101,7 +143,7 @@ export function generateSanitySeedDocuments(): any[] {
   // 2. Category Documents
   const categoryMap = new Map<string, { name: string; type: 'amenity' | 'style' | 'experience' }>();
 
-  for (const b of mockBreweries) {
+  for (const b of targetBreweries) {
     if (b.amenities) {
       for (const amenity of b.amenities) {
         const catSlug = slugify(amenity);
@@ -132,7 +174,7 @@ export function generateSanitySeedDocuments(): any[] {
   }
 
   // 3. Brewery Editorial Documents
-  for (const b of mockBreweries) {
+  for (const b of targetBreweries) {
     const countySlug = b.county ? slugify(b.county.endsWith('County') || b.county.endsWith('City') ? b.county : `${b.county} County`) : null;
     const breweryCategories = [
       ...(b.amenities || []).map((a) => ({ _type: 'reference', _ref: `category-${slugify(a)}` })),
@@ -159,29 +201,33 @@ export function generateSanitySeedDocuments(): any[] {
       },
       county: countySlug ? { _type: 'reference', _ref: `county-${countySlug}` } : undefined,
       categories: breweryCategories,
-      ...(b.logo ? { logo: { _type: 'image', asset: { _type: 'reference', _ref: `image-logo-${b.id}` } } } : {}),
+      ...(b.logo && b.logo.startsWith('image-') ? { logo: { _type: 'image', asset: { _type: 'reference', _ref: b.logo } } } : {}),
+      ...(b.image && b.image.startsWith('image-') ? { image: { _type: 'image', asset: { _type: 'reference', _ref: b.image } } } : {}),
     });
   }
 
   // 4. Trail Documents
-  for (const t of mockTrails) {
-    const stops = (t.stops || []).map((stop) => ({
-      _type: 'trailStop',
-      order: stop.order,
-      brewery: { _type: 'reference', _ref: `brewery-${stop.brewery.id}` },
-      isOptional: Boolean(stop.isOptional),
-      notes: stop.notes || '',
-      highlight: stop.highlight || '',
-      recommendedDuration: stop.recommendedDuration || '1-2 Hours',
-      attractions: stop.attractions || [],
-    }));
+  for (const t of targetTrails) {
+    const stops = (t.stops || [])
+      .filter((stop) => selectedBreweryIds.has(stop.brewery?.id))
+      .map((stop) => ({
+        _type: 'trailStop',
+        order: stop.order,
+        brewery: { _type: 'reference', _ref: `brewery-${stop.brewery.id}` },
+        isOptional: Boolean(stop.isOptional),
+        notes: stop.notes || '',
+        highlight: stop.highlight || '',
+        recommendedDuration: stop.recommendedDuration || '1-2 Hours',
+        attractions: stop.attractions || [],
+      }));
 
-    const breweries = (t.breweries || []).map((b) => ({
-      _type: 'reference',
-      _ref: `brewery-${b.id}`,
-    }));
+    const breweries = (t.breweries || [])
+      .filter((b) => selectedBreweryIds.has(b.id))
+      .map((b) => ({
+        _type: 'reference',
+        _ref: `brewery-${b.id}`,
+      }));
 
-    // Pick postalCode and coordinates from the first stop's brewery if available
     const firstStopBrewery = t.stops?.[0]?.brewery;
     documents.push({
       _id: `trail-${t.id}`,
@@ -201,20 +247,25 @@ export function generateSanitySeedDocuments(): any[] {
       notes: t.notes || '',
       stops,
       breweries,
+      ...(t.image && t.image.startsWith('image-') ? { image: { _type: 'image', asset: { _type: 'reference', _ref: t.image } } } : {}),
     });
   }
 
   // 5. Guide Documents
-  for (const g of mockGuides) {
-    const recommendedStops = (g.recommendedStops || []).map((b) => ({
-      _type: 'reference',
-      _ref: `brewery-${b.id}`,
-    }));
+  for (const g of targetGuides) {
+    const recommendedStops = (g.recommendedStops || [])
+      .filter((b) => selectedBreweryIds.has(b.id))
+      .map((b) => ({
+        _type: 'reference',
+        _ref: `brewery-${b.id}`,
+      }));
 
-    const relatedTrails = (g.relatedTrails || []).map((t) => ({
-      _type: 'reference',
-      _ref: `trail-${t.id}`,
-    }));
+    const relatedTrails = (g.relatedTrails || [])
+      .filter((t) => targetTrails.some((tt) => tt.id === t.id))
+      .map((t) => ({
+        _type: 'reference',
+        _ref: `trail-${t.id}`,
+      }));
 
     documents.push({
       _id: `guide-${g.slug}`,
@@ -234,19 +285,22 @@ export function generateSanitySeedDocuments(): any[] {
       recommendedStops,
       relatedTrails,
       content: typeof g.content === 'string' ? htmlStringToPortableText(g.content) : g.content,
+      ...(g.image && g.image.startsWith('image-') ? { image: { _type: 'image', asset: { _type: 'reference', _ref: g.image } } } : {}),
     });
   }
 
   return documents;
 }
 
-export async function seedSanityDataset(options: { dryRun?: boolean } = {}) {
-  const documents = generateSanitySeedDocuments();
+export async function seedSanityDataset(options: SeedOptions = {}) {
+  const effectiveMode = resolveSeedMode(options);
+  const documents = generateSanitySeedDocuments(options);
   const dataset = getSanityDataset();
 
   if (options.dryRun || !process.env.SANITY_API_WRITE_TOKEN || !isSanityConfigured()) {
-    console.log('--- Sanity Local Baseline Seeding (Dry-Run / Verification Mode) ---');
+    console.log(`--- Sanity Local Baseline Seeding (Dry-Run / Verification Mode - ${effectiveMode.toUpperCase()} MODE) ---`);
     console.log(`Target Dataset: ${dataset}`);
+    console.log(`Seeding Mode: ${effectiveMode}`);
     console.log(`Total Baseline Documents Prepared: ${documents.length}`);
 
     const byType = documents.reduce((acc, doc) => {
@@ -267,13 +321,14 @@ export async function seedSanityDataset(options: { dryRun?: boolean } = {}) {
     return {
       success: true,
       dryRun: true,
+      mode: effectiveMode,
       documentCount: documents.length,
       byType,
       documents,
     };
   }
 
-  console.log(`--- Seeding ${documents.length} baseline documents to Sanity dataset "${dataset}" ---`);
+  console.log(`--- Seeding ${documents.length} baseline documents (${effectiveMode.toUpperCase()} mode) to Sanity dataset "${dataset}" ---`);
   const client = getSanityWriteClient();
   const transaction = client.transaction();
 
@@ -282,11 +337,12 @@ export async function seedSanityDataset(options: { dryRun?: boolean } = {}) {
   }
 
   const result = await transaction.commit();
-  console.log(`Successfully committed baseline Sanity documents. Transaction ID: ${result.transactionId}`);
+  console.log(`Successfully committed baseline Sanity documents in ${effectiveMode} mode. Transaction ID: ${result.transactionId}`);
 
   return {
     success: true,
     dryRun: false,
+    mode: effectiveMode,
     transactionId: result.transactionId,
     documentCount: documents.length,
   };

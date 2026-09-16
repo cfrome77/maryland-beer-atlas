@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { brewerySchema } from '../brewery';
 
 describe('Sanity Brewery Editorial Schema', () => {
@@ -37,6 +37,14 @@ describe('Sanity Brewery Editorial Schema', () => {
     const logoField = brewerySchema.fields.find((f) => f.name === 'logo') as any;
     expect(logoField?.type).toBe('image');
     expect(logoField?.options?.hotspot).toBe(true);
+
+    const imageField = brewerySchema.fields.find((f) => f.name === 'image') as any;
+    expect(imageField?.type).toBe('image');
+    const mockRule = { optional: vi.fn().mockReturnThis() };
+    if (imageField?.validation) {
+      imageField.validation(mockRule);
+      expect(mockRule.optional).toHaveBeenCalled();
+    }
 
     // Curation & recommendations
     expect(fieldNames).toContain('featured');

@@ -89,7 +89,7 @@ export const guideSchema = {
       options: {
         hotspot: true,
       },
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: any) => Rule.optional(),
     },
     {
       name: 'content',
