@@ -142,6 +142,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SANITY_API_VERSION` | Client & Server | Optional | `2026-03-01` | Sanity API version date (`YYYY-MM-DD`). |
 | `SANITY_API_WRITE_TOKEN` | Server Only | Required for Seeding | - | Secret Sanity write token (with Create/Update/Delete permissions) for dataset seeding. |
 | `SANITY_API_READ_TOKEN` | Server Only | Optional | - | Optional read token for fetching draft documents or private datasets. |
+| `SANITY_REVALIDATE_SECRET` | Server Only | Optional | - | Secret token for authenticating Sanity On-Demand Webhook Revalidation (`/api/revalidate`). |
 
 > **Note on Map Keys**: No `NEXT_PUBLIC_MAPBOX_TOKEN`, `MAPTILER_KEY`, or proprietary map API keys are required! MapLibre GL JS renders open high-DPI CARTO Voyager tiles directly.
 
@@ -213,6 +214,23 @@ npm run seed:sanity:prod
 
 # Dry-run validation mode (verifies schema documents without writing)
 npm run seed:sanity:dev -- --dry-run
+```
+
+#### 3. On-Demand Cache Revalidation (`/api/revalidate`)
+To instantly revalidate static site pages when content is published in Sanity Studio (without waiting for the 60s ISR background window):
+1. In [Sanity Manage](https://manage.sanity.io), navigate to **API** -> **Webhooks**.
+2. Add a new Webhook targeting `https://marylandbeeratlas.com/api/revalidate`.
+3. Set Custom Header: `x-revalidate-secret: your_configured_secret_token`.
+4. Set Projection: `{ "_type": _type, "slug": slug.current }`.
+
+#### 4. Dataset Backup & Restore
+To export or restore Sanity dataset snapshots:
+```bash
+# Export production dataset backup
+npm run sanity:export production-backup.tar.gz
+
+# Import backup snapshot into development dataset
+npm run sanity:import production-backup.tar.gz development
 ```
 
 ---
