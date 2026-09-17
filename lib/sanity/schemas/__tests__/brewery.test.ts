@@ -34,11 +34,18 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).toContain('image');
     expect(fieldNames).toContain('logo');
 
-    const logoField = brewerySchema.fields.find((f) => f.name === 'logo') as any;
+    type SchemaField = {
+      name: string;
+      type: string;
+      options?: { hotspot?: boolean };
+      validation?: (rule: { optional: () => unknown }) => unknown;
+    };
+
+    const logoField = brewerySchema.fields.find((f) => f.name === 'logo') as SchemaField | undefined;
     expect(logoField?.type).toBe('image');
     expect(logoField?.options?.hotspot).toBe(true);
 
-    const imageField = brewerySchema.fields.find((f) => f.name === 'image') as any;
+    const imageField = brewerySchema.fields.find((f) => f.name === 'image') as SchemaField | undefined;
     expect(imageField?.type).toBe('image');
     const mockRule = { optional: vi.fn().mockReturnThis() };
     if (imageField?.validation) {

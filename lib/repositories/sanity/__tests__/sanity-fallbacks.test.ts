@@ -86,7 +86,7 @@ describe('Sanity Repository Fallbacks and Zod Schema Validation', () => {
     });
 
     it('SanityBreweryRepository handles null or non-array API responses gracefully', async () => {
-      vi.spyOn(sanityClient, 'fetch').mockResolvedValue(null as any);
+      vi.spyOn(sanityClient, 'fetch').mockResolvedValue(null as unknown as Awaited<ReturnType<typeof sanityClient.fetch>>);
 
       const repo = new SanityBreweryRepository();
       const breweries = await repo.getAll();
