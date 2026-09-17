@@ -1,0 +1,40 @@
+name: Maryland Beer Atlas CI/CD Quality Pipeline
+
+on:
+  push:
+    branches: [ main, master, 'feature/**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-audit:
+    name: Build, Test & Data Quality Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Project Dependencies
+        run: npm ci
+
+      - name: Execute TypeScript Compiler Check
+        run: npx tsc --noEmit
+
+      - name: Execute ESLint Code Linting
+        run: npm run lint
+
+      - name: Execute Vitest Test Suite
+        run: npm test
+
+      - name: Test Next.js Production Build
+        run: USE_MOCK_DATA=true npm run build
+
+      - name: Execute Dataset Quality Audit
+        run: npm run audit:data

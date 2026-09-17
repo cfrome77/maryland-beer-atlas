@@ -46,7 +46,7 @@ export function formatSanityOgImageUrl(
     // If it's a Sanity image object or asset reference
     if (typeof imageSource === "object" && imageSource !== null) {
       // Check if it has an asset or ref
-      return urlFor(imageSource as any)
+      return urlFor(imageSource as Parameters<typeof urlFor>[0])
         .width(width)
         .height(height)
         .fit(fit)
