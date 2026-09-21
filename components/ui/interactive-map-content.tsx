@@ -540,26 +540,60 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 />
               </div>
 
-              {/* Optional Trail Routes Layer toggler */}
+              {/* Regional Beer Trail Selection Dropdown & Layer Toggler */}
               {trails.length > 0 && (
                 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-850 space-y-3">
-                  <div>
-                    <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Active Beer Trail Layer</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {trails.map((trail) => (
-                        <button
-                          key={trail.id}
-                          onClick={() => handleTrailToggle(trail.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                            activeTrailId === trail.id
-                              ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
-                              : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
-                          }`}
-                        >
-                          <Eye className="w-3.5 h-3.5 shrink-0" />
-                          {trail.name}
-                        </button>
-                      ))}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
+                        Regional Beer Trail Curation
+                      </span>
+                      <select
+                        aria-label="Filter by Regional Beer Trail"
+                        value={activeTrailId || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            handleTrailToggle(val);
+                          } else {
+                            setActiveTrailId(null);
+                            setSelectedBrewery(null);
+                          }
+                        }}
+                        className="w-full py-2.5 px-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                      >
+                        <option value="" className="text-zinc-900 dark:text-zinc-100">
+                          Show All Breweries (No Trail Selected)
+                        </option>
+                        {trails.map((t) => (
+                          <option key={t.id} value={t.id} className="text-zinc-900 dark:text-zinc-100">
+                            🍻 {t.name} ({t.breweries?.length || t.stops?.length || 0} stops)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="shrink-0 pt-1 sm:pt-0">
+                      <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
+                        Quick Toggle
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {trails.map((trail) => (
+                          <button
+                            key={trail.id}
+                            type="button"
+                            onClick={() => handleTrailToggle(trail.id)}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+                              activeTrailId === trail.id
+                                ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
+                                : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
+                            }`}
+                          >
+                            <Eye className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate max-w-[120px]">{trail.name}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

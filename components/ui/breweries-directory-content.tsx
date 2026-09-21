@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity, ArrowUpDown, MapPin, Tag, Dog, Utensils, Factory, Trees } from 'lucide-react';
-import { Brewery, BreweryType, MarylandRegion, OperationalCategory, BEER_STYLES, BeerStyle } from '@/lib/types';
+import { Brewery, BeerTrail, BreweryType, MarylandRegion, OperationalCategory, BEER_STYLES, BeerStyle } from '@/lib/types';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
 import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
+import { getCoordinatesForPostalCode, calculateHaversineDistance, GeographicCoordinates } from '@/lib/utils/geocoding';
 import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 import { Compass, BookOpen, ArrowRight } from 'lucide-react';
@@ -17,6 +18,7 @@ import { RecommendationsPanel } from '@/components/ui/recommendations/recommenda
 interface BreweriesDirectoryContentProps {
   breweries: Brewery[];
   guides?: TravelGuide[];
+  trails?: BeerTrail[];
   recommendations?: Recommendation[];
 }
 
@@ -76,7 +78,7 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Farm Brewery': 'farm-brewery',
 };
 
-function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [] }: BreweriesDirectoryContentProps) {
+function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recommendations = [] }: BreweriesDirectoryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -90,6 +92,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
   const initialBeerStyle = (searchParams?.get('beerStyle') as BeerStyle) || '';
   const initialQuickGuide = searchParams?.get('quickGuide') || '';
   const initialSort = (searchParams?.get('sort') as BrewerySortOption) || 'name-asc';
+  const initialPostalCode = searchParams?.get('postalCode') || '';
+  const initialRadius = searchParams?.get('radius') ? parseInt(searchParams.get('radius')!, 10) : 25;
+  const initialTrail = searchParams?.get('trail') || '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedRegion, setSelectedRegion] = useState<MarylandRegion | ''>(initialRegion);
@@ -100,6 +105,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
   const [selectedBeerStyle, setSelectedBeerStyle] = useState<BeerStyle | ''>(initialBeerStyle);
   const [selectedQuickGuide, setSelectedQuickGuide] = useState<string>(initialQuickGuide);
   const [selectedSort, setSelectedSort] = useState<BrewerySortOption>(initialSort);
+  const [radiusPostalCode, setRadiusPostalCode] = useState<string>(initialPostalCode);
+  const [radiusMiles, setRadiusMiles] = useState<number>(initialRadius);
+  const [selectedTrail, setSelectedTrail] = useState<string>(initialTrail);
 
   // Region, Type, County and Amenity lists
   const regions: MarylandRegion[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
@@ -143,6 +151,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     beerStyle: BeerStyle | '';
     quickGuide: string;
     sort: BrewerySortOption;
+    postalCode: string;
+    radius: number;
+    trail: string;
   }>({
     search: initialSearch,
     region: initialRegion,
@@ -153,6 +164,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     beerStyle: initialBeerStyle,
     quickGuide: initialQuickGuide,
     sort: initialSort,
+    postalCode: initialPostalCode,
+    radius: initialRadius,
+    trail: initialTrail,
   });
 
   const filterStateRef = useRef({
@@ -163,6 +177,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     selectedStatus,
     selectedBeerStyle,
     selectedSort,
+    radiusPostalCode,
+    radiusMiles,
+    selectedTrail,
   });
 
   useEffect(() => {
@@ -174,8 +191,11 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
       selectedStatus,
       selectedBeerStyle,
       selectedSort,
+      radiusPostalCode,
+      radiusMiles,
+      selectedTrail,
     };
-  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedSort]);
+  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedSort, radiusPostalCode, radiusMiles, selectedTrail]);
 
   useEffect(() => {
     const currentSearch = searchParams?.get('search') || '';
@@ -187,6 +207,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     const currentBeerStyle = (searchParams?.get('beerStyle') as BeerStyle) || '';
     const currentQuickGuide = searchParams?.get('quickGuide') || '';
     const currentSort = (searchParams?.get('sort') as BrewerySortOption) || 'name-asc';
+    const currentPostalCode = searchParams?.get('postalCode') || '';
+    const currentRadius = searchParams?.get('radius') ? parseInt(searchParams.get('radius')!, 10) : 25;
+    const currentTrail = searchParams?.get('trail') || '';
 
     const prev = prevParamsRef.current;
     const hasChanged =
@@ -198,7 +221,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
       currentStatus !== prev.status ||
       currentBeerStyle !== prev.beerStyle ||
       currentQuickGuide !== prev.quickGuide ||
-      currentSort !== prev.sort;
+      currentSort !== prev.sort ||
+      currentPostalCode !== prev.postalCode ||
+      currentRadius !== prev.radius ||
+      currentTrail !== prev.trail;
 
     if (hasChanged) {
       setSearchQuery(currentSearch);
@@ -210,6 +236,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
       setSelectedBeerStyle(currentBeerStyle);
       setSelectedQuickGuide(currentQuickGuide);
       setSelectedSort(currentSort);
+      setRadiusPostalCode(currentPostalCode);
+      setRadiusMiles(currentRadius);
+      setSelectedTrail(currentTrail);
 
       prevParamsRef.current = {
         search: currentSearch,
@@ -221,6 +250,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
         beerStyle: currentBeerStyle,
         quickGuide: currentQuickGuide,
         sort: currentSort,
+        postalCode: currentPostalCode,
+        radius: currentRadius,
+        trail: currentTrail,
       };
     }
   }, [searchParams]);
@@ -235,6 +267,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     beerStyle: string = '',
     quickGuide: string = '',
     sort: BrewerySortOption = 'name-asc',
+    postalCode: string = '',
+    radius: number = 25,
+    trail: string = '',
     replace: boolean = false
   ) => {
     const params = new URLSearchParams();
@@ -247,6 +282,11 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     if (beerStyle) params.set('beerStyle', beerStyle);
     if (quickGuide) params.set('quickGuide', quickGuide);
     if (sort && sort !== 'name-asc') params.set('sort', sort);
+    if (postalCode) {
+      params.set('postalCode', postalCode);
+      params.set('radius', radius.toString());
+    }
+    if (trail) params.set('trail', trail);
 
     const query = params.toString();
     const url = query ? `/breweries?${query}` : '/breweries';
@@ -271,23 +311,38 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
         selectedStatus: s,
         selectedBeerStyle: bs,
         selectedSort: st,
+        radiusPostalCode: pc,
+        radiusMiles: rm,
+        selectedTrail: tr,
       } = filterStateRef.current;
-      const params = new URLSearchParams();
-      if (searchQuery) params.set('search', searchQuery);
-      if (r) params.set('region', r);
-      if (t) params.set('type', t);
-      if (c) params.set('county', c);
-      if (a) params.set('amenity', a);
-      if (s) params.set('status', s);
-      if (bs) params.set('beerStyle', bs);
-      if (st && st !== 'name-asc') params.set('sort', st);
-
-      const query = params.toString();
-      router.replace(query ? `/breweries?${query}` : '/breweries');
+      applyFilters(searchQuery, r, t, c, a, s, bs, '', st, pc, rm, tr, true);
     }, 400);
 
     return () => clearTimeout(timer);
   }, [searchQuery, searchParams, router]);
+
+  // Debounce postal code change in URL
+  useEffect(() => {
+    const currentPostalCode = searchParams?.get('postalCode') || '';
+    if (radiusPostalCode === currentPostalCode) return;
+
+    const timer = setTimeout(() => {
+      const {
+        selectedRegion: r,
+        selectedType: t,
+        selectedCounty: c,
+        selectedAmenity: a,
+        selectedStatus: s,
+        selectedBeerStyle: bs,
+        selectedSort: st,
+        radiusMiles: rm,
+        selectedTrail: tr,
+      } = filterStateRef.current;
+      applyFilters(searchQuery, r, t, c, a, s, bs, selectedQuickGuide, st, radiusPostalCode, rm, tr, true);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [radiusPostalCode, searchParams, searchQuery, selectedQuickGuide]);
 
   const handleQuickGuideChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -309,10 +364,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
       setSelectedStatus(targetStatus);
       setSelectedBeerStyle(targetBeerStyle);
 
-      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, targetBeerStyle, val, selectedSort);
+      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, targetBeerStyle, val, selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
     } else {
       setSelectedQuickGuide('');
-      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort);
+      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
     }
   };
 
@@ -320,52 +375,69 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     setSearchQuery(e.target.value);
   };
 
+  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRadiusPostalCode(e.target.value);
+  };
+
+  const handleRadiusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = parseInt(e.target.value, 10);
+    setRadiusMiles(val);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, selectedSort, radiusPostalCode, val, selectedTrail);
+  };
+
+  const handleTrailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedTrail(val);
+    setSelectedQuickGuide('');
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, val);
+  };
+
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as MarylandRegion | '';
     setSelectedRegion(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort);
+    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BreweryType | '';
     setSelectedType(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort);
+    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const handleCountyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedCounty(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort);
+    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const handleAmenityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedAmenity(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, selectedBeerStyle, '', selectedSort);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedStatus(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, selectedBeerStyle, '', selectedSort);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const handleBeerStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BeerStyle | '';
     setSelectedBeerStyle(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, val, '', selectedSort);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, val, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BrewerySortOption;
     setSelectedSort(val);
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, val);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, val, radiusPostalCode, radiusMiles, selectedTrail);
   };
 
   const resetFilters = () => {
@@ -378,6 +450,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     setSelectedBeerStyle('');
     setSelectedQuickGuide('');
     setSelectedSort('name-asc');
+    setRadiusPostalCode('');
+    setRadiusMiles(25);
+    setSelectedTrail('');
     router.push('/breweries');
   };
 
@@ -389,6 +464,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     amenity: selectedAmenity,
     status: selectedStatus,
     beerStyle: selectedBeerStyle || undefined,
+    radiusPostalCode: radiusPostalCode || undefined,
+    radiusMiles,
+    trailId: selectedTrail || undefined,
+    trails,
     sort: selectedSort,
   });
 
@@ -396,9 +475,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
     <>
       {/* Filter Controls Box */}
       <div className="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-4">
-        {/* Row 1: Search & Popular Guides preset select */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
+        {/* Row 1: Search & ZIP Proximity Search & Preset Select */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-4 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
             <input
               type="text"
@@ -410,22 +489,71 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
             />
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedQuickGuide}
-              onChange={handleQuickGuideChange}
-              aria-label="Popular guides and presets"
-              className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              <option value="" className="text-zinc-800 dark:text-zinc-200">
-                Select Popular Guide or Filter Preset...
-              </option>
-              {Object.keys(FILTER_PRESETS).map((key) => (
-                <option key={key} value={key} className="text-zinc-800 dark:text-zinc-200">
-                  {key}
+          {/* ZIP Code Proximity Search & Distance Radius Selector */}
+          <div className="lg:col-span-4 grid grid-cols-12 gap-2">
+            <div className="col-span-7 relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
+              <input
+                type="text"
+                aria-label="Filter by ZIP Code"
+                placeholder="ZIP Code (e.g. 21701)"
+                value={radiusPostalCode}
+                onChange={handlePostalCodeChange}
+                maxLength={5}
+                className="w-full pl-9 pr-3 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              />
+            </div>
+            <div className="col-span-5 relative">
+              <select
+                value={radiusMiles}
+                onChange={handleRadiusChange}
+                aria-label="Distance radius in miles"
+                className="w-full px-3 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
+              >
+                <option value={5}>Within 5 miles</option>
+                <option value={10}>Within 10 miles</option>
+                <option value={25}>Within 25 miles</option>
+                <option value={50}>Within 50 miles</option>
+                <option value={100}>Within 100 miles</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Regional Beer Trail Selector */}
+          <div className="lg:col-span-4 relative">
+            {trails.length > 0 ? (
+              <select
+                value={selectedTrail}
+                onChange={handleTrailChange}
+                aria-label="Filter by Regional Beer Trail"
+                className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
+              >
+                <option value="" className="text-zinc-800 dark:text-zinc-200">
+                  Select Regional Beer Trail...
                 </option>
-              ))}
-            </select>
+                {trails.map((t) => (
+                  <option key={t.id} value={t.id} className="text-zinc-800 dark:text-zinc-200">
+                    🍻 {t.name} ({t.stops?.length || t.breweries?.length || 0} stops)
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                value={selectedQuickGuide}
+                onChange={handleQuickGuideChange}
+                aria-label="Popular guides and presets"
+                className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
+              >
+                <option value="" className="text-zinc-800 dark:text-zinc-200">
+                  Select Popular Guide or Filter Preset...
+                </option>
+                {Object.keys(FILTER_PRESETS).map((key) => (
+                  <option key={key} value={key} className="text-zinc-800 dark:text-zinc-200">
+                    {key}
+                  </option>
+                ))}
+              </select>
+            )}
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
           </div>
         </div>
@@ -571,7 +699,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
           <div>
             Showing <span className="font-semibold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
           </div>
-          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedStatus || selectedBeerStyle || selectedQuickGuide) && (
+          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedStatus || selectedBeerStyle || selectedQuickGuide || radiusPostalCode || selectedTrail) && (
             <span className="text-amber-600 dark:text-amber-400 font-medium">Filters are currently active</span>
           )}
         </div>
@@ -769,10 +897,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], recommendations = [
   );
 }
 
-export function BreweriesDirectoryContainer({ breweries, guides = [], recommendations = [] }: BreweriesDirectoryContentProps) {
+export function BreweriesDirectoryContainer({ breweries, guides = [], trails = [], recommendations = [] }: BreweriesDirectoryContentProps) {
   return (
     <Suspense fallback={<div>Loading breweries directory...</div>}>
-      <BreweriesDirectoryContent breweries={breweries} guides={guides} recommendations={recommendations} />
+      <BreweriesDirectoryContent breweries={breweries} guides={guides} trails={trails} recommendations={recommendations} />
     </Suspense>
   );
 }
