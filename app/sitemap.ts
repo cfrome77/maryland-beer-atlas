@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { contentService } from '@/lib/services/content.service';
 import { CATEGORY_MAP } from '@/app/breweries/category/[slug]/page';
 import { slugifyCounty } from '@/app/breweries/county/[slug]/page';
+import { getOperationalCategory } from '@/lib/utils/hours';
 
 const BASE_URL = 'https://marylandbeeratlas.com';
 
@@ -13,6 +14,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const now = new Date();
+
+  // Filter out permanently closed breweries to include only active brewery routes
+  const activeBreweries = breweries.filter(
+    (b) => getOperationalCategory(b.status, b.structuredHours) !== 'permanently_closed'
+  );
 
   // Core static pages
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -48,16 +54,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Brewery detail routes
-  const breweryRoutes: MetadataRoute.Sitemap = breweries.map((b) => ({
+  // Active brewery detail routes
+  const breweryRoutes: MetadataRoute.Sitemap = activeBreweries.map((b) => ({
     url: `${BASE_URL}/breweries/${b.slug}`,
     lastModified: b.lastVerified ? new Date(b.lastVerified) : now,
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
-  // County routes
-  const uniqueCounties = Array.from(new Set(breweries.map((b) => b.county)));
+  // County routes for active breweries
+  const uniqueCounties = Array.from(new Set(activeBreweries.map((b) => b.county)));
   const countyRoutes: MetadataRoute.Sitemap = uniqueCounties.map((county) => ({
     url: `${BASE_URL}/breweries/county/${slugifyCounty(county)}`,
     lastModified: now,

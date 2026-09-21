@@ -95,7 +95,8 @@ export async function generateMetadata({
     openGraph: {
       title: `${brewery.name} | ${brewery.city}, MD Brewery`,
       description: brewery.description,
-      type: "article",
+      type: "website",
+      siteName: "Maryland Beer Atlas",
       url: `https://marylandbeeratlas.com/breweries/${slug}`,
       images: [
         {
@@ -151,8 +152,7 @@ export default async function BreweryDetailPage({
   // Schema.org JSON-LD
   const brewerySchema = {
     "@context": "https://schema.org",
-    "@type":
-      brewery.type === "Brewpub" ? "Brewery" : ["Brewery", "LocalBusiness"],
+    "@type": ["Brewery", "LocalBusiness"],
     name: brewery.name,
     description: brewery.description,
     image: brewery.image || undefined,
