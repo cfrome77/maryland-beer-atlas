@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
-import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X, Locate, Navigation, Loader2 } from 'lucide-react';
+import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X, Locate, Navigation, Loader2, ChevronDown } from 'lucide-react';
 import { Brewery, BeerTrail, TravelGuide, BEER_STYLES } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
@@ -21,7 +21,7 @@ const MapView = dynamic(
       <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded-3xl text-zinc-400">
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-xs">Loading Interactive Map...</p>
+          <p className="text-xs font-semibold">Loading Interactive Map...</p>
         </div>
       </div>
     ),
@@ -34,7 +34,7 @@ interface InteractiveMapContentProps {
   guides?: TravelGuide[];
 }
 
-// Mini custom multi-select dropdown component using pure React states for simplicity and precision.
+// Custom multi-select dropdown component using pure React states and full keyboard navigation / ARIA attributes.
 interface MultiSelectDropdownProps {
   label: string;
   options: string[];
@@ -119,11 +119,11 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
         aria-expanded={isOpen}
         aria-controls={`${id}-listbox`}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-left text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className="w-full min-h-[42px] flex items-center justify-between gap-2 px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-left text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
       >
         <span className="truncate">
           {selectedValues.length === 0 ? (
-            <span className="text-zinc-400 dark:text-zinc-500">{placeholder}</span>
+            <span className="text-zinc-400 dark:text-zinc-500 font-normal">{placeholder}</span>
           ) : (
             <span className="flex items-center gap-1.5">
               <span className="bg-amber-500 text-zinc-950 font-bold px-1.5 py-0.5 rounded text-[10px] leading-none shrink-0">
@@ -149,14 +149,10 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
               className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none"
               title="Clear selection"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-3.5 h-3.5" />
             </span>
           )}
-          <svg className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-          </svg>
+          <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
         </div>
       </button>
 
@@ -166,7 +162,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
           role="listbox"
           aria-label={label}
           aria-multiselectable="true"
-          className={`absolute ${alignRight ? 'right-0' : 'left-0'} mt-1 min-w-full w-max max-w-[280px] sm:max-w-xs max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1`}
+          className={`absolute ${alignRight ? 'right-0' : 'left-0'} mt-1 min-w-full w-max max-w-[280px] sm:max-w-xs max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl shadow-lg p-2 space-y-1`}
         >
           {options.map((option, idx) => {
             const isChecked = selectedValues.includes(option);
@@ -190,7 +186,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
                   checked={isChecked}
                   onChange={() => {}} // Controlled through the parent div's handlers
                   tabIndex={-1} // Avoid double tab stops
-                  className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-880 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 focus:outline-none pointer-events-none"
+                  className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-800 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 focus:outline-none pointer-events-none"
                 />
                 <span className="truncate">{option}</span>
               </div>
@@ -213,6 +209,10 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedBeerStyles, setSelectedBeerStyles] = useState<string[]>([]);
   const [selectedSort, setSelectedSort] = useState<BrewerySortOption>('name-asc');
 
+  // ZIP Code Proximity Search state
+  const [radiusPostalCode, setRadiusPostalCode] = useState<string>('');
+  const [radiusMiles, setRadiusMiles] = useState<number>(25);
+
   // Geolocation state
   const [userLocation, setUserLocation] = useState<GeographicCoordinates | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
@@ -225,7 +225,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const regions: string[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
   const types: string[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];
   const statusOptions = [
-    { label: 'All Statuses', value: '' },
+    { label: 'All Operational Statuses', value: '' },
     { label: 'Open Now', value: 'open_now' },
     { label: 'Open Taprooms', value: 'open' },
     { label: 'Temporarily Closed', value: 'temporarily_closed' },
@@ -281,6 +281,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
       beerStyles: selectedBeerStyles,
       sort: selectedSort,
       userLocation: userLocation || undefined,
+      radiusPostalCode: radiusPostalCode || undefined,
+      radiusMiles,
     });
 
     return filtered.filter((b) => {
@@ -298,7 +300,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
       return regionMatch && typeMatch && countyMatch;
     });
-  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedBeerStyles, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation]);
+  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedBeerStyles, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation, radiusPostalCode, radiusMiles]);
 
   const handleSelectBrewery = (brewery: Brewery) => {
     setSelectedBrewery(brewery);
@@ -313,6 +315,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedAmenities([]);
     setSelectedBeerStyles([]);
     setSelectedSort('name-asc');
+    setRadiusPostalCode('');
+    setRadiusMiles(25);
     setUserLocation(null);
     setLocationError(null);
     setActiveTrailId(null);
@@ -347,16 +351,16 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
         <div className="lg:col-span-8 flex flex-col gap-6">
 
           {/* Filter Controls Accordion/Container */}
-          <div className="bg-white dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-850 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-zinc-950 p-4 sm:p-6 rounded-3xl border border-zinc-200 dark:border-zinc-850 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-850 pb-3">
-              <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200 font-bold">
+              <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200 font-bold text-sm sm:text-base">
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || selectedBeerStyles.length > 0 || activeTrailId || userLocation || selectedSort !== 'name-asc') && (
+              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || selectedBeerStyles.length > 0 || activeTrailId || userLocation || radiusPostalCode || selectedSort !== 'name-asc') && (
                 <button
                   onClick={handleClearAllFilters}
-                  className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   Clear All Filters
                 </button>
@@ -364,107 +368,170 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
             </div>
 
             <div className="space-y-4">
-              {/* Search & Operational Status & Sorting & Geolocation Bar */}
+              {/* Row 1: Search & Operational Status & Sorting & Geolocation Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                 {/* Search Input */}
-                <div className="sm:col-span-12 lg:col-span-4 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                    <Search className="w-4 h-4" />
+                <div className="sm:col-span-12 lg:col-span-4 space-y-1">
+                  <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Search Map</span>
+                  <div className="relative">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by brewery, city, or style..."
+                      aria-label="Search map by brewery, city, or style"
+                      className="w-full pl-10 pr-9 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[42px]"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        aria-label="Clear search input"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by brewery, city, or style..."
-                    className="w-full pl-10 pr-9 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                      aria-label="Clear search input"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
                 </div>
 
                 {/* Status / Open Now Filter Dropdown */}
-                <div className="sm:col-span-6 lg:col-span-3 relative min-w-0">
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    aria-label="Filter by operational status"
-                    className="w-full py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate"
-                  >
-                    {statusOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="sm:col-span-6 lg:col-span-3 space-y-1">
+                  <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Status</span>
+                  <div className="relative">
+                    <select
+                      value={selectedStatus}
+                      onChange={(e) => setSelectedStatus(e.target.value)}
+                      aria-label="Filter by operational status"
+                      className="appearance-none w-full py-2.5 pl-3 pr-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate min-h-[42px]"
+                    >
+                      {statusOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+                  </div>
                 </div>
 
                 {/* Sort By Dropdown & Near Me button */}
-                <div className="sm:col-span-6 lg:col-span-5 flex gap-2 min-w-0">
-                  <select
-                    value={selectedSort}
-                    onChange={(e) => {
-                      const sortVal = e.target.value as BrewerySortOption;
-                      setSelectedSort(sortVal);
-                      if (sortVal === 'proximity' && !userLocation) {
-                        handleGetUserLocation();
-                      }
-                    }}
-                    aria-label="Sort breweries by"
-                    className="flex-1 min-w-0 py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate"
-                  >
-                    <option value="name-asc">Sort: Name (A-Z)</option>
-                    <option value="name-desc">Sort: Name (Z-A)</option>
-                    <option value="proximity">Sort: Distance (Nearest First)</option>
-                    <option value="county-asc">Sort: County</option>
-                    <option value="city-asc">Sort: City</option>
-                    <option value="type-asc">Sort: Brewery Type</option>
-                    <option value="verified-desc">Sort: Recently Verified</option>
-                  </select>
+                <div className="sm:col-span-6 lg:col-span-5 space-y-1">
+                  <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Sort & Geolocation</span>
+                  <div className="flex gap-2 min-w-0">
+                    <div className="relative flex-1 min-w-0">
+                      <select
+                        value={selectedSort}
+                        onChange={(e) => {
+                          const sortVal = e.target.value as BrewerySortOption;
+                          setSelectedSort(sortVal);
+                          if (sortVal === 'proximity' && !userLocation) {
+                            handleGetUserLocation();
+                          }
+                        }}
+                        aria-label="Sort breweries by"
+                        className="appearance-none w-full py-2.5 pl-3 pr-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate min-h-[42px]"
+                      >
+                        <option value="name-asc">Sort: Name (A-Z)</option>
+                        <option value="name-desc">Sort: Name (Z-A)</option>
+                        <option value="proximity">Sort: Distance (Nearest)</option>
+                        <option value="county-asc">Sort: County</option>
+                        <option value="city-asc">Sort: City</option>
+                        <option value="type-asc">Sort: Brewery Type</option>
+                        <option value="verified-desc">Sort: Recently Verified</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+                    </div>
 
-                  {/* Geolocation "Near Me" Button */}
-                  {userLocation ? (
-                    <button
-                      type="button"
-                      onClick={handleClearUserLocation}
-                      aria-label="Clear user location"
-                      title="Clear location"
-                      className="px-3 py-2.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shrink-0 hover:bg-amber-600 transition-colors cursor-pointer"
-                    >
-                      <Navigation className="w-3.5 h-3.5 fill-current" />
-                      <span className="hidden md:inline">Near Me</span>
-                      <X className="w-3 h-3" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleGetUserLocation}
-                      disabled={isLocating}
-                      aria-label="Use my location to find nearby breweries"
-                      title="Use my location"
-                      className="px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 font-semibold text-xs flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                      {isLocating ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
-                      ) : (
-                        <Locate className="w-3.5 h-3.5 text-amber-500" />
-                      )}
-                      <span className="hidden md:inline">{isLocating ? 'Locating...' : 'Near Me'}</span>
-                    </button>
-                  )}
+                    {/* Geolocation "Near Me" Button */}
+                    {userLocation ? (
+                      <button
+                        type="button"
+                        onClick={handleClearUserLocation}
+                        aria-label="Clear user location"
+                        title="Clear location"
+                        className="px-3 py-2.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shrink-0 hover:bg-amber-600 transition-colors cursor-pointer min-h-[42px]"
+                      >
+                        <Navigation className="w-3.5 h-3.5 fill-current" />
+                        <span className="hidden sm:inline">Near Me</span>
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleGetUserLocation}
+                        disabled={isLocating}
+                        aria-label="Use my location to find nearby breweries"
+                        title="Use my location"
+                        className="px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 font-semibold text-xs flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer disabled:opacity-50 min-h-[42px]"
+                      >
+                        {isLocating ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                        ) : (
+                          <Locate className="w-3.5 h-3.5 text-amber-500" />
+                        )}
+                        <span className="hidden sm:inline">{isLocating ? 'Locating...' : 'Near Me'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Location Feedback / Status Callout */}
+              {/* Row 2: ZIP Code Proximity Search Bar */}
+              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-850">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  <div className="sm:col-span-7 space-y-1">
+                    <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">ZIP Code Proximity</span>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
+                      <input
+                        type="text"
+                        aria-label="Filter map by ZIP Code"
+                        placeholder="ZIP Code (e.g. 21701)"
+                        value={radiusPostalCode}
+                        onChange={(e) => setRadiusPostalCode(e.target.value)}
+                        maxLength={5}
+                        className="w-full pl-9 pr-8 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[42px]"
+                      />
+                      {radiusPostalCode && (
+                        <button
+                          type="button"
+                          onClick={() => setRadiusPostalCode('')}
+                          aria-label="Clear map ZIP code input"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full focus:outline-none"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-5 space-y-1">
+                    <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Distance Radius</span>
+                    <div className="relative">
+                      <select
+                        value={radiusMiles}
+                        onChange={(e) => setRadiusMiles(parseInt(e.target.value, 10))}
+                        aria-label="Map distance radius in miles"
+                        className="appearance-none w-full py-2.5 pl-3 pr-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate min-h-[42px]"
+                      >
+                        <option value={5}>Within 5 miles</option>
+                        <option value={10}>Within 10 miles</option>
+                        <option value={25}>Within 25 miles</option>
+                        <option value={50}>Within 50 miles</option>
+                        <option value={100}>Within 100 miles</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Feedback / ZIP Code Radius Banner Callouts */}
               {userLocation && (
-                <div className="flex items-center justify-between text-xs px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
-                  <span className="flex items-center gap-1.5 font-medium">
+                <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
+                  <span className="flex items-center gap-1.5 font-semibold">
                     <Navigation className="w-3.5 h-3.5 text-amber-500 shrink-0 fill-current" />
                     Showing distance relative to your current location ({userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)})
                   </span>
@@ -477,8 +544,23 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
               )}
 
+              {radiusPostalCode && (
+                <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    Filtered within {radiusMiles} miles of ZIP Code <span className="underline font-bold">{radiusPostalCode}</span>
+                  </span>
+                  <button
+                    onClick={() => setRadiusPostalCode('')}
+                    className="text-[11px] font-bold underline hover:text-amber-800 dark:hover:text-amber-300 ml-2 cursor-pointer"
+                  >
+                    Clear ZIP
+                  </button>
+                </div>
+              )}
+
               {locationError && (
-                <div className="flex items-center justify-between text-xs px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+                <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
                   <span>{locationError}</span>
                   <button
                     onClick={() => setLocationError(null)}
@@ -490,7 +572,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               )}
 
               {/* Multi-Select Dropdowns grid - 5 columns */}
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                 <MultiSelectDropdown
                   label="Regions"
                   options={regions}
@@ -548,34 +630,37 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                       <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
                         Regional Beer Trail Curation
                       </span>
-                      <select
-                        aria-label="Filter by Regional Beer Trail"
-                        value={activeTrailId || ''}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val) {
-                            handleTrailToggle(val);
-                          } else {
-                            setActiveTrailId(null);
-                            setSelectedBrewery(null);
-                          }
-                        }}
-                        className="w-full py-2.5 px-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
-                      >
-                        <option value="" className="text-zinc-900 dark:text-zinc-100">
-                          Show All Breweries (No Trail Selected)
-                        </option>
-                        {trails.map((t) => (
-                          <option key={t.id} value={t.id} className="text-zinc-900 dark:text-zinc-100">
-                            🍻 {t.name} ({t.breweries?.length || t.stops?.length || 0} stops)
+                      <div className="relative">
+                        <select
+                          aria-label="Filter by Regional Beer Trail"
+                          value={activeTrailId || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val) {
+                              handleTrailToggle(val);
+                            } else {
+                              setActiveTrailId(null);
+                              setSelectedBrewery(null);
+                            }
+                          }}
+                          className="appearance-none w-full py-2.5 pl-3 pr-8 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[42px] truncate"
+                        >
+                          <option value="" className="text-zinc-900 dark:text-zinc-100">
+                            Show All Breweries (No Trail Selected)
                           </option>
-                        ))}
-                      </select>
+                          {trails.map((t) => (
+                            <option key={t.id} value={t.id} className="text-zinc-900 dark:text-zinc-100">
+                              🍻 {t.name} ({t.breweries?.length || t.stops?.length || 0} stops)
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="shrink-0 pt-1 sm:pt-0">
                       <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
-                        Quick Toggle
+                        Quick Trail Layer
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {trails.map((trail) => (
@@ -583,14 +668,14 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                             key={trail.id}
                             type="button"
                             onClick={() => handleTrailToggle(trail.id)}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer min-h-[38px] ${
                               activeTrailId === trail.id
                                 ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/10'
-                                : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
+                                : 'bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850'
                             }`}
                           >
                             <Eye className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate max-w-[120px]">{trail.name}</span>
+                            <span className="truncate max-w-[130px]">{trail.name}</span>
                           </button>
                         ))}
                       </div>
@@ -648,7 +733,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     <button
                       key={brewery.id}
                       onClick={() => handleSelectBrewery(brewery)}
-                      className={`text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer ${
+                      className={`text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-3 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] ${
                         isActive
                           ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-500 text-zinc-950 dark:text-white'
                           : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-850 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300'
@@ -676,7 +761,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               </div>
             ) : (
               <div className="p-8 text-center text-zinc-500 dark:text-zinc-400 text-sm">
-                No breweries match your selected filters. Try broadening your region or type preferences.
+                No breweries match your selected filters. Try broadening your search or region preferences.
               </div>
             )}
           </div>
