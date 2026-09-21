@@ -41,9 +41,10 @@ interface MultiSelectDropdownProps {
   selectedValues: string[];
   onChange: (values: string[]) => void;
   placeholder: string;
+  alignRight?: boolean;
 }
 
-function MultiSelectDropdown({ label, options, selectedValues, onChange, placeholder }: MultiSelectDropdownProps) {
+function MultiSelectDropdown({ label, options, selectedValues, onChange, placeholder, alignRight = false }: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -107,7 +108,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
     <div
       ref={containerRef}
       onKeyDown={handleKeyDown}
-      className="relative flex-1 min-w-[140px] md:min-w-[170px] space-y-1.5"
+      className="relative flex-1 min-w-0 w-full space-y-1.5"
     >
       <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{label}</span>
       <button
@@ -165,7 +166,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
           role="listbox"
           aria-label={label}
           aria-multiselectable="true"
-          className="absolute left-0 mt-1 w-full max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1"
+          className={`absolute ${alignRight ? 'right-0' : 'left-0'} mt-1 min-w-full w-max max-w-[280px] sm:max-w-xs max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1`}
         >
           {options.map((option, idx) => {
             const isChecked = selectedValues.includes(option);
@@ -525,6 +526,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     setSelectedBeerStyles(vals);
                   }}
                   placeholder="All Styles"
+                  alignRight={true}
                 />
                 <MultiSelectDropdown
                   label="Amenities"
@@ -534,6 +536,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     setSelectedAmenities(vals);
                   }}
                   placeholder="All Amenities"
+                  alignRight={true}
                 />
               </div>
 
