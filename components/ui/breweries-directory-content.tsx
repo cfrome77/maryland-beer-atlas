@@ -1,17 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity, ArrowUpDown, MapPin, Tag, Dog, Utensils, Factory, Trees } from 'lucide-react';
+import { Search, Filter, RotateCcw, Beer as BeerIcon, Activity, ArrowUpDown, MapPin, Tag, Dog, Utensils, Factory, Trees, ChevronDown, X, Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { Brewery, BeerTrail, BreweryType, MarylandRegion, OperationalCategory, BEER_STYLES, BeerStyle } from '@/lib/types';
 import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
 import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
-import { getCoordinatesForPostalCode, calculateHaversineDistance, GeographicCoordinates } from '@/lib/utils/geocoding';
 import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
-import { Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { Recommendation } from '@/lib/services/recommendation.service';
 import { RecommendationsPanel } from '@/components/ui/recommendations/recommendations-panel';
 
@@ -251,13 +249,13 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
         quickGuide: currentQuickGuide,
         sort: currentSort,
         postalCode: currentPostalCode,
-        radius: currentRadius,
+        radius: currentPostalCode ? currentRadius : 25,
         trail: currentTrail,
       };
     }
   }, [searchParams]);
 
-  const applyFilters = (
+  const applyFilters = useCallback((
     search: string,
     region: string,
     type: string,
@@ -295,7 +293,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     } else {
       router.push(url);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     const currentSearch = searchParams?.get('search') || '';
@@ -319,7 +317,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, searchParams, router]);
+  }, [searchQuery, searchParams, applyFilters]);
 
   // Debounce postal code change in URL
   useEffect(() => {
@@ -342,7 +340,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [radiusPostalCode, searchParams, searchQuery, selectedQuickGuide]);
+  }, [radiusPostalCode, searchParams, searchQuery, selectedQuickGuide, applyFilters]);
 
   const handleQuickGuideChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -473,216 +471,320 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
 
   return (
     <>
-      {/* Filter Controls Box */}
-      <div className="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-4">
-        {/* Row 1: Search & ZIP Proximity Search & Preset Select */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-4 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
-            <input
-              type="text"
-              aria-label="Search by name, style, city"
-              placeholder="Search by name, style, city..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="w-full pl-11 pr-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            />
-          </div>
+      {/* Filter Controls Panel */}
+      <div className="bg-white dark:bg-zinc-950 p-4 sm:p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-850 shadow-sm mb-10 space-y-5">
 
-          {/* ZIP Code Proximity Search & Distance Radius Selector */}
-          <div className="lg:col-span-4 grid grid-cols-12 gap-2">
-            <div className="col-span-7 relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
+        {/* Row 1: Primary Search & ZIP Code Proximity & Beer Trail / Presets */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4">
+
+          {/* Search Input */}
+          <div className="lg:col-span-4 space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Search Breweries
+            </span>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
               <input
                 type="text"
-                aria-label="Filter by ZIP Code"
-                placeholder="ZIP Code (e.g. 21701)"
-                value={radiusPostalCode}
-                onChange={handlePostalCodeChange}
-                maxLength={5}
-                className="w-full pl-9 pr-3 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                aria-label="Search by name, style, city"
+                placeholder="Search by name, style, city..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[44px]"
               />
-            </div>
-            <div className="col-span-5 relative">
-              <select
-                value={radiusMiles}
-                onChange={handleRadiusChange}
-                aria-label="Distance radius in miles"
-                className="w-full px-3 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-              >
-                <option value={5}>Within 5 miles</option>
-                <option value={10}>Within 10 miles</option>
-                <option value={25}>Within 25 miles</option>
-                <option value={50}>Within 50 miles</option>
-                <option value={100}>Within 100 miles</option>
-              </select>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search text"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full focus:outline-none"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Regional Beer Trail Selector */}
-          <div className="lg:col-span-4 relative">
-            {trails.length > 0 ? (
-              <select
-                value={selectedTrail}
-                onChange={handleTrailChange}
-                aria-label="Filter by Regional Beer Trail"
-                className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-              >
-                <option value="" className="text-zinc-800 dark:text-zinc-200">
-                  Select Regional Beer Trail...
-                </option>
-                {trails.map((t) => (
-                  <option key={t.id} value={t.id} className="text-zinc-800 dark:text-zinc-200">
-                    🍻 {t.name} ({t.stops?.length || t.breweries?.length || 0} stops)
+          {/* ZIP Code Proximity & Distance Selector */}
+          <div className="lg:col-span-4 space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              ZIP Code Radius Proximity
+            </span>
+            <div className="grid grid-cols-12 gap-2">
+              <div className="col-span-7 relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
+                <input
+                  type="text"
+                  aria-label="Filter by ZIP Code"
+                  placeholder="ZIP (e.g. 21701)"
+                  value={radiusPostalCode}
+                  onChange={handlePostalCodeChange}
+                  maxLength={5}
+                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[44px]"
+                />
+                {radiusPostalCode && (
+                  <button
+                    type="button"
+                    onClick={() => setRadiusPostalCode('')}
+                    aria-label="Clear ZIP code input"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full focus:outline-none"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="col-span-5 relative">
+                <select
+                  value={radiusMiles}
+                  onChange={handleRadiusChange}
+                  aria-label="Distance radius in miles"
+                  className="appearance-none w-full pl-3 pr-8 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+                >
+                  <option value={5}>5 miles</option>
+                  <option value={10}>10 miles</option>
+                  <option value={25}>25 miles</option>
+                  <option value={50}>50 miles</option>
+                  <option value={100}>100 miles</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
+          {/* Regional Beer Trail / Filter Presets Selector */}
+          <div className="lg:col-span-4 space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              {trails.length > 0 ? 'Regional Trail Itinerary' : 'Popular Preset Filter'}
+            </span>
+            <div className="relative">
+              {trails.length > 0 ? (
+                <select
+                  value={selectedTrail}
+                  onChange={handleTrailChange}
+                  aria-label="Filter by Regional Beer Trail"
+                  className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+                >
+                  <option value="" className="text-zinc-900 dark:text-zinc-100">
+                    Select Regional Beer Trail...
                   </option>
-                ))}
-              </select>
-            ) : (
-              <select
-                value={selectedQuickGuide}
-                onChange={handleQuickGuideChange}
-                aria-label="Popular guides and presets"
-                className="w-full pl-4 pr-10 py-3 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-              >
-                <option value="" className="text-zinc-800 dark:text-zinc-200">
-                  Select Popular Guide or Filter Preset...
-                </option>
-                {Object.keys(FILTER_PRESETS).map((key) => (
-                  <option key={key} value={key} className="text-zinc-800 dark:text-zinc-200">
-                    {key}
+                  {trails.map((t) => (
+                    <option key={t.id} value={t.id} className="text-zinc-900 dark:text-zinc-100">
+                      🍻 {t.name} ({t.stops?.length || t.breweries?.length || 0} stops)
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  value={selectedQuickGuide}
+                  onChange={handleQuickGuideChange}
+                  aria-label="Popular guides and presets"
+                  className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+                >
+                  <option value="" className="text-zinc-900 dark:text-zinc-100">
+                    Select Popular Guide or Filter Preset...
                   </option>
-                ))}
-              </select>
-            )}
-            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
+                  {Object.keys(FILTER_PRESETS).map((key) => (
+                    <option key={key} value={key} className="text-zinc-900 dark:text-zinc-100">
+                      {key}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
         </div>
 
-        {/* Row 2: Standard Filtering dropdowns & Reset button */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8 gap-4">
-          <div className="relative">
-            <select
-              value={selectedRegion}
-              onChange={handleRegionChange}
-              aria-label="Filter by region"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
+        {/* Active ZIP Code Proximity Banner Callout */}
+        {radiusPostalCode && (
+          <div className="flex items-center justify-between text-xs px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+              Searching within {radiusMiles} miles of ZIP Code <span className="font-bold underline">{radiusPostalCode}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setRadiusPostalCode('')}
+              className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
             >
-              <option value="">All Regions</option>
-              {regions.map((region) => (
-                <option key={region} value={region}>
-                  {region} Region
-                </option>
-              ))}
-            </select>
-            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+              Clear ZIP Filter <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Row 2: Standard Category Filtering Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+
+          {/* Region */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Region
+            </span>
+            <div className="relative">
+              <select
+                value={selectedRegion}
+                onChange={handleRegionChange}
+                aria-label="Filter by region"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                <option value="">All Regions</option>
+                {regions.map((region) => (
+                  <option key={region} value={region}>
+                    {region} Region
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedCounty}
-              onChange={handleCountyChange}
-              aria-label="Filter by county"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              <option value="">All Counties</option>
-              {counties.map((county) => (
-                <option key={county} value={county}>
-                  {county} County ({countyCounts[county] || 0})
-                </option>
-              ))}
-            </select>
-            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          {/* County */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              County
+            </span>
+            <div className="relative">
+              <select
+                value={selectedCounty}
+                onChange={handleCountyChange}
+                aria-label="Filter by county"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                <option value="">All Counties</option>
+                {counties.map((county) => (
+                  <option key={county} value={county}>
+                    {county} County ({countyCounts[county] || 0})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedType}
-              onChange={handleTypeChange}
-              aria-label="Filter by brewery type"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              <option value="">All Brewery Types</option>
-              {breweryTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type} ({typeCounts[type] || 0})
-                </option>
-              ))}
-            </select>
-            <BeerIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          {/* Brewery Type */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Brewery Type
+            </span>
+            <div className="relative">
+              <select
+                value={selectedType}
+                onChange={handleTypeChange}
+                aria-label="Filter by brewery type"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                <option value="">All Brewery Types</option>
+                {breweryTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type} ({typeCounts[type] || 0})
+                  </option>
+                ))}
+              </select>
+              <BeerIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedStatus}
-              onChange={handleStatusChange}
-              aria-label="Filter by operational status"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              {OPERATIONAL_STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <Activity className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          {/* Operational Status */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Operational Status
+            </span>
+            <div className="relative">
+              <select
+                value={selectedStatus}
+                onChange={handleStatusChange}
+                aria-label="Filter by operational status"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                {OPERATIONAL_STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <Activity className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedBeerStyle}
-              onChange={handleBeerStyleChange}
-              aria-label="Filter by beer style"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              <option value="">All Beer Styles</option>
-              {BEER_STYLES.map((style) => (
-                <option key={style} value={style}>
-                  {style}
-                </option>
-              ))}
-            </select>
-            <BeerIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          {/* Beer Style */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Beer Style
+            </span>
+            <div className="relative">
+              <select
+                value={selectedBeerStyle}
+                onChange={handleBeerStyleChange}
+                aria-label="Filter by beer style"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                <option value="">All Beer Styles</option>
+                {BEER_STYLES.map((style) => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </select>
+              <BeerIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedAmenity}
-              onChange={handleAmenityChange}
-              aria-label="Filter by amenity"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              <option value="">All Amenities</option>
-              {amenities.map((amenity) => (
-                <option key={amenity} value={amenity}>
-                  {amenity}
-                </option>
-              ))}
-            </select>
-            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          {/* Amenity */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Taproom Amenities
+            </span>
+            <div className="relative">
+              <select
+                value={selectedAmenity}
+                onChange={handleAmenityChange}
+                aria-label="Filter by amenity"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                <option value="">All Amenities</option>
+                {amenities.map((amenity) => (
+                  <option key={amenity} value={amenity}>
+                    {amenity}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedSort}
-              onChange={handleSortChange}
-              aria-label="Sort breweries"
-              className="w-full pl-4 pr-10 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  Sort: {opt.label}
-                </option>
-              ))}
-            </select>
-            <ArrowUpDown className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+          {/* Sort By */}
+          <div className="space-y-1.5">
+            <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              Sort Results
+            </span>
+            <div className="relative">
+              <select
+                value={selectedSort}
+                onChange={handleSortChange}
+                aria-label="Sort breweries"
+                className="appearance-none w-full pl-3.5 pr-9 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer min-h-[44px] truncate"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    Sort: {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div>
+          {/* Reset Action */}
+          <div className="space-y-1.5 flex flex-col justify-end">
+            <span className="block text-[10px] font-bold text-transparent uppercase tracking-wider select-none hidden sm:block">
+              Reset
+            </span>
             <button
               onClick={resetFilters}
               title="Reset Filters"
               aria-label="Reset all filters"
-              className="w-full py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
+              className="w-full py-2.5 sm:py-3 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[44px] cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               Reset Filters
@@ -690,17 +792,20 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
           </div>
         </div>
 
-        {/* Result Count and active filters with aria-live */}
+        {/* Result Count and active filters status with aria-live */}
         <div
           aria-live="polite"
           aria-atomic="true"
-          className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-850"
+          className="flex flex-wrap items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-3 border-t border-zinc-100 dark:border-zinc-850 gap-2"
         >
           <div>
-            Showing <span className="font-semibold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
+            Showing <span className="font-bold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
           </div>
           {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedStatus || selectedBeerStyle || selectedQuickGuide || radiusPostalCode || selectedTrail) && (
-            <span className="text-amber-600 dark:text-amber-400 font-medium">Filters are currently active</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+              <Filter className="w-3 h-3 fill-current" />
+              Active filters applied
+            </span>
           )}
         </div>
       </div>
