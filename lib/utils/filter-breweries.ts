@@ -1,4 +1,4 @@
-import { Brewery, MarylandRegion, BreweryType, OperationalCategory } from '../types';
+import { Brewery, MarylandRegion, BreweryType, OperationalCategory, BeerStyle } from '../types';
 import { getOperationalCategory, isBreweryOpenNow } from './hours';
 
 import {
@@ -29,6 +29,8 @@ export interface BreweryFilterParams {
   status?: OperationalCategory | string;
   amenity?: string;
   amenities?: string[];
+  beerStyle?: BeerStyle | string;
+  beerStyles?: (BeerStyle | string)[];
   sort?: BrewerySortOption;
 }
 
@@ -128,6 +130,8 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
   const targetStatus = filters.status || '';
   const singleAmenity = filters.amenity || '';
   const selectedAmenities = filters.amenities || [];
+  const singleBeerStyle = filters.beerStyle || '';
+  const selectedBeerStyles = filters.beerStyles || [];
 
   const filtered = breweries.filter((brewery) => {
     // 1. Search Query Filter (name, city, zipCode, description, beer styles)
@@ -200,6 +204,27 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
     if (
       selectedAmenities.length > 0 &&
       !selectedAmenities.every((amenity) => brewery.amenities.includes(amenity))
+    ) {
+      return false;
+    }
+
+    // 7. Beer Style / Beer Styles Filter
+    if (
+      singleBeerStyle &&
+      !brewery.beerStyles.some(
+        (style) => style.toLowerCase() === singleBeerStyle.toLowerCase()
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      selectedBeerStyles.length > 0 &&
+      !selectedBeerStyles.every((sStyle) =>
+        brewery.beerStyles.some(
+          (style) => style.toLowerCase() === sStyle.toLowerCase()
+        )
+      )
     ) {
       return false;
     }

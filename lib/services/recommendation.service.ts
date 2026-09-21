@@ -1,5 +1,5 @@
 import { contentService } from './content.service';
-import type { Brewery, TravelGuide } from '../types';
+import type { Brewery, TravelGuide, BeerStyle } from '../types';
 
 export type RecommendationSource = 'curated' | 'computed';
 
@@ -26,7 +26,7 @@ export interface RecommendationOptions {
   dogFriendlyRequired?: boolean;
   familyFriendlyRequired?: boolean;
   breweryType?: string;
-  beerStyles?: string[];
+  beerStyles?: (BeerStyle | string)[];
   region?: string;
   includeTemporarilyClosed?: boolean; // Default true (with explicit statusNote callouts)
 }

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { getDataFreshnessInfo, DataFreshnessInfo } from '../utils/freshness';
+import { BEER_STYLES } from '../constants/beer-styles';
 
 /**
  * Maryland Beer Atlas - Zod Runtime Validation Layer
@@ -85,6 +86,8 @@ export const breweryTypeSchema = z.enum([
   'Production',
   'Farm Brewery',
 ]);
+
+export const beerStyleSchema = z.enum(BEER_STYLES);
 
 export const breweryOperatingStatusSchema = z.enum([
   'Open',
@@ -196,7 +199,7 @@ export const brewerySchema = z.object({
   socialLinks: socialLinksSchema,
   coordinates: coordinatesSchema,
   hours: z.array(operatingHoursSchema),
-  beerStyles: z.array(z.string()),
+  beerStyles: z.array(beerStyleSchema),
   amenities: z.array(z.string()),
   featured: z.boolean(),
   lastVerified: dateSchema,

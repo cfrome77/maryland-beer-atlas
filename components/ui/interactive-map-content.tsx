@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
 import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X, Locate, Navigation, Loader2 } from 'lucide-react';
-import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
+import { Brewery, BeerTrail, TravelGuide, BEER_STYLES } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
@@ -41,9 +41,10 @@ interface MultiSelectDropdownProps {
   selectedValues: string[];
   onChange: (values: string[]) => void;
   placeholder: string;
+  alignRight?: boolean;
 }
 
-function MultiSelectDropdown({ label, options, selectedValues, onChange, placeholder }: MultiSelectDropdownProps) {
+function MultiSelectDropdown({ label, options, selectedValues, onChange, placeholder, alignRight = false }: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -107,7 +108,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
     <div
       ref={containerRef}
       onKeyDown={handleKeyDown}
-      className="relative flex-1 min-w-[140px] md:min-w-[170px] space-y-1.5"
+      className="relative flex-1 min-w-0 w-full space-y-1.5"
     >
       <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{label}</span>
       <button
@@ -165,7 +166,7 @@ function MultiSelectDropdown({ label, options, selectedValues, onChange, placeho
           role="listbox"
           aria-label={label}
           aria-multiselectable="true"
-          className="absolute left-0 mt-1 w-full max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1"
+          className={`absolute ${alignRight ? 'right-0' : 'left-0'} mt-1 min-w-full w-max max-w-[280px] sm:max-w-xs max-h-[220px] overflow-y-auto z-40 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-880 rounded-xl shadow-lg p-2.5 space-y-1`}
         >
           {options.map((option, idx) => {
             const isChecked = selectedValues.includes(option);
@@ -209,6 +210,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedBeerStyles, setSelectedBeerStyles] = useState<string[]>([]);
   const [selectedSort, setSelectedSort] = useState<BrewerySortOption>('name-asc');
 
   // Geolocation state
@@ -276,6 +278,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
       search: searchQuery,
       status: selectedStatus || undefined,
       amenities: selectedAmenities,
+      beerStyles: selectedBeerStyles,
       sort: selectedSort,
       userLocation: userLocation || undefined,
     });
@@ -295,7 +298,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
       return regionMatch && typeMatch && countyMatch;
     });
-  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation]);
+  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedBeerStyles, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation]);
 
   const handleSelectBrewery = (brewery: Brewery) => {
     setSelectedBrewery(brewery);
@@ -308,6 +311,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedTypes([]);
     setSelectedCounties([]);
     setSelectedAmenities([]);
+    setSelectedBeerStyles([]);
     setSelectedSort('name-asc');
     setUserLocation(null);
     setLocationError(null);
@@ -349,7 +353,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId || userLocation || selectedSort !== 'name-asc') && (
+              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || selectedBeerStyles.length > 0 || activeTrailId || userLocation || selectedSort !== 'name-asc') && (
                 <button
                   onClick={handleClearAllFilters}
                   className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -363,7 +367,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               {/* Search & Operational Status & Sorting & Geolocation Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                 {/* Search Input */}
-                <div className="sm:col-span-5 relative">
+                <div className="sm:col-span-12 lg:col-span-4 relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                     <Search className="w-4 h-4" />
                   </div>
@@ -386,12 +390,12 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
 
                 {/* Status / Open Now Filter Dropdown */}
-                <div className="sm:col-span-3 relative">
+                <div className="sm:col-span-6 lg:col-span-3 relative min-w-0">
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                     aria-label="Filter by operational status"
-                    className="w-full py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                    className="w-full py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate"
                   >
                     {statusOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -402,7 +406,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
 
                 {/* Sort By Dropdown & Near Me button */}
-                <div className="sm:col-span-4 flex gap-2">
+                <div className="sm:col-span-6 lg:col-span-5 flex gap-2 min-w-0">
                   <select
                     value={selectedSort}
                     onChange={(e) => {
@@ -413,7 +417,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                       }
                     }}
                     aria-label="Sort breweries by"
-                    className="flex-1 py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                    className="flex-1 min-w-0 py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate"
                   >
                     <option value="name-asc">Sort: Name (A-Z)</option>
                     <option value="name-desc">Sort: Name (Z-A)</option>
@@ -485,8 +489,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
               )}
 
-              {/* Multi-Select Dropdowns grid - 4 columns */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Multi-Select Dropdowns grid - 5 columns */}
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 <MultiSelectDropdown
                   label="Regions"
                   options={regions}
@@ -515,6 +519,16 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                   placeholder="All Types"
                 />
                 <MultiSelectDropdown
+                  label="Beer Styles"
+                  options={[...BEER_STYLES]}
+                  selectedValues={selectedBeerStyles}
+                  onChange={(vals) => {
+                    setSelectedBeerStyles(vals);
+                  }}
+                  placeholder="All Styles"
+                  alignRight={true}
+                />
+                <MultiSelectDropdown
                   label="Amenities"
                   options={amenities}
                   selectedValues={selectedAmenities}
@@ -522,6 +536,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     setSelectedAmenities(vals);
                   }}
                   placeholder="All Amenities"
+                  alignRight={true}
                 />
               </div>
 

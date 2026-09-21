@@ -68,7 +68,7 @@ const mockBreweries: Brewery[] = [
     image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
     hours: [{ day: 'Tuesday', hours: '12 PM - 10 PM' }],
     structuredHours: [],
-    beerStyles: ['Pilsner', 'Sauer'],
+    beerStyles: ['Pilsner', 'Sour'],
     amenities: ['Outdoor Seating'],
     featured: false,
     lastVerified: '2026-07-28',
