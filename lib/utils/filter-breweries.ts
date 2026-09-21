@@ -1,10 +1,13 @@
-import { Brewery, MarylandRegion, BreweryType, OperationalCategory, BeerStyle } from '../types';
+import { Brewery, BeerTrail, MarylandRegion, BreweryType, OperationalCategory, BeerStyle } from '../types';
 import { getOperationalCategory, isBreweryOpenNow } from './hours';
 
 import {
   sortBreweriesByPostalCode,
   sortBreweriesByProximity,
   GeographicCoordinates,
+  getCoordinatesForPostalCode,
+  calculateHaversineDistance,
+  getBreweryCoordinates,
 } from './geocoding';
 
 export type BrewerySortOption =
@@ -24,6 +27,10 @@ export interface BreweryFilterParams {
   region?: MarylandRegion | string;
   county?: string;
   postalCode?: string;
+  radiusPostalCode?: string;
+  radiusMiles?: number;
+  trailId?: string;
+  trails?: BeerTrail[];
   userLocation?: GeographicCoordinates;
   type?: BreweryType | string;
   status?: OperationalCategory | string;
@@ -132,8 +139,64 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
   const selectedAmenities = filters.amenities || [];
   const singleBeerStyle = filters.beerStyle || '';
   const selectedBeerStyles = filters.beerStyles || [];
+  const radiusPostalCode = (filters.radiusPostalCode || '').trim();
+  const radiusMiles = filters.radiusMiles;
+  const trailId = filters.trailId || '';
+  const trails = filters.trails || [];
+
+  // Determine postal code radius target center coordinates if requested
+  const postalCodeCoords = radiusPostalCode ? getCoordinatesForPostalCode(radiusPostalCode) : null;
+
+  // Resolve target trail breweries set if trailId filtering is active
+  let trailBreweryKeys: Set<string> | null = null;
+  if (trailId && trails.length > 0) {
+    const targetTrail = trails.find((t) => t.id === trailId || t.slug === trailId);
+    if (targetTrail) {
+      trailBreweryKeys = new Set<string>();
+      const trailStops = Array.isArray(targetTrail.stops) ? targetTrail.stops.map((s) => s.brewery) : [];
+      const trailBreweries = Array.isArray(targetTrail.breweries) ? targetTrail.breweries : [];
+      [...trailStops, ...trailBreweries].forEach((b) => {
+        if (b) {
+          if (b.id) trailBreweryKeys!.add(b.id);
+          if (b.slug) trailBreweryKeys!.add(b.slug);
+        }
+      });
+    }
+  }
 
   const filtered = breweries.filter((brewery) => {
+    // Trail Filter
+    if (trailBreweryKeys) {
+      const matchId = brewery.id && trailBreweryKeys.has(brewery.id);
+      const matchSlug = brewery.slug && trailBreweryKeys.has(brewery.slug);
+      if (!matchId && !matchSlug) {
+        return false;
+      }
+    }
+
+    // ZIP Code Proximity Radius Filter
+    if (radiusPostalCode && radiusMiles && radiusMiles > 0) {
+      if (postalCodeCoords) {
+        const bCoords = getBreweryCoordinates(brewery);
+        if (!bCoords) return false;
+        const dist = calculateHaversineDistance(
+          postalCodeCoords.lat,
+          postalCodeCoords.lng,
+          bCoords.lat,
+          bCoords.lng,
+          'miles'
+        );
+        if (dist > radiusMiles) {
+          return false;
+        }
+      } else {
+        // Fallback: prefix/exact ZIP match if coordinate lookup for input ZIP prefix fails
+        const bZip = (brewery.zipCode || '').toLowerCase();
+        if (!bZip.startsWith(radiusPostalCode.toLowerCase())) {
+          return false;
+        }
+      }
+    }
     // 1. Search Query Filter (name, city, zipCode, description, beer styles)
     if (searchQuery) {
       const matchesName = brewery.name.toLowerCase().includes(searchQuery);
@@ -232,5 +295,11 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
     return true;
   });
 
-  return sortBreweries(filtered, filters.sort || 'name-asc', filters.userLocation);
+  // Effective location for proximity sorting: explicit userLocation or postalCodeCoords if radiusPostalCode is active
+  const effectiveLocation = filters.userLocation || (postalCodeCoords || undefined);
+  const effectiveSort = (radiusPostalCode && postalCodeCoords && (!filters.sort || filters.sort === 'name-asc'))
+    ? 'proximity'
+    : (filters.sort || 'name-asc');
+
+  return sortBreweries(filtered, effectiveSort, effectiveLocation);
 }

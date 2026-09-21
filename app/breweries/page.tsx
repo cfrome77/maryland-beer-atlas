@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 export default async function BreweriesDirectoryPage() {
   const breweries = await contentService.breweries.getAll();
   const guides = await contentService.guides.getAll();
+  const trails = await contentService.trails.getAll();
 
   // Fetch curated recommendations (no user location by default). Guides and featured breweries
   // will surface as 'curated' editorial recommendations. Computed nearby suggestions require
@@ -46,7 +47,7 @@ export default async function BreweriesDirectoryPage() {
 
       {/* PageContainer structure */}
       <PageContainer size="default">
-        <BreweriesDirectoryContainer breweries={breweries} guides={guides} recommendations={recommendations} />
+        <BreweriesDirectoryContainer breweries={breweries} guides={guides} trails={trails} recommendations={recommendations} />
       </PageContainer>
     </div>
   );

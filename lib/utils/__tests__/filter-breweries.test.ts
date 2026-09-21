@@ -338,4 +338,60 @@ describe('filterBreweries', () => {
       expect(result[0].name).toBe('Station Brewpub');
     });
   });
+
+  describe('radiusPostalCode proximity filtering', () => {
+    it('filters breweries within a distance radius of a ZIP code center', () => {
+      // 21701 is Frederick (approx 39.4292, -77.4045). Flying Dog in Frederick 21703 (39.3821, -77.4045) is ~3.2 miles away.
+      const result = filterBreweries(sampleBreweries, {
+        radiusPostalCode: '21701',
+        radiusMiles: 10,
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Flying Dog Brewery');
+    });
+
+    it('returns empty list when no breweries are within specified radius', () => {
+      // 21701 (Frederick) with tight 1 mile radius won't reach Flying Dog (~3.2 miles away)
+      const result = filterBreweries(sampleBreweries, {
+        radiusPostalCode: '21701',
+        radiusMiles: 1,
+      });
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('trailId curation filtering', () => {
+    const mockTrails = [
+      {
+        id: 'frederick-beer-trail',
+        slug: 'frederick-beer-trail',
+        name: 'Frederick Beer Trail',
+        description: 'Frederick craft route',
+        region: 'Western' as const,
+        distance: '15 miles',
+        duration: '1 day',
+        breweries: [sampleBreweries[0]],
+        stops: [
+          {
+            order: 1,
+            brewery: sampleBreweries[0],
+            isOptional: false,
+          },
+        ],
+        image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658',
+        highlight: 'IPAs',
+        nearbyAttractions: [],
+        difficulty: 'Easy',
+      },
+    ];
+
+    it('filters breweries to only those on the specified trail', () => {
+      const result = filterBreweries(sampleBreweries, {
+        trailId: 'frederick-beer-trail',
+        trails: mockTrails,
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Flying Dog Brewery');
+    });
+  });
 });

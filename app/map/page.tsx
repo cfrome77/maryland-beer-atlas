@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 export default async function InteractiveMapPage() {
   const breweries = await contentService.breweries.getAll();
   const guides = await contentService.guides.getAll();
+  const trails = await contentService.trails.getAll();
 
   return (
     <div className="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
@@ -30,12 +31,12 @@ export default async function InteractiveMapPage() {
             Interactive Maryland Beer Map
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400 mt-2 text-base max-w-3xl">
-            Locate and explore craft breweries throughout Maryland. Select regions to filter the map, then tap on marker dots or the sidebar list to see rich taproom details.
+            Locate and explore craft breweries throughout Maryland. Select regions or regional beer trails to filter the map, then tap on marker dots or the sidebar list to see rich taproom details.
           </p>
         </div>
 
         {/* Interactive Map Component Content */}
-        <InteractiveMapContent breweries={breweries} guides={guides} />
+        <InteractiveMapContent breweries={breweries} guides={guides} trails={trails} />
       </div>
     </div>
   );
