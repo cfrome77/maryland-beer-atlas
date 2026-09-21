@@ -1,5 +1,5 @@
 import { Brewery, BeerTrail, TravelGuide } from '../../types';
-import { IBreweryRepository, ITrailRepository, IGuideRepository } from '../interfaces';
+import { IBreweryRepository, ITrailRepository, IGuideRepository, MapBreweryMarker } from '../interfaces';
 import { mockBreweries, mockTrails, mockGuides } from '../../data/mock-data';
 import {
   normalizeAndValidateBrewery,
@@ -30,6 +30,22 @@ export class MockBreweryRepository implements IBreweryRepository {
   async getFeatured(): Promise<Brewery[]> {
     const featured = this.breweries.filter((b) => b.featured);
     return normalizeAndValidateBreweryList(featured);
+  }
+
+  async getMapBreweries(): Promise<MapBreweryMarker[]> {
+    const all = await this.getAll();
+    return all.map((b) => ({
+      id: b.id,
+      breweryId: b.id,
+      slug: b.slug,
+      name: b.name,
+      latitude: b.coordinates?.lat,
+      longitude: b.coordinates?.lng,
+      postalCode: b.zipCode,
+      featured: b.featured,
+      amenities: b.amenities,
+      image: b.image,
+    }));
   }
 }
 

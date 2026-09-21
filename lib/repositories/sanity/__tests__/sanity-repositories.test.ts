@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SanityBreweryRepository } from '../brewery';
+import {
+  SanityBreweryRepository,
+  MAP_BREWERY_PROJECTION,
+  FULL_BREWERY_PROJECTION,
+  MAP_BREWERIES_QUERY,
+} from '../brewery';
 import { SanityTrailRepository } from '../trail';
 import { SanityGuideRepository } from '../guide';
 import { sanityClient } from '../../../sanity/client';
@@ -40,7 +45,7 @@ describe('Sanity Repositories with Canonical Dataset Injection', () => {
   });
 
   describe('SanityBreweryRepository', () => {
-    it('should map Sanity records and merge with provided canonical dataset', async () => {
+    it('should map Sanity records and merge with provided canonical dataset including hours, socialLinks, and amenities', async () => {
       (vi.spyOn(sanityClient, 'fetch') as any).mockResolvedValueOnce([
         {
           id: 'guinness-open-gate',
@@ -51,6 +56,9 @@ describe('Sanity Repositories with Canonical Dataset Injection', () => {
           highlights: ['Lawn Games', 'Historic Barrel Room'],
           atmosphere: ['Spacious'],
           featured: true,
+          hours: [{ day: 'Mon-Sun', hours: '10am-10pm' }],
+          socialLinks: { instagram: 'https://instagram.com/guinnessus' },
+          amenities: ['Beer Garden', 'Taproom', 'Guided Tours'],
         },
       ]);
 
@@ -61,7 +69,42 @@ describe('Sanity Repositories with Canonical Dataset Injection', () => {
       expect(results[0].id).toBe('guinness-open-gate');
       expect(results[0].description).toBe('Editorial description from Sanity.');
       expect(results[0].highlights).toEqual(['Lawn Games', 'Historic Barrel Room']);
+      expect(results[0].hours).toEqual([{ day: 'Mon-Sun', hours: '10am-10pm' }]);
+      expect(results[0].socialLinks?.instagram).toBe('https://instagram.com/guinnessus');
+      expect(results[0].amenities).toEqual(['Beer Garden', 'Taproom', 'Guided Tours']);
       expect(results[0].address).toBe('5001 Washington Blvd');
+    });
+
+    it('should fetch lightweight map view markers via getMapBreweries() using MAP_BREWERIES_QUERY', async () => {
+      const fetchSpy = (vi.spyOn(sanityClient, 'fetch') as any).mockResolvedValueOnce([
+        {
+          id: 'guinness-open-gate',
+          breweryId: 'guinness-open-gate',
+          slug: 'guinness-open-gate-brewery',
+          name: 'Guinness Open Gate Brewery',
+          latitude: 39.2082,
+          longitude: -76.7118,
+          postalCode: '21227',
+          featured: true,
+          amenities: ['Outdoor Seating'],
+          image: 'https://cdn.sanity.io/images/proj/dataset/img.jpg?auto=format&q=80',
+        },
+      ]);
+
+      const repo = new SanityBreweryRepository([canonicalBrewery]);
+      const mapMarkers = await repo.getMapBreweries();
+
+      expect(fetchSpy).toHaveBeenCalledWith(MAP_BREWERIES_QUERY);
+      expect(mapMarkers).toHaveLength(1);
+      expect(mapMarkers[0].id).toBe('guinness-open-gate');
+      expect(mapMarkers[0].latitude).toBe(39.2082);
+      expect(mapMarkers[0].longitude).toBe(-76.7118);
+      expect(mapMarkers[0].image).toContain('auto=format');
+    });
+
+    it('should optimize image asset delivery in GROQ projections', () => {
+      expect(MAP_BREWERY_PROJECTION).toContain('auto=format');
+      expect(FULL_BREWERY_PROJECTION).toContain('auto=format');
     });
 
     it('should filter out incomplete Sanity brewery records that do not match canonical dataset', async () => {

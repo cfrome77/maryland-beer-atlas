@@ -202,6 +202,10 @@ export function generateSanitySeedDocuments(options?: SeedOptions): any[] {
       description: b.description,
       highlights: b.highlights || ['Local Maryland Craft Brewery', 'Tasting Room Experience'],
       atmosphere: b.atmosphere || ['Welcoming Taproom', 'Community Hub'],
+      hours: b.hours || [],
+      structuredHours: b.structuredHours || [],
+      socialLinks: b.socialLinks || {},
+      amenities: b.amenities || [],
       featured: Boolean(b.featured),
       editorialRecommendations: b.editorialRecommendations || [],
       curatedContent: b.curatedContent || {

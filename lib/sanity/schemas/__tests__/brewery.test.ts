@@ -8,15 +8,16 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(brewerySchema.title).toContain('Brewery Editorial Content');
   });
 
-  it('should contain expected field groups', () => {
+  it('should contain expected field groups including operations', () => {
     const groupNames = brewerySchema.groups.map((g) => g.name);
     expect(groupNames).toContain('identity');
     expect(groupNames).toContain('editorial');
+    expect(groupNames).toContain('operations');
     expect(groupNames).toContain('curation');
     expect(groupNames).toContain('relationships');
   });
 
-  it('should include required identity and editorial fields', () => {
+  it('should include required identity, editorial, and operations fields', () => {
     const fieldNames = brewerySchema.fields.map((f) => f.name);
 
     // Identity & stable linking
@@ -33,6 +34,12 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).toContain('atmosphere');
     expect(fieldNames).toContain('image');
     expect(fieldNames).toContain('logo');
+
+    // Structured operations, contact, and amenities
+    expect(fieldNames).toContain('hours');
+    expect(fieldNames).toContain('structuredHours');
+    expect(fieldNames).toContain('socialLinks');
+    expect(fieldNames).toContain('amenities');
 
     type SchemaField = {
       name: string;
@@ -68,28 +75,20 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).not.toContain('relatedGuides');
   });
 
-  it('should NOT duplicate canonical location, operational hours, or verification fields', () => {
+  it('should NOT duplicate canonical street address, state, or verification fields', () => {
     const fieldNames = brewerySchema.fields.map((f) => f.name);
 
-    // Canonical location & contact
+    // Canonical address & coordinates
     expect(fieldNames).not.toContain('address');
     expect(fieldNames).not.toContain('city');
     expect(fieldNames).not.toContain('state');
     expect(fieldNames).not.toContain('zipCode');
-    expect(fieldNames).not.toContain('phone');
-    expect(fieldNames).not.toContain('website');
-    expect(fieldNames).not.toContain('socialLinks');
     expect(fieldNames).not.toContain('coordinates');
 
-    // Canonical operational facts & hours
-    expect(fieldNames).not.toContain('status');
+    // Canonical operational status & verification
     expect(fieldNames).not.toContain('statusNotes');
     expect(fieldNames).not.toContain('statusUpdatedAt');
-    expect(fieldNames).not.toContain('hours');
-    expect(fieldNames).not.toContain('structuredHours');
     expect(fieldNames).not.toContain('holidayExceptions');
-
-    // Canonical verification & provenance facts
     expect(fieldNames).not.toContain('lastVerified');
     expect(fieldNames).not.toContain('verificationSource');
     expect(fieldNames).not.toContain('verificationStatus');
