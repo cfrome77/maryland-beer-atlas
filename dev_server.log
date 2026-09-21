@@ -1,0 +1,24 @@
+
+> maryland-beer-atlas@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 534ms
+✓ Running next.config.ts took 50ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+○ Compiling /breweries ...
+ GET /breweries 200 in 6.6s (next.js: 5.6s, application-code: 973ms)
+ GET /breweries?beerStyle=Hazy+IPA 200 in 146ms (next.js: 11ms, application-code: 134ms)
+ GET /map 200 in 2.5s (next.js: 2.2s, application-code: 277ms)
+ GET /map 200 in 189ms (next.js: 3ms, application-code: 186ms)
+ GET /breweries 200 in 244ms (next.js: 10ms, application-code: 234ms)
+ GET /breweries?beerStyle=Hazy+IPA 200 in 76ms (next.js: 16ms, application-code: 60ms)
+ GET /map 200 in 135ms (next.js: 6ms, application-code: 129ms)
+ GET /map 200 in 202ms (next.js: 3ms, application-code: 199ms)

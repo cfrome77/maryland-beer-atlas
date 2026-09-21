@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mockBreweries, mockTrails, mockGuides } from '../data/mock-data';
 import { isSanityConfigured, getSanityWriteClient, getSanityDataset } from './client';
+import { BEER_STYLES } from '../constants/beer-styles';
 
 export interface SeedOptions {
   dryRun?: boolean;
@@ -142,6 +143,14 @@ export function generateSanitySeedDocuments(options?: SeedOptions): any[] {
 
   // 2. Category Documents
   const categoryMap = new Map<string, { name: string; type: 'amenity' | 'style' | 'experience' }>();
+
+  // Ensure all canonical BEER_STYLES taxonomy entries are seeded as category style documents
+  for (const style of BEER_STYLES) {
+    const catSlug = slugify(style);
+    if (!categoryMap.has(catSlug)) {
+      categoryMap.set(catSlug, { name: style, type: 'style' });
+    }
+  }
 
   for (const b of targetBreweries) {
     if (b.amenities) {

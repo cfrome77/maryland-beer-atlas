@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
 import { MapPin, Info, Beer as BeerIcon, Phone, Globe, SlidersHorizontal, Eye, Sparkles, Compass, Search, X, Locate, Navigation, Loader2 } from 'lucide-react';
-import { Brewery, BeerTrail, TravelGuide } from '@/lib/types';
+import { Brewery, BeerTrail, TravelGuide, BEER_STYLES } from '@/lib/types';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
@@ -209,6 +209,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedBeerStyles, setSelectedBeerStyles] = useState<string[]>([]);
   const [selectedSort, setSelectedSort] = useState<BrewerySortOption>('name-asc');
 
   // Geolocation state
@@ -276,6 +277,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
       search: searchQuery,
       status: selectedStatus || undefined,
       amenities: selectedAmenities,
+      beerStyles: selectedBeerStyles,
       sort: selectedSort,
       userLocation: userLocation || undefined,
     });
@@ -295,7 +297,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
 
       return regionMatch && typeMatch && countyMatch;
     });
-  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation]);
+  }, [breweries, searchQuery, selectedStatus, selectedAmenities, selectedBeerStyles, selectedRegions, selectedTypes, selectedCounties, activeTrailId, trails, selectedSort, userLocation]);
 
   const handleSelectBrewery = (brewery: Brewery) => {
     setSelectedBrewery(brewery);
@@ -308,6 +310,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
     setSelectedTypes([]);
     setSelectedCounties([]);
     setSelectedAmenities([]);
+    setSelectedBeerStyles([]);
     setSelectedSort('name-asc');
     setUserLocation(null);
     setLocationError(null);
@@ -349,7 +352,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 <SlidersHorizontal className="w-4 h-4 text-amber-500" />
                 <span>Map Filters & Layer Explorer</span>
               </div>
-              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || activeTrailId || userLocation || selectedSort !== 'name-asc') && (
+              {(searchQuery || selectedStatus || selectedRegions.length > 0 || selectedTypes.length > 0 || selectedCounties.length > 0 || selectedAmenities.length > 0 || selectedBeerStyles.length > 0 || activeTrailId || userLocation || selectedSort !== 'name-asc') && (
                 <button
                   onClick={handleClearAllFilters}
                   className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -485,8 +488,8 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
               )}
 
-              {/* Multi-Select Dropdowns grid - 4 columns */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Multi-Select Dropdowns grid - 5 columns */}
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 <MultiSelectDropdown
                   label="Regions"
                   options={regions}
@@ -513,6 +516,15 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                     setSelectedTypes(vals);
                   }}
                   placeholder="All Types"
+                />
+                <MultiSelectDropdown
+                  label="Beer Styles"
+                  options={[...BEER_STYLES]}
+                  selectedValues={selectedBeerStyles}
+                  onChange={(vals) => {
+                    setSelectedBeerStyles(vals);
+                  }}
+                  placeholder="All Styles"
                 />
                 <MultiSelectDropdown
                   label="Amenities"

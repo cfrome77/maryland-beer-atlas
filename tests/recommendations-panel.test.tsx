@@ -22,7 +22,7 @@ describe('RecommendationsPanel', () => {
     socialLinks: {},
     coordinates: { lat: 39, lng: -76 },
     hours: [],
-    beerStyles: ['IPA'],
+    beerStyles: ['IPA' as const],
     amenities: ['Dog Friendly'],
     featured: true,
     lastVerified: '2025-01-01',
