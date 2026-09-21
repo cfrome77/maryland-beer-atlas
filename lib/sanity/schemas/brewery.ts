@@ -9,6 +9,7 @@ export const brewerySchema = {
   groups: [
     { name: 'identity', title: 'Identity & Reference' },
     { name: 'editorial', title: 'Editorial & Storytelling' },
+    { name: 'operations', title: 'Operating Hours & Contact' },
     { name: 'curation', title: 'Curation & Recommendations' },
     { name: 'relationships', title: 'Related Content & Classifications' },
   ],
@@ -130,6 +131,129 @@ export const brewerySchema = {
         hotspot: true,
       },
       validation: (Rule: any) => Rule.optional(),
+    },
+
+    // Operating Hours & Contact Group
+    {
+      name: 'hours',
+      title: 'Operating Hours Summary',
+      type: 'array',
+      group: 'operations',
+      description: 'Human-readable daily operating hours summary (e.g. Thu-Sun: 11am-10pm).',
+      of: [
+        {
+          type: 'object',
+          title: 'Daily Hours Summary',
+          fields: [
+            { name: 'day', title: 'Day / Days', type: 'string', validation: (Rule: any) => Rule.required() },
+            { name: 'hours', title: 'Hours Specification', type: 'string', validation: (Rule: any) => Rule.required() },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'structuredHours',
+      title: 'Structured Operating Hours',
+      type: 'array',
+      group: 'operations',
+      description: 'Granular structured daily operating hours with open and close time periods.',
+      of: [
+        {
+          type: 'object',
+          title: 'Daily Operating Hours',
+          fields: [
+            {
+              name: 'day',
+              title: 'Day of Week',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Monday', value: 'Monday' },
+                  { title: 'Tuesday', value: 'Tuesday' },
+                  { title: 'Wednesday', value: 'Wednesday' },
+                  { title: 'Thursday', value: 'Thursday' },
+                  { title: 'Friday', value: 'Friday' },
+                  { title: 'Saturday', value: 'Saturday' },
+                  { title: 'Sunday', value: 'Sunday' },
+                ],
+              },
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'isClosed',
+              title: 'Is Closed',
+              type: 'boolean',
+              initialValue: false,
+            },
+            {
+              name: 'periods',
+              title: 'Operating Periods',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {
+                      name: 'opens',
+                      title: 'Opens (24h format HH:MM)',
+                      type: 'string',
+                      validation: (Rule: any) =>
+                        Rule.regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, { name: '24h time format' }).error(
+                          'Opening time must be in 24-hour HH:MM format (e.g. 11:00)'
+                        ),
+                    },
+                    {
+                      name: 'closes',
+                      title: 'Closes (24h format HH:MM)',
+                      type: 'string',
+                      validation: (Rule: any) =>
+                        Rule.regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, { name: '24h time format' }).error(
+                          'Closing time must be in 24-hour HH:MM format (e.g. 22:00)'
+                        ),
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'socialLinks',
+      title: 'Social Media Links',
+      type: 'object',
+      group: 'operations',
+      description: 'Official social media presence links for the brewery.',
+      fields: [
+        {
+          name: 'facebook',
+          title: 'Facebook URL',
+          type: 'url',
+          validation: (Rule: any) => Rule.uri({ scheme: ['http', 'https'] }),
+        },
+        {
+          name: 'instagram',
+          title: 'Instagram URL',
+          type: 'url',
+          validation: (Rule: any) => Rule.uri({ scheme: ['http', 'https'] }),
+        },
+        {
+          name: 'twitter',
+          title: 'Twitter / X URL',
+          type: 'url',
+          validation: (Rule: any) => Rule.uri({ scheme: ['http', 'https'] }),
+        },
+      ],
+    },
+    {
+      name: 'amenities',
+      title: 'Amenity Tags',
+      type: 'array',
+      group: 'operations',
+      description: 'Amenity and facility tags (e.g. Outdoor Seating, Dog Friendly, Food Trucks, Taproom).',
+      of: [{ type: 'string', validation: (Rule: any) => Rule.required().min(2) }],
+      validation: (Rule: any) => Rule.max(20),
     },
 
     // Curation & Editorial Recommendations Group

@@ -1,10 +1,24 @@
 import { Brewery, BeerTrail, TravelGuide } from '../types';
 
+export interface MapBreweryMarker {
+  id: string;
+  breweryId?: string;
+  slug: string;
+  name: string;
+  latitude?: number;
+  longitude?: number;
+  postalCode?: string;
+  featured?: boolean;
+  amenities?: string[];
+  image?: string;
+}
+
 export interface IBreweryRepository {
   getAll(): Promise<Brewery[]>;
   getBySlug(slug: string): Promise<Brewery | null>;
   getById(id: string): Promise<Brewery | null>;
   getFeatured(): Promise<Brewery[]>;
+  getMapBreweries?(): Promise<MapBreweryMarker[]>;
 }
 
 export interface ITrailRepository {
