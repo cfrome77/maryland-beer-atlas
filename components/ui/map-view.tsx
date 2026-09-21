@@ -2,10 +2,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import { Brewery, BeerTrail } from '@/lib/types';
+import { Brewery, BeerTrail, BreweryOperatingStatus } from '@/lib/types';
 import { isValidImageSrc, DEFAULT_PLACEHOLDER } from '@/components/ui/safe-image';
 import { AlertTriangle } from 'lucide-react';
-import { isBreweryOpenNow } from '@/lib/utils/hours';
+import { isBreweryOpenNow, getMarylandDateComponents, formatPeriods } from '@/lib/utils/hours';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
 import { getDirectionsUrls } from '@/lib/utils/directions';
 
@@ -23,6 +23,22 @@ export interface BreweryCluster {
   isCluster: boolean;
   breweries: Brewery[];
   center: { lat: number; lng: number };
+  bounds?: {
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  };
+}
+
+function escapeHtml(str?: string | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export function clusterBreweries(breweries: Brewery[], zoom: number): BreweryCluster[] {
@@ -39,16 +55,27 @@ export function clusterBreweries(breweries: Brewery[], zoom: number): BreweryClu
       b.coordinates.lng <= 180
   );
 
-  if (zoom >= 13 || valid.length <= 1) {
+  if (valid.length <= 1) {
     return valid.map((b) => ({
       id: b.id,
       isCluster: false,
       breweries: [b],
       center: { lat: b.coordinates.lat, lng: b.coordinates.lng },
+      bounds: {
+        minLat: b.coordinates.lat,
+        maxLat: b.coordinates.lat,
+        minLng: b.coordinates.lng,
+        maxLng: b.coordinates.lng,
+      },
     }));
   }
 
-  const threshold = Math.max(0.012, 1.2 / Math.pow(2, Math.max(0, zoom - 5)));
+  // Distance threshold scales dynamically with zoom level
+  // At high zoom levels (>= 13), uncluster unless breweries are virtually co-located (<0.0002 deg)
+  const threshold =
+    zoom >= 13
+      ? 0.0002
+      : Math.max(0.008, 1.2 / Math.pow(2, Math.max(0, zoom - 5)));
 
   const clusters: BreweryCluster[] = [];
   const visited = new Set<string>();
@@ -74,14 +101,22 @@ export function clusterBreweries(breweries: Brewery[], zoom: number): BreweryClu
       }
     }
 
-    const avgLat = clusterMembers.reduce((sum, b) => sum + b.coordinates.lat, 0) / clusterMembers.length;
-    const avgLng = clusterMembers.reduce((sum, b) => sum + b.coordinates.lng, 0) / clusterMembers.length;
+    const lats = clusterMembers.map((b) => b.coordinates.lat);
+    const lngs = clusterMembers.map((b) => b.coordinates.lng);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+
+    const avgLat = lats.reduce((sum, lat) => sum + lat, 0) / clusterMembers.length;
+    const avgLng = lngs.reduce((sum, lng) => sum + lng, 0) / clusterMembers.length;
 
     clusters.push({
       id: clusterMembers.length > 1 ? `cluster-${clusterMembers.map((b) => b.id).join('-')}` : current.id,
       isCluster: clusterMembers.length > 1,
       breweries: clusterMembers,
       center: { lat: avgLat, lng: avgLng },
+      bounds: { minLat, maxLat, minLng, maxLng },
     });
   }
 
@@ -120,8 +155,6 @@ export default function MapView({
     if (!mapContainerRef.current) return;
 
     // Use high-performance, high-DPI CARTO Voyager raster style as default.
-    // This loads streets, buildings, landmarks, and roads beautifully for all users and headless browsers,
-    // completely avoiding WebGL hardware-acceleration stalls, canvas blanking, or font failures.
     const mapStyle = {
       version: 8 as const,
       sources: {
@@ -131,11 +164,11 @@ export default function MapView({
             'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
             'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
             'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
+            'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
           ],
           tileSize: 256,
           attribution: '© OpenStreetMap contributors, © CARTO',
-        }
+        },
       },
       layers: [
         {
@@ -144,7 +177,7 @@ export default function MapView({
           source: 'carto-voyager',
           minzoom: 0,
           maxzoom: 20,
-        }
+        },
       ],
     };
 
@@ -160,7 +193,6 @@ export default function MapView({
     } catch (err: unknown) {
       console.error('Error initializing maplibre map instance:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to initialize 3D GPU graphics.';
-      // Trigger error state on next event loop tick to avoid react setState in render effect warning
       setTimeout(() => {
         setInitError(errorMessage);
       }, 0);
@@ -172,13 +204,8 @@ export default function MapView({
     // Add navigation controls (zoom, compass)
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
 
-    // Explicitly trigger a resize on load and style load, and track zoom level changes
-    map.on('load', () => {
-      map.resize();
-    });
-    map.on('style.load', () => {
-      map.resize();
-    });
+    map.on('load', () => map.resize());
+    map.on('style.load', () => map.resize());
     map.on('zoomend', () => {
       if (mapRef.current) {
         setCurrentZoom(mapRef.current.getZoom());
@@ -191,7 +218,6 @@ export default function MapView({
       }
     }, 200);
 
-    // Clean up on unmount
     return () => {
       clearTimeout(resizeTimer);
       if (map) {
@@ -214,7 +240,6 @@ export default function MapView({
     Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
 
-
     // Helper for coloring based on brewery type
     const getColorForType = (type: string) => {
       switch (type) {
@@ -226,26 +251,101 @@ export default function MapView({
       }
     };
 
+    // Helper for status styling & badges
+    const getStatusStyle = (status: BreweryOperatingStatus, type: string) => {
+      switch (status) {
+        case 'Closed':
+        case 'Permanently closed':
+          return {
+            pinColor: '#6b7280', // Muted Gray
+            strokeColor: '#9ca3af',
+            badgeBg: '#ef4444', // Red indicator
+            badgeTitle: 'Permanently Closed',
+            opacityClass: 'opacity-65',
+          };
+        case 'Temporarily closed':
+        case 'Seasonal':
+        case 'Opening soon':
+        case 'Relocating':
+        case 'Contract-only':
+          return {
+            pinColor: '#f59e0b', // Amber/Orange
+            strokeColor: '#fde047',
+            badgeBg: '#f97316', // Orange indicator
+            badgeTitle: status,
+            opacityClass: 'opacity-90',
+          };
+        case 'Open':
+        default:
+          return {
+            pinColor: getColorForType(type),
+            strokeColor: '#ffffff',
+            badgeBg: '#10b981', // Emerald indicator
+            badgeTitle: 'Active / Open',
+            opacityClass: 'opacity-100',
+          };
+      }
+    };
+
     const clusters = clusterBreweries(breweries, currentZoom);
 
     clusters.forEach((item) => {
       if (item.isCluster) {
-        // Render Dense-Area Cluster Badge Marker
+        // Size tier styling based on cluster count
+        const count = item.breweries.length;
+        let clusterClasses = {
+          dimensions: 'w-9 h-9',
+          bgGradient: 'bg-gradient-to-br from-amber-400 to-amber-600',
+          textSize: 'text-xs font-bold',
+          ringColor: 'border border-white/60',
+        };
+
+        if (count >= 10) {
+          clusterClasses = {
+            dimensions: 'w-12 h-12',
+            bgGradient: 'bg-gradient-to-br from-red-500 via-orange-500 to-amber-600',
+            textSize: 'text-base font-black',
+            ringColor: 'border-2 border-white',
+          };
+        } else if (count >= 5) {
+          clusterClasses = {
+            dimensions: 'w-10 h-10',
+            bgGradient: 'bg-gradient-to-br from-orange-500 to-amber-600',
+            textSize: 'text-sm font-extrabold',
+            ringColor: 'border-2 border-white',
+          };
+        }
+
         const el = document.createElement('div');
         el.className = 'cursor-pointer group';
-        el.setAttribute('aria-label', `${item.breweries.length} breweries in this area`);
+        el.setAttribute('aria-label', `${count} breweries in this area. Click to zoom in.`);
         el.innerHTML = `
-          <div class="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 font-black text-xs border-2 border-white shadow-lg shadow-amber-500/30 transition-all duration-200 group-hover:scale-110">
-            <span class="z-10">${item.breweries.length}</span>
-            <span class="absolute -inset-1 rounded-full bg-amber-500/20 animate-ping pointer-events-none"></span>
+          <div class="relative flex items-center justify-center ${clusterClasses.dimensions} rounded-full ${clusterClasses.bgGradient} text-zinc-950 ${clusterClasses.textSize} ${clusterClasses.ringColor} shadow-lg shadow-amber-500/25 transition-all duration-200 group-hover:scale-110">
+            <span class="z-10">${count}</span>
+            <span class="absolute -inset-1 rounded-full bg-amber-500/20 pointer-events-none"></span>
           </div>
         `;
 
         el.addEventListener('click', () => {
-          if (mapRef.current) {
+          if (!mapRef.current) return;
+
+          if (
+            item.bounds &&
+            (item.bounds.minLat !== item.bounds.maxLat || item.bounds.minLng !== item.bounds.maxLng)
+          ) {
+            const bounds = new maplibregl.LngLatBounds(
+              [item.bounds.minLng, item.bounds.minLat],
+              [item.bounds.maxLng, item.bounds.maxLat]
+            );
+            mapRef.current.fitBounds(bounds, {
+              padding: 60,
+              maxZoom: 15,
+              duration: 800,
+            });
+          } else {
             mapRef.current.flyTo({
               center: [item.center.lng, item.center.lat],
-              zoom: Math.min(14, currentZoom + 2.5),
+              zoom: Math.min(15, currentZoom + 2.5),
               essential: true,
               duration: 800,
             });
@@ -258,22 +358,22 @@ export default function MapView({
 
         markersRef.current[item.id] = marker;
       } else {
-        // Render Individual Brewery Marker
+        // Render Individual Brewery Marker with dynamic status styling
         const brewery = item.breweries[0];
-        const color = getColorForType(brewery.type);
+        const statusStyle = getStatusStyle(brewery.status, brewery.type);
 
         const el = document.createElement('div');
         el.className = 'cursor-pointer';
 
         el.innerHTML = `
-          <div class="relative flex items-center justify-center transition-all duration-300 ease-out hover:scale-120 hover:-translate-y-1 group">
+          <div class="relative flex items-center justify-center transition-all duration-300 ease-out hover:scale-115 hover:-translate-y-1 group ${statusStyle.opacityClass}">
             <div class="relative w-9 h-11 flex items-center justify-center drop-shadow-md">
-              <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${color}" stroke="#ffffff" stroke-width="2"/>
+              <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.18)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${statusStyle.pinColor}" stroke="${statusStyle.strokeColor}" stroke-width="2"/>
               </svg>
 
               <div class="relative z-10 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-inner">
-                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="${statusStyle.pinColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17 11h1a3 3 0 0 1 0 6h-1"/>
                   <path d="M9 12v6"/>
                   <path d="M13 12v6"/>
@@ -281,68 +381,117 @@ export default function MapView({
                   <path d="M18 5H6"/>
                 </svg>
               </div>
+
+              <!-- Status indicator badge dot -->
+              <span class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white shadow-xs pointer-events-none" style="background-color: ${statusStyle.badgeBg};" title="${escapeHtml(statusStyle.badgeTitle)}"></span>
             </div>
           </div>
         `;
 
-        const popupContent = document.createElement('div');
-        popupContent.className = 'p-3 max-w-[280px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-lg shadow-xl text-xs space-y-2 font-sans';
-
-        const popupImgSrc = isValidImageSrc(brewery.image) ? (brewery.image as string).trim() : DEFAULT_PLACEHOLDER;
+        // Calculate Operating Hours summary for today
+        const { dayOfWeek } = getMarylandDateComponents();
         const openStatus = isBreweryOpenNow(brewery);
         const freshness = getDataFreshnessInfo(brewery);
+        const directions = getDirectionsUrls(brewery);
+
+        let todayHoursSummary = 'Hours unavailable';
+        if (brewery.structuredHours && brewery.structuredHours.length > 0) {
+          const todaySchedule = brewery.structuredHours.find((h) => h.day === dayOfWeek);
+          if (todaySchedule) {
+            if (todaySchedule.isClosed || !todaySchedule.periods || todaySchedule.periods.length === 0) {
+              todayHoursSummary = `Today (${dayOfWeek}): Closed`;
+            } else {
+              todayHoursSummary = `Today (${dayOfWeek}): ${formatPeriods(todaySchedule.periods)}`;
+            }
+          }
+        } else if (brewery.status === 'Open') {
+          todayHoursSummary = 'Open • See profile for taproom schedule';
+        } else {
+          todayHoursSummary = openStatus.reason;
+        }
+
+        const popupImgSrc = isValidImageSrc(brewery.image) ? (brewery.image as string).trim() : DEFAULT_PLACEHOLDER;
 
         const statusBadgeHtml = openStatus.isOpen
           ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Open Now</span>`
           : openStatus.category === 'permanently_closed'
           ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Closed Permanently</span>`
           : openStatus.category === 'temporarily_closed'
-          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Temporarily Closed</span>`
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>${escapeHtml(brewery.status)}</span>`
           : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Closed Now</span>`;
 
         const freshnessBadgeHtml = freshness.freshnessCategory === 'fresh'
-          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Verified Fresh</span>`
-          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Verified ${brewery.lastVerified || 'recently'}</span>`;
+          ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Verified Fresh</span>`
+          : `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Verified ${escapeHtml(brewery.lastVerified || 'recently')}</span>`;
+
+        const popupContent = document.createElement('div');
+        popupContent.className = 'p-3 max-w-[290px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-xl shadow-xl text-xs space-y-2 font-sans border border-zinc-100 dark:border-zinc-800';
 
         popupContent.innerHTML = `
           <div class="space-y-2">
-            <div class="relative h-20 w-full overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
+            <div class="relative h-20 w-full overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
               <img
                 src="${popupImgSrc}"
-                alt="${brewery.name.replace(/"/g, '&quot;')}"
+                alt="${escapeHtml(brewery.name)}"
                 class="object-cover w-full h-full"
                 onerror="if (!this.src.endsWith('${DEFAULT_PLACEHOLDER}')) this.src='${DEFAULT_PLACEHOLDER}';"
               />
-              <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-900/80 text-white backdrop-blur-xs">
-                ${brewery.type}
+              <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold bg-zinc-950/80 text-white backdrop-blur-md">
+                ${escapeHtml(brewery.type)}
               </span>
             </div>
+
             <div>
-              <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">${brewery.name}</h4>
-              <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">${brewery.city} • ${brewery.region} Region</p>
+              <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">${escapeHtml(brewery.name)}</h4>
+              <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">
+                ${escapeHtml(brewery.address)}, ${escapeHtml(brewery.city)}, MD ${escapeHtml(brewery.zipCode)}
+              </p>
             </div>
-            <div class="flex flex-col gap-1 py-1 border-y border-zinc-100 dark:border-zinc-800">
-              ${statusBadgeHtml}
-              ${freshnessBadgeHtml}
+
+            <!-- Operating Status & Today's Hours -->
+            <div class="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-100 dark:border-zinc-800 space-y-1">
+              <div class="flex items-center justify-between gap-1 text-[10px]">
+                <div class="flex items-center gap-1 font-bold">
+                  ${statusBadgeHtml}
+                </div>
+                ${freshnessBadgeHtml}
+              </div>
+              <div class="text-[10.5px] text-zinc-600 dark:text-zinc-300 flex items-center gap-1 font-medium pt-0.5">
+                <svg class="w-3 h-3 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="truncate">${escapeHtml(todayHoursSummary)}</span>
+              </div>
             </div>
-            <p class="text-zinc-600 dark:text-zinc-300 text-[11px] line-clamp-2 leading-snug">
-              ${brewery.description || ''}
-            </p>
-            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+
+            ${brewery.description ? `<p class="text-zinc-600 dark:text-zinc-300 text-[10.5px] line-clamp-2 leading-snug font-normal">${escapeHtml(brewery.description)}</p>` : ''}
+
+            <!-- Direct Action Shortcuts -->
+            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
+              <div class="flex items-center gap-1.5">
+                <a
+                  href="${directions.googleMapsUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Google Maps directions to ${escapeHtml(brewery.name)}"
+                  class="flex-1 py-1.5 px-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center justify-center gap-1 transition-colors shadow-xs"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  Google Maps
+                </a>
+                <a
+                  href="${directions.appleMapsUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Apple Maps directions to ${escapeHtml(brewery.name)}"
+                  class="py-1.5 px-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-[10px] inline-flex items-center justify-center gap-1 transition-colors border border-zinc-200 dark:border-zinc-700"
+                >
+                  Apple Maps
+                </a>
+              </div>
               <a
-                href="/breweries/${brewery.slug}"
-                class="text-amber-600 dark:text-amber-400 font-bold hover:underline inline-flex items-center gap-0.5 text-[10px]"
+                href="/breweries/${escapeHtml(brewery.slug)}"
+                class="w-full py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white font-bold text-[10px] inline-flex items-center justify-center gap-1 transition-colors"
               >
-                Visit Profile &rarr;
-              </a>
-              <a
-                href="${getDirectionsUrls(brewery).googleMapsUrl}"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Get directions to ${brewery.name.replace(/"/g, '&quot;')}"
-                class="px-2 py-1 rounded bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
-              >
-                Directions
+                View Full Profile &rarr;
               </a>
             </div>
           </div>
@@ -385,7 +534,6 @@ export default function MapView({
       coords.lng > 180
     ) return;
 
-    // Fly to position
     map.flyTo({
       center: [coords.lng, coords.lat],
       zoom: 11,
@@ -393,10 +541,8 @@ export default function MapView({
       duration: 1200,
     });
 
-    // Open popup for selected brewery if marker exists
     const marker = markersRef.current[selectedBrewery.id];
     if (marker) {
-      // Small timeout to let flyTo start/finish smoothly
       const timer = setTimeout(() => {
         marker.togglePopup();
       }, 400);
@@ -404,12 +550,11 @@ export default function MapView({
     }
   }, [selectedBrewery]);
 
-  // Trail route rendering support (Prepared for routes/trails)
+  // Trail route rendering support
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    // Cleanup route layer & source if any
     const removeRoute = () => {
       if (map.getLayer('trail-route-layer')) map.removeLayer('trail-route-layer');
       if (map.getSource('trail-route-source')) map.removeSource('trail-route-source');
@@ -422,7 +567,6 @@ export default function MapView({
     const trail = trails.find((t) => t.id === activeTrailId);
     if (!trail || !trail.breweries || trail.breweries.length < 2) return;
 
-    // Collect coordinates from trail breweries
     const coordinates = trail.breweries
       .map((b) => b.coordinates)
       .filter((c) => c && typeof c.lng === 'number' && typeof c.lat === 'number' && !isNaN(c.lng) && !isNaN(c.lat) && c.lat >= -90 && c.lat <= 90 && c.lng >= -180 && c.lng <= 180)
@@ -430,7 +574,6 @@ export default function MapView({
 
     if (coordinates.length < 2) return;
 
-    // Wait for style to load before adding sources
     const addRouteLayer = () => {
       if (map.getSource('trail-route-source')) return;
 
@@ -461,7 +604,6 @@ export default function MapView({
         },
       });
 
-      // Fit map boundary to contain all breweries in the trail
       const bounds = coordinates.reduce(
         (acc, coord) => acc.extend(coord as [number, number]),
         new maplibregl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number])
@@ -515,9 +657,9 @@ export default function MapView({
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
       {/* Mini Legends card on the map */}
-      <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg text-[10px] space-y-1.5 z-10 pointer-events-auto">
-        <h5 className="font-bold text-zinc-900 dark:text-white uppercase tracking-wider text-[9px]">Legend</h5>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+      <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg text-[10px] space-y-2 z-10 pointer-events-auto max-w-[200px]">
+        <h5 className="font-bold text-zinc-900 dark:text-white uppercase tracking-wider text-[9px]">Map Legend</h5>
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-white"></span>
             <span className="text-zinc-600 dark:text-zinc-400">Micro</span>
@@ -533,6 +675,20 @@ export default function MapView({
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-lime-500 border border-white"></span>
             <span className="text-zinc-600 dark:text-zinc-400">Farm</span>
+          </div>
+        </div>
+        <div className="pt-1.5 border-t border-zinc-200 dark:border-zinc-800 space-y-1">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-zinc-600 dark:text-zinc-400">Active / Open</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+            <span className="text-zinc-600 dark:text-zinc-400">Seasonal / Temp</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+            <span className="text-zinc-600 dark:text-zinc-400">Closed</span>
           </div>
         </div>
       </div>

@@ -149,7 +149,7 @@ describe('Map Provider & Configuration Tests', () => {
       />
     );
 
-    expect(screen.getByText('Legend')).toBeInTheDocument();
+    expect(screen.getByText('Map Legend')).toBeInTheDocument();
     expect(screen.getByText('Micro')).toBeInTheDocument();
     expect(screen.getByText('Brewpub')).toBeInTheDocument();
   });
@@ -202,7 +202,7 @@ describe('Map Provider & Configuration Tests', () => {
 
     render(<TrailMapView breweries={[sampleBrewery]} trail={sampleTrail} />);
 
-    const legend = await screen.findByText('Legend');
+    const legend = await screen.findByText('Map Legend');
     expect(legend).toBeInTheDocument();
   });
 
