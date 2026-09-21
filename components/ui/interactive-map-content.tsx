@@ -367,7 +367,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               {/* Search & Operational Status & Sorting & Geolocation Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                 {/* Search Input */}
-                <div className="sm:col-span-5 relative">
+                <div className="sm:col-span-12 lg:col-span-4 relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                     <Search className="w-4 h-4" />
                   </div>
@@ -390,12 +390,12 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
 
                 {/* Status / Open Now Filter Dropdown */}
-                <div className="sm:col-span-3 relative">
+                <div className="sm:col-span-6 lg:col-span-3 relative min-w-0">
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                     aria-label="Filter by operational status"
-                    className="w-full py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                    className="w-full py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate"
                   >
                     {statusOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -406,7 +406,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                 </div>
 
                 {/* Sort By Dropdown & Near Me button */}
-                <div className="sm:col-span-4 flex gap-2">
+                <div className="sm:col-span-6 lg:col-span-5 flex gap-2 min-w-0">
                   <select
                     value={selectedSort}
                     onChange={(e) => {
@@ -417,7 +417,7 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
                       }
                     }}
                     aria-label="Sort breweries by"
-                    className="flex-1 py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                    className="flex-1 min-w-0 py-2.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-880 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer truncate"
                   >
                     <option value="name-asc">Sort: Name (A-Z)</option>
                     <option value="name-desc">Sort: Name (Z-A)</option>
