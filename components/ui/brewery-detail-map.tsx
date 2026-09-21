@@ -2,13 +2,23 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import { Brewery } from '@/lib/types';
+import { Brewery, BreweryOperatingStatus } from '@/lib/types';
 import { MapPin, Navigation, ExternalLink, AlertTriangle } from 'lucide-react';
 import { getDirectionsUrls, hasValidCoordinates } from '@/lib/utils/directions';
 
 interface BreweryDetailMapProps {
   brewery: Brewery;
   className?: string;
+}
+
+function escapeHtml(str?: string | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export default function BreweryDetailMap({ brewery, className = '' }: BreweryDetailMapProps) {
@@ -86,26 +96,64 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
     map.on('style.load', () => map.resize());
 
     // Color based on brewery type
-    const color =
-      brewery.type === 'Microbrewery'
-        ? '#f59e0b'
-        : brewery.type === 'Brewpub'
-        ? '#10b981'
-        : brewery.type === 'Production'
-        ? '#3b82f6'
-        : '#84cc16';
+    const getColorForType = (type: string) => {
+      switch (type) {
+        case 'Microbrewery': return '#f59e0b';
+        case 'Brewpub': return '#10b981';
+        case 'Production': return '#3b82f6';
+        case 'Farm Brewery': return '#84cc16';
+        default: return '#6b7280';
+      }
+    };
+
+    const getStatusStyle = (status: BreweryOperatingStatus, type: string) => {
+      switch (status) {
+        case 'Closed':
+        case 'Permanently closed':
+          return {
+            pinColor: '#6b7280',
+            strokeColor: '#9ca3af',
+            badgeBg: '#ef4444',
+            badgeTitle: 'Permanently Closed',
+            opacityClass: 'opacity-65',
+          };
+        case 'Temporarily closed':
+        case 'Seasonal':
+        case 'Opening soon':
+        case 'Relocating':
+        case 'Contract-only':
+          return {
+            pinColor: '#f59e0b',
+            strokeColor: '#fde047',
+            badgeBg: '#f97316',
+            badgeTitle: status,
+            opacityClass: 'opacity-90',
+          };
+        case 'Open':
+        default:
+          return {
+            pinColor: getColorForType(type),
+            strokeColor: '#ffffff',
+            badgeBg: '#10b981',
+            badgeTitle: 'Active / Open',
+            opacityClass: 'opacity-100',
+          };
+      }
+    };
+
+    const statusStyle = getStatusStyle(brewery.status, brewery.type);
 
     // Marker Element
     const el = document.createElement('div');
     el.className = 'cursor-pointer';
     el.innerHTML = `
-      <div class="relative flex items-center justify-center transition-all duration-300 hover:scale-110 group">
+      <div class="relative flex items-center justify-center transition-all duration-300 hover:scale-110 group ${statusStyle.opacityClass}">
         <div class="relative w-10 h-12 flex items-center justify-center drop-shadow-lg">
           <svg class="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${color}" stroke="#ffffff" stroke-width="2.5"/>
+            <path d="M18 0C8.06 0 0 8.06 0 18C0 29.4 15.48 42.68 17.16 44.06C17.41 44.27 17.72 44.38 18 44.38C18.28 44.38 18.59 44.27 18.84 44.06C20.52 42.68 36 29.4 36 18C36 8.06 27.94 0 18 0Z" fill="${statusStyle.pinColor}" stroke="${statusStyle.strokeColor}" stroke-width="2.5"/>
           </svg>
           <div class="relative z-10 w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-inner">
-            <svg class="w-3.5 h-3.5 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="${statusStyle.pinColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 11h1a3 3 0 0 1 0 6h-1"/>
               <path d="M9 12v6"/>
               <path d="M13 12v6"/>
@@ -113,26 +161,28 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
               <path d="M18 5H6"/>
             </svg>
           </div>
+          <!-- Status badge indicator dot -->
+          <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs pointer-events-none" style="background-color: ${statusStyle.badgeBg};" title="${escapeHtml(statusStyle.badgeTitle)}"></span>
         </div>
       </div>
     `;
 
     // Popup
     const popupContent = document.createElement('div');
-    popupContent.className = 'p-3 max-w-[260px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-xl shadow-xl text-xs space-y-2 font-sans';
+    popupContent.className = 'p-3 max-w-[270px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 rounded-xl shadow-xl text-xs space-y-2 font-sans';
 
     popupContent.innerHTML = `
       <div class="space-y-1.5">
-        <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">${brewery.name}</h4>
+        <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">${escapeHtml(brewery.name)}</h4>
         <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">
-          ${brewery.address}, ${brewery.city}, MD ${brewery.zipCode}
+          ${escapeHtml(brewery.address)}, ${escapeHtml(brewery.city)}, MD ${escapeHtml(brewery.zipCode)}
         </p>
         <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-1.5">
           <a
             href="${googleMapsUrl}"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Get directions to ${brewery.name.replace(/"/g, '&quot;')} via Google Maps"
+            aria-label="Get directions to ${escapeHtml(brewery.name)} via Google Maps"
             class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
           >
             Get Directions (Google)
@@ -141,7 +191,7 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
             href="${appleMapsUrl}"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Get directions to ${brewery.name.replace(/"/g, '&quot;')} via Apple Maps"
+            aria-label="Get directions to ${escapeHtml(brewery.name)} via Apple Maps"
             class="px-2 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
           >
             Apple Maps

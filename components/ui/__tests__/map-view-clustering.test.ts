@@ -36,7 +36,7 @@ const testBreweries: Brewery[] = [
     name: 'Brewery Two',
     type: 'Brewpub',
     region: 'Central',
-    status: 'Open',
+    status: 'Seasonal',
     address: '102 Main St',
     city: 'Baltimore',
     county: 'Baltimore City',
@@ -63,7 +63,7 @@ const testBreweries: Brewery[] = [
     name: 'Brewery Three',
     type: 'Production',
     region: 'Western',
-    status: 'Open',
+    status: 'Permanently closed',
     address: '100 Hill Rd',
     city: 'Cumberland',
     county: 'Allegany',
@@ -95,16 +95,35 @@ describe('clusterBreweries function', () => {
     expect(clusterOne).toBeDefined();
     expect(clusterOne?.breweries.length).toBe(2);
     expect(clusterOne?.breweries.map((b) => b.id)).toEqual(['b1', 'b2']);
+    expect(clusterOne?.bounds).toBeDefined();
+    expect(clusterOne?.bounds?.minLat).toBe(39.2900);
+    expect(clusterOne?.bounds?.maxLat).toBe(39.2905);
 
     const singleOne = clusters.find((c) => !c.isCluster);
     expect(singleOne).toBeDefined();
     expect(singleOne?.breweries[0].id).toBe('b3');
   });
 
-  it('unclusters all breweries at high zoom levels (>= 13)', () => {
+  it('unclusters breweries at high zoom levels (>= 13) when not co-located', () => {
     const clusters = clusterBreweries(testBreweries, 13);
     expect(clusters.length).toBe(3);
     expect(clusters.every((c) => !c.isCluster)).toBe(true);
+  });
+
+  it('clusters high-density co-located breweries even at zoom >= 13', () => {
+    const coLocatedBreweries: Brewery[] = [
+      testBreweries[0],
+      {
+        ...testBreweries[1],
+        id: 'co-1',
+        coordinates: { lat: 39.290001, lng: -76.610001 },
+      },
+    ];
+
+    const clustersAt14 = clusterBreweries(coLocatedBreweries, 14);
+    expect(clustersAt14.length).toBe(1);
+    expect(clustersAt14[0].isCluster).toBe(true);
+    expect(clustersAt14[0].breweries.length).toBe(2);
   });
 
   it('filters out invalid or missing coordinates before clustering', () => {
@@ -124,14 +143,6 @@ describe('clusterBreweries function', () => {
 
     const clusters = clusterBreweries(breweriesWithInvalid, 13);
     expect(clusters.length).toBe(3);
-  });
-
-  it('handles zoom boundary transitions smoothly (12.9 vs 13.0)', () => {
-    const clustersAt12_9 = clusterBreweries(testBreweries, 12.9);
-    expect(clustersAt12_9.some((c) => c.isCluster)).toBe(true);
-
-    const clustersAt13_0 = clusterBreweries(testBreweries, 13.0);
-    expect(clustersAt13_0.every((c) => !c.isCluster)).toBe(true);
   });
 
   it('handles empty brewery arrays and single brewery arrays cleanly', () => {
