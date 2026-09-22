@@ -48,25 +48,22 @@ export default function BreweryDetailMap({ brewery, className = '' }: BreweryDet
     const mapStyle = {
       version: 8 as const,
       sources: {
-        'carto-voyager': {
+        'osm-tiles': {
           type: 'raster' as const,
           tiles: [
-            'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           ],
           tileSize: 256,
-          attribution: '© OpenStreetMap contributors, © CARTO',
+          attribution: '© OpenStreetMap contributors',
         },
       },
       layers: [
         {
-          id: 'carto-voyager-layer',
+          id: 'osm-tiles-layer',
           type: 'raster' as const,
-          source: 'carto-voyager',
+          source: 'osm-tiles',
           minzoom: 0,
-          maxzoom: 20,
+          maxzoom: 19,
         },
       ],
     };

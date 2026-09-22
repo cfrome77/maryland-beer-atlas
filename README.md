@@ -20,7 +20,7 @@ Maryland Beer Atlas is a modern, full-stack Next.js web application for discover
 ## Key Features
 
 1. **Interactive Maryland Beer Map (`/map`)**:
-   - Built on MapLibre GL JS v6 with high-DPI CARTO Voyager raster tiles.
+   - Built on MapLibre GL JS v6 with keyless OpenStreetMap standard raster tiles.
    - Multi-select facet filtering by Region, County, Brewery Type, and Amenities in a responsive grid.
    - Dense area marker clustering (`clusterBreweries`) and taproom popups.
    - Real-time browser geolocation positioning (`navigator.geolocation`) with proximity distance calculations.
@@ -144,7 +144,7 @@ cp .env.example .env.local
 | `SANITY_API_READ_TOKEN` | Server Only | Optional | - | Optional read token for fetching draft documents or private datasets. |
 | `SANITY_REVALIDATE_SECRET` | Server Only | Optional | - | Secret token for authenticating Sanity On-Demand Webhook Revalidation (`/api/revalidate`). |
 
-> **Note on Map Keys**: No `NEXT_PUBLIC_MAPBOX_TOKEN`, `MAPTILER_KEY`, or proprietary map API keys are required! MapLibre GL JS renders open high-DPI CARTO Voyager tiles directly.
+> **Note on Map Keys**: No `NEXT_PUBLIC_MAPBOX_TOKEN`, `MAPTILER_KEY`, or proprietary map API keys are required! MapLibre GL JS renders keyless OpenStreetMap standard tiles directly.
 
 ---
 
@@ -271,7 +271,7 @@ npm run audit:breweries -- --json
 
 ### Map Engine & Tile Provider
 - **Library**: MapLibre GL JS (`maplibre-gl` v6).
-- **Tiles**: High-DPI CARTO Voyager raster tiles (`https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png`).
+- **Tiles**: OpenStreetMap standard raster tiles (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`).
 - **Global Stylesheet**: `@import "maplibre-gl/dist/maplibre-gl.css";` loaded in `app/globals.css`.
 
 ### Marker Pin Stability Rules
