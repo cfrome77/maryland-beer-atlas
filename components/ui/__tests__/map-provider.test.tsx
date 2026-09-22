@@ -168,7 +168,7 @@ describe('Map Provider & Configuration Tests', () => {
     expect(screen.getByText('WebGL2 is Disabled or Unsupported')).toBeInTheDocument();
     expect(
       screen.getByText(
-        /This interactive map requires WebGL2 hardware graphics acceleration to render the high-performance CARTO maps/i
+        /This interactive map requires WebGL2 hardware graphics acceleration to render interactive maps/i
       )
     ).toBeInTheDocument();
     expect(screen.getByText('How to resolve:')).toBeInTheDocument();

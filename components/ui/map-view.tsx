@@ -154,29 +154,26 @@ export default function MapView({
     if (!webglSupported) return;
     if (!mapContainerRef.current) return;
 
-    // Use high-performance, high-DPI CARTO Voyager raster style as default.
+    // Use open keyless OpenStreetMap standard raster style as default.
     const mapStyle = {
       version: 8 as const,
       sources: {
-        'carto-voyager': {
+        'osm-tiles': {
           type: 'raster' as const,
           tiles: [
-            'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-            'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           ],
           tileSize: 256,
-          attribution: '© OpenStreetMap contributors, © CARTO',
+          attribution: '© OpenStreetMap contributors',
         },
       },
       layers: [
         {
-          id: 'carto-voyager-layer',
+          id: 'osm-tiles-layer',
           type: 'raster' as const,
-          source: 'carto-voyager',
+          source: 'osm-tiles',
           minzoom: 0,
-          maxzoom: 20,
+          maxzoom: 19,
         },
       ],
     };
@@ -633,7 +630,7 @@ export default function MapView({
           <div className="space-y-2">
             <h3 className="text-base font-bold text-white">WebGL2 is Disabled or Unsupported</h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              This interactive map requires WebGL2 hardware graphics acceleration to render the high-performance CARTO maps and brewery geographic markers beautifully.
+              This interactive map requires WebGL2 hardware graphics acceleration to render interactive maps and brewery geographic markers beautifully.
             </p>
           </div>
           <div className="p-4 bg-zinc-900 rounded-2xl border border-zinc-800 text-left text-[11px] space-y-2 text-zinc-400">
