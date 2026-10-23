@@ -33,6 +33,12 @@ jobs:
       - name: Execute Vitest Test Suite
         run: npm test
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Execute Playwright E2E Test Suite
+        run: USE_MOCK_DATA=true npm run test:e2e
+
       - name: Test Next.js Production Build
         run: USE_MOCK_DATA=true npm run build
 

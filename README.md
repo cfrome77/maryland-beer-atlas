@@ -288,10 +288,41 @@ To prevent visual jitter or displacement during zoom, pan, or hover interactions
 
 ## Testing & Quality Assurance
 
+Maryland Beer Atlas uses a comprehensive testing strategy combining Vitest for unit & integration testing and Playwright for end-to-end (E2E) browser automation testing.
+
+### 1. Vitest Unit & Integration Tests
 ```bash
 # Run Vitest unit & integration test suite
 npm test
+```
 
+### 2. Playwright End-to-End (E2E) Testing
+The Playwright E2E test suite validates critical interactive user flows across real browser instances in `tests/e2e`:
+- **ZIP Code Proximity Search (`tests/e2e/zip-code-search.spec.ts`)**: Validates ZIP code input, distance radius selection, active search callouts, validation error handling, and clearing filters across `/breweries` and `/map`.
+- **Beer Trail Filtering (`tests/e2e/trail-filtering.spec.ts`)**: Validates regional trail dropdown filtering on directory views, active trail layer toggling on the interactive map, and sequential itinerary stop navigation on `/trails` and `/trails/[slug]`.
+- **Map Pin Interactions & Inspector Sync (`tests/e2e/map-interactions.spec.ts`)**: Validates MapLibre marker pin clicks, taproom popup rendering with directions links, and state synchronization between the matching breweries list and the RHS sidebar inspector panel.
+
+```bash
+# Install Playwright browser binaries
+npx playwright install chromium
+
+# Run all Playwright E2E tests headlessly
+npm run test:e2e
+
+# Run Playwright E2E tests in interactive UI mode
+npx playwright test --ui
+
+# Run a specific E2E test file
+npx playwright test tests/e2e/zip-code-search.spec.ts
+```
+
+### 3. Page Object Models & Helper Fixtures
+E2E tests follow the Page Object Model (POM) pattern to maintain clean, robust test code:
+- `DirectoryPage` (`tests/e2e/pages/directory.page.ts`): Encapsulates search inputs, ZIP code proximity controls, filter dropdowns, and brewery card grid assertions.
+- `MapPage` (`tests/e2e/pages/map.page.ts`): Encapsulates map filter controls, trail layer toggling, matching brewery list buttons, map pins, popups, and sidebar inspector panel assertions.
+
+### 4. Code Quality & Build Checks
+```bash
 # Run ESLint linter
 npm run lint
 
