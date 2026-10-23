@@ -251,6 +251,13 @@ export const trailStopSchema = z.object({
   attractions: z.array(z.string()).nullish(),
 });
 
+export const trailTypeSchema = z.enum([
+  'walkable_loop',
+  'downtown_district',
+  'regional_trail',
+  'scenic_drive',
+]);
+
 /**
  * Zod Schema for Beer Trail domain records structured as detailed itineraries.
  */
@@ -260,6 +267,8 @@ export const beerTrailSchema = z.object({
   name: z.string().min(1, 'Trail name is required'),
   description: z.string(),
   region: marylandRegionSchema,
+  trailType: trailTypeSchema.optional(),
+  categories: z.array(z.string()).nullish(),
   distance: z.string(),
   duration: z.string(),
   breweries: z.array(brewerySchema),

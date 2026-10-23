@@ -16,7 +16,7 @@ export async function generateStaticParams() {
     slug: trail.slug,
   }));
 }
-import { Brewery } from '@/lib/types';
+import { Brewery, TrailStop } from '@/lib/types';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { TrailMapView } from '@/components/ui/trail-map-view';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
@@ -78,9 +78,10 @@ export async function generateMetadata({ params }: TrailDetailPageProps): Promis
 interface BreweryStopCardProps {
   brewery: Brewery;
   index: number;
+  stop?: TrailStop;
 }
 
-function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
+function BreweryStopCard({ brewery, index, stop }: BreweryStopCardProps) {
   const isClosedStatus = brewery.status === 'Permanently closed' || brewery.status === 'Temporarily closed' || brewery.status === 'Closed';
 
   return (
@@ -154,6 +155,28 @@ function BreweryStopCard({ brewery, index }: BreweryStopCardProps) {
             <p className="text-zinc-600 dark:text-zinc-400 text-xs leading-relaxed line-clamp-3 font-normal">
               {brewery.description}
             </p>
+
+            {/* Localized Stop Highlight & Advice */}
+            {(stop?.highlight || stop?.notes) && (
+              <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/15 dark:border-amber-500/20 space-y-2">
+                {stop.highlight && (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                    <Star className="w-3.5 h-3.5 fill-current shrink-0" />
+                    <span>Stop Highlight: {stop.highlight}</span>
+                  </div>
+                )}
+                {stop.notes && (
+                  <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed font-normal">
+                    <strong className="font-semibold text-zinc-800 dark:text-zinc-100">Local Advice:</strong> {stop.notes}
+                  </p>
+                )}
+                {stop.recommendedDuration && (
+                  <span className="inline-block text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                    Suggested Stay: {stop.recommendedDuration}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Quick Amenities Preview */}
             {brewery.amenities && brewery.amenities.length > 0 && (
@@ -290,6 +313,17 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-zinc-950 shadow-sm">
                     {trail.region} Region
                   </span>
+                  {trail.trailType && (
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-400/90 text-zinc-950 shadow-sm uppercase tracking-wider">
+                      {trail.trailType === 'walkable_loop'
+                        ? 'Walkable Loop'
+                        : trail.trailType === 'downtown_district'
+                        ? 'Downtown District'
+                        : trail.trailType === 'regional_trail'
+                        ? 'Regional Trail'
+                        : 'Scenic Drive'}
+                    </span>
+                  )}
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white backdrop-blur-sm border border-white/20">
                     {trail.distance} • {trail.duration}
                   </span>
@@ -397,15 +431,15 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
               </h2>
 
               <div className="space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-6 before:w-[2px] before:bg-zinc-200 dark:before:bg-zinc-800 before:pointer-events-none">
-                {trail.breweries.map((brewery, index) => (
-                  <div key={brewery.id} className="relative pl-10 md:pl-16">
+                {trail.stops.map((stop, index) => (
+                  <div key={stop.brewery.id} className="relative pl-10 md:pl-16">
                     {/* Circle Node on Timeline */}
                     <div className="absolute left-1.5 md:left-3 top-2.5 w-5 h-5 md:w-7 md:h-7 rounded-full bg-amber-500 text-zinc-950 font-bold text-xs md:text-sm flex items-center justify-center border-4 border-zinc-100 dark:border-zinc-900 shadow-md ring-2 ring-amber-500/20 z-10">
-                      {index + 1}
+                      {stop.order || index + 1}
                     </div>
 
                     {/* Brewery Stop Component */}
-                    <BreweryStopCard brewery={brewery} index={index} />
+                    <BreweryStopCard brewery={stop.brewery} index={index} stop={stop} />
                   </div>
                 ))}
               </div>

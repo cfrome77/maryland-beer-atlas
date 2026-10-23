@@ -38,6 +38,8 @@ export class SanityTrailRepository implements ITrailRepository {
     name,
     description,
     region,
+    trailType,
+    "categories": categories[]->name,
     postalCode,
     latitude,
     longitude,

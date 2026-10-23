@@ -118,8 +118,8 @@ describe('Baseline Local Seeding Script & Helpers', () => {
 
     expect(counties.length).toBeGreaterThan(0);
     expect(categories.length).toBeGreaterThan(0);
-    expect(breweries.length).toBe(11);
-    expect(trails.length).toBe(3);
+    expect(breweries.length).toBe(12);
+    expect(trails.length).toBe(4);
     expect(guides.length).toBe(5);
 
     // Validate brewery document format
@@ -150,7 +150,7 @@ describe('Baseline Local Seeding Script & Helpers', () => {
     const prodBreweries = prodDocs.filter((d) => d._type === 'brewery');
 
     expect(devBreweries.length).toBe(5);
-    expect(prodBreweries.length).toBe(11);
+    expect(prodBreweries.length).toBe(12);
     expect(devDocs.length).toBeLessThan(prodDocs.length);
   });
 
@@ -161,8 +161,8 @@ describe('Baseline Local Seeding Script & Helpers', () => {
     expect(result.mode).toBe('production');
     expect(result.documentCount).toBeGreaterThan(50);
     expect(result.byType.county).toBeGreaterThan(0);
-    expect(result.byType.brewery).toBe(11);
-    expect(result.byType.trail).toBe(3);
+    expect(result.byType.brewery).toBe(12);
+    expect(result.byType.trail).toBe(4);
     expect(result.byType.guide).toBe(5);
   });
 });

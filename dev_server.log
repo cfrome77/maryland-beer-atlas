@@ -1,0 +1,24 @@
+
+> maryland-beer-atlas@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 608ms
+✓ Running next.config.ts took 57ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+○ Compiling /trails ...
+ HEAD /trails 200 in 5.6s (next.js: 4.9s, application-code: 657ms)
+ GET /trails 200 in 246ms (next.js: 15ms, application-code: 230ms)
+[browser] Image with src "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+○ Compiling /trails/[slug] ...
+ GET /trails/downtown-frederick-taproom-walk 200 in 3.9s
+ GET /trails/downtown-frederick-taproom-walk 200 in 325ms (next.js: 15ms, generate-params: 14ms, application-code: 296ms)
+ GET /trails/downtown-frederick-taproom-walk 200 in 221ms (next.js: 4ms, generate-params: 15ms, application-code: 202ms)
