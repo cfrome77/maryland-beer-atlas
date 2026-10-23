@@ -33,3 +33,67 @@ https://nextjs.org/telemetry
 [SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
 [SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
  GET /map?trail=frederick-beer-adventure 200 in 1474ms (next.js: 1374ms, application-code: 100ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+ GET / 200 in 1580ms (next.js: 469ms, application-code: 1111ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+ GET / 200 in 735ms (next.js: 12ms, application-code: 723ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+ GET / 200 in 269ms (next.js: 27ms, application-code: 242ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+ GET / 200 in 258ms (next.js: 5ms, application-code: 252ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /map 200 in 892ms (next.js: 61ms, application-code: 830ms)
+○ Compiling /breweries ...
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /map 200 in 362ms (next.js: 6ms, application-code: 355ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+ GET /breweries 200 in 5.9s (next.js: 5.5s, application-code: 432ms)
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /trails 200 in 1770ms (next.js: 1121ms, application-code: 649ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+ GET /breweries?trail=hyattsville-beer-trail 200 in 228ms (next.js: 16ms, application-code: 212ms)
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /trails/downtown-frederick-taproom-walk 200 in 526ms (next.js: 14ms, generate-params: 130ms, application-code: 383ms)
+[browser] Image with src "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /trails/downtown-frederick-taproom-walk 200 in 531ms (next.js: 7ms, generate-params: 0.0ms, application-code: 524ms)
+ GET /breweries 200 in 82ms (next.js: 29ms, application-code: 53ms)
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+ GET /breweries 200 in 256ms (next.js: 40ms, application-code: 215ms)
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
