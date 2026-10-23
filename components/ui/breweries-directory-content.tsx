@@ -8,6 +8,7 @@ import { BreweryCard } from '@/components/ui/brewery-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TravelGuide } from '@/lib/types';
 import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
+import { validatePostalCode } from '@/lib/utils/geocoding';
 import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 import { Recommendation } from '@/lib/services/recommendation.service';
@@ -106,6 +107,11 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
   const [radiusPostalCode, setRadiusPostalCode] = useState<string>(initialPostalCode);
   const [radiusMiles, setRadiusMiles] = useState<number>(initialRadius);
   const [selectedTrail, setSelectedTrail] = useState<string>(initialTrail);
+
+  const postalCodeValidation = useMemo(() => {
+    if (!radiusPostalCode || !radiusPostalCode.trim()) return null;
+    return validatePostalCode(radiusPostalCode);
+  }, [radiusPostalCode]);
 
   // Region, Type, County and Amenity lists
   const regions: MarylandRegion[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
@@ -598,19 +604,35 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
 
         {/* Active ZIP Code Proximity Banner Callout */}
         {radiusPostalCode && (
-          <div className="flex items-center justify-between text-xs px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
-            <span className="flex items-center gap-1.5 font-semibold">
-              <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
-              Searching within {radiusMiles} miles of ZIP Code <span className="font-bold underline">{radiusPostalCode}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setRadiusPostalCode('')}
-              className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              Clear ZIP Filter <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          postalCodeValidation && !postalCodeValidation.isValid ? (
+            <div className="flex items-center justify-between text-xs px-3.5 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+              <span className="flex items-center gap-1.5 font-semibold">
+                <MapPin className="w-4 h-4 text-red-500 shrink-0" />
+                {postalCodeValidation.error || `Invalid postal code '${radiusPostalCode}'`}
+              </span>
+              <button
+                type="button"
+                onClick={() => setRadiusPostalCode('')}
+                className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                Clear Input <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-xs px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
+              <span className="flex items-center gap-1.5 font-semibold">
+                <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+                Searching within {radiusMiles} miles of ZIP Code <span className="font-bold underline">{radiusPostalCode}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setRadiusPostalCode('')}
+                className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                Clear ZIP Filter <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )
         )}
 
         {/* Row 2: Standard Category Filtering Grid */}

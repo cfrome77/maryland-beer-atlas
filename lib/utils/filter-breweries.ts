@@ -29,6 +29,7 @@ export interface BreweryFilterParams {
   postalCode?: string;
   radiusPostalCode?: string;
   radiusMiles?: number;
+  radiusUnit?: 'miles' | 'km';
   trailId?: string;
   trails?: BeerTrail[];
   userLocation?: GeographicCoordinates;
@@ -176,6 +177,7 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
 
     // ZIP Code Proximity Radius Filter
     if (radiusPostalCode && radiusMiles && radiusMiles > 0) {
+      const radiusUnit = filters.radiusUnit || 'miles';
       if (postalCodeCoords) {
         const bCoords = getBreweryCoordinates(brewery);
         if (!bCoords) return false;
@@ -184,7 +186,7 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
           postalCodeCoords.lng,
           bCoords.lat,
           bCoords.lng,
-          'miles'
+          radiusUnit
         );
         if (dist > radiusMiles) {
           return false;
