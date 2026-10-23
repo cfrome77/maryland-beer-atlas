@@ -241,6 +241,14 @@ export function generateSanitySeedDocuments(options?: SeedOptions): any[] {
         _ref: `brewery-${b.id}`,
       }));
 
+    const trailCategories = (t.categories || []).map((catName) => {
+      const catSlug = slugify(catName);
+      if (!categoryMap.has(catSlug)) {
+        categoryMap.set(catSlug, { name: catName, type: 'experience' });
+      }
+      return { _type: 'reference', _ref: `category-${catSlug}` };
+    });
+
     const firstStopBrewery = t.stops?.[0]?.brewery;
     documents.push({
       _id: `trail-${t.id}`,
@@ -249,6 +257,8 @@ export function generateSanitySeedDocuments(options?: SeedOptions): any[] {
       slug: { _type: 'slug', current: t.slug },
       description: t.description,
       region: t.region,
+      trailType: t.trailType || 'walkable_loop',
+      categories: trailCategories,
       postalCode: firstStopBrewery?.zipCode,
       latitude: firstStopBrewery?.coordinates?.lat,
       longitude: firstStopBrewery?.coordinates?.lng,

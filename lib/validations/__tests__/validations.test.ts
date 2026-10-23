@@ -164,7 +164,7 @@ describe('Zod Validation Layer', () => {
 
   describe('Beer Trail & Structured Itinerary Validation', () => {
     it('validates beer trails structured as explicit ordered itineraries with stops', () => {
-      const trail = mockTrails[0];
+      const trail = mockTrails.find(t => t.id === 'frederick-beer-adventure')!;
       const parsed = validateBeerTrail(trail);
       expect(parsed.name).toBe('Frederick City Beer Trail');
       expect(parsed.stops.length).toBe(2);

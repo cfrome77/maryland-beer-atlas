@@ -53,6 +53,21 @@ export const trailSchema = {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'trailType',
+      title: 'Trail Type / Category',
+      type: 'string',
+      description: 'Classification of route (e.g., Walkable Urban Loop, Downtown District, Regional County Trail, Scenic Drive).',
+      options: {
+        list: [
+          { title: 'Walkable Loop', value: 'walkable_loop' },
+          { title: 'Downtown District', value: 'downtown_district' },
+          { title: 'Regional County Trail', value: 'regional_trail' },
+          { title: 'Scenic Drive', value: 'scenic_drive' },
+        ],
+      },
+      initialValue: 'walkable_loop',
+    },
+    {
       name: 'county',
       title: 'County Reference',
       type: 'reference',

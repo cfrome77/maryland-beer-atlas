@@ -141,6 +141,30 @@ describe('Beer Trail Planning & Map Experience', () => {
     );
   });
 
+  it('renders thematic walkable loop trail detail page with stop highlights and local advice', async () => {
+    const pageJsx = await TrailDetailPage({
+      params: Promise.resolve({ slug: 'downtown-frederick-taproom-walk' }),
+    });
+
+    render(pageJsx);
+
+    // Title & Walkable Loop Badge
+    expect(screen.getByRole('heading', { level: 1, name: /Downtown Frederick Taproom Walk/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Walkable Loop/i).length).toBeGreaterThan(0);
+
+    // Metrics
+    expect(screen.getAllByText(/0.9 miles/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/3 Stops/i).length).toBeGreaterThan(0);
+
+    // Ordered Stops & Local Advice / Highlights
+    expect(screen.getByRole('article', { name: /Stop 1: Idiom Brewing Co\./i })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: /Stop 2: Monocacy Brewing Company/i })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: /Stop 3: Flying Dog Brewery/i })).toBeInTheDocument();
+
+    expect(screen.getByText(/Stop Highlight: Creek-Front Patio & Small-Batch IPAs/i)).toBeInTheDocument();
+    expect(screen.getByText(/Start your downtown walking loop along the Carroll Creek promenade/i)).toBeInTheDocument();
+  });
+
   it('renders TrailMapView with full trail dataset and active trail route layer', () => {
     const b1: Brewery = {
       id: 'b1',

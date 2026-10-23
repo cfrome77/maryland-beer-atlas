@@ -23,10 +23,21 @@ export function TrailCard({ trail }: TrailCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
           <Badge className="bg-zinc-950/85 hover:bg-zinc-950/85 text-white backdrop-blur-sm border-none text-[11px] font-semibold py-1 px-3">
             {trail.region} Region
           </Badge>
+          {trail.trailType && (
+            <Badge className="bg-amber-500 hover:bg-amber-500 text-zinc-950 border-none text-[10px] font-extrabold py-1 px-2.5 uppercase tracking-wider">
+              {trail.trailType === 'walkable_loop'
+                ? 'Walkable Loop'
+                : trail.trailType === 'downtown_district'
+                ? 'Downtown District'
+                : trail.trailType === 'regional_trail'
+                ? 'Regional Trail'
+                : 'Scenic Drive'}
+            </Badge>
+          )}
         </div>
       </div>
 
