@@ -5,11 +5,31 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 669ms
-✓ Running next.config.ts took 60ms
+✓ Ready in 587ms
+✓ Running next.config.ts took 64ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
 
- HEAD / 200 in 1144ms (next.js: 390ms, application-code: 755ms)
- GET /breweries 200 in 408ms (next.js: 39ms, application-code: 369ms)
- GET /breweries?postalCode=21701&radius=25 200 in 73ms (next.js: 7ms, application-code: 67ms)
- GET /map 200 in 280ms (next.js: 31ms, application-code: 250ms)
- GET /map 200 in 151ms (next.js: 4ms, application-code: 147ms)
+
+○ Compiling / ...
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+ HEAD / 200 in 5.7s (next.js: 4.9s, application-code: 767ms)
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /trails/frederick-beer-adventure 200 in 5.0s (next.js: 2.7s, generate-params: 1663ms, application-code: 584ms)
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /trails/frederick-beer-adventure 200 in 231ms (next.js: 6ms, generate-params: 15ms, application-code: 210ms)
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+[SanityBreweryRepository] Sanity unconfigured. Falling back to MockBreweryRepository.
+[SanityGuideRepository] Sanity unconfigured. Falling back to MockGuideRepository.
+[SanityTrailRepository] Sanity unconfigured. Falling back to MockTrailRepository.
+ GET /map?trail=frederick-beer-adventure 200 in 1474ms (next.js: 1374ms, application-code: 100ms)

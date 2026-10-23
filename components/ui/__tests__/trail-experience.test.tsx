@@ -60,6 +60,11 @@ describe('Beer Trail Planning & Map Experience', () => {
     expect(screen.getByText(/2 Stops/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Easy/i).length).toBeGreaterThan(0);
 
+    // Elevation Profile Component & Topography Metrics
+    expect(screen.getByTestId('trail-elevation-profile')).toBeInTheDocument();
+    expect(screen.getByText(/Elevation Gain/i)).toBeInTheDocument();
+    expect(screen.getByText(/Terrain Type/i)).toBeInTheDocument();
+
     // Nearby Attractions
     expect(screen.getByText(/Monocacy National Battlefield/i)).toBeInTheDocument();
     expect(screen.getByText(/Historic Downtown Frederick/i)).toBeInTheDocument();
@@ -68,8 +73,8 @@ describe('Beer Trail Planning & Map Experience', () => {
     expect(screen.getByRole('article', { name: /Stop 1: Flying Dog Brewery/i })).toBeInTheDocument();
     expect(screen.getByRole('article', { name: /Stop 2: Monocacy Brewing Company/i })).toBeInTheDocument();
 
-    expect(screen.getByText(/Stop #1/i)).toBeInTheDocument();
-    expect(screen.getByText(/Stop #2/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Stop #1/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Stop #2/i).length).toBeGreaterThan(0);
 
     // Directions & Stop Navigation Buttons
     const directionLinks = screen.getAllByRole('link', { name: /Directions/i });
@@ -79,6 +84,11 @@ describe('Beer Trail Planning & Map Experience', () => {
     const viewStopLinks = screen.getAllByRole('link', { name: /View Stop →/i });
     expect(viewStopLinks.length).toBeGreaterThan(0);
     expect(viewStopLinks[0]).toHaveAttribute('href', '/breweries/flying-dog-brewery');
+
+    // Interactive Map Pin Links
+    const mapPinLinks = screen.getAllByRole('link', { name: /Map Pin/i });
+    expect(mapPinLinks.length).toBeGreaterThan(0);
+    expect(mapPinLinks[0]).toHaveAttribute('href', expect.stringContaining('/map?brewery='));
   });
 
   it('handles closed or inactive trail stops gracefully with operational notices', async () => {
