@@ -226,6 +226,39 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   const [selectedBrewery, setSelectedBrewery] = useState<Brewery | null>(null);
   const [activeTrailId, setActiveTrailId] = useState<string | null>(null);
 
+  // Sync initial URL query parameters (?trail=slug or ?brewery=slug)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const trailParam = params.get('trail');
+    const breweryParam = params.get('brewery');
+
+    let targetTrailId: string | null = null;
+    let targetBrewery: Brewery | null = null;
+
+    if (trailParam && trails.length > 0) {
+      const matchedTrail = trails.find((t) => t.slug === trailParam || t.id === trailParam);
+      if (matchedTrail) {
+        targetTrailId = matchedTrail.id;
+      }
+    }
+
+    if (breweryParam && breweries.length > 0) {
+      const matchedBrewery = breweries.find((b) => b.slug === breweryParam || b.id === breweryParam);
+      if (matchedBrewery) {
+        targetBrewery = matchedBrewery;
+      }
+    }
+
+    if (targetTrailId || targetBrewery) {
+      const timer = setTimeout(() => {
+        if (targetTrailId) setActiveTrailId(targetTrailId);
+        if (targetBrewery) setSelectedBrewery(targetBrewery);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [trails, breweries]);
+
   // Lists of options dynamically pulled/hardcoded
   const regions: string[] = ['Capital', 'Central', 'Eastern Shore', 'Southern', 'Western'];
   const types: string[] = ['Microbrewery', 'Brewpub', 'Production', 'Farm Brewery'];

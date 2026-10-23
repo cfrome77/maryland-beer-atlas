@@ -44,17 +44,25 @@ export function TrailCard({ trail }: TrailCardProps) {
       {/* Main card body */}
       <CardContent className="p-8 flex-1 flex flex-col justify-between gap-6">
         <div className="space-y-4">
-          {/* Quick stats (Distance & Duration & Difficulty) */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <span className="flex items-center gap-1.5">
+          {/* Quick stats (Distance & Duration & Difficulty & Elevation) */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <span className="flex items-center gap-1">
               <Compass className="w-3.5 h-3.5" />
-              {trail.distance}
+              {trail.totalDistance || trail.distance}
             </span>
             <span className="text-zinc-300 dark:text-zinc-700">•</span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
               {trail.duration}
             </span>
+            {trail.elevationGain && (
+              <>
+                <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                <span className="text-zinc-600 dark:text-zinc-300 font-semibold text-[11px]">
+                  +{trail.elevationGain}
+                </span>
+              </>
+            )}
             <span className="text-zinc-300 dark:text-zinc-700">•</span>
             <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold text-[10px]">
               {trail.difficulty}
