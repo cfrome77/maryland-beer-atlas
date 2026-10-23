@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/brewery-status-badge";
 import { BreweryDirectionsAction } from "@/components/ui/brewery-directions-action";
 import BreweryDetailMap from "@/components/ui/brewery-detail-map";
+import { SuggestEditModal } from "@/components/ui/suggest-edit-modal";
 
 interface BreweryDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -919,6 +920,19 @@ export default async function BreweryDetailPage({
               {/* Freshness summary box */}
               <div className="p-3 rounded-2xl bg-zinc-500/10 border border-zinc-200/50 dark:border-zinc-800/50 text-[11px] leading-relaxed font-medium">
                 {freshness.freshnessSummary}
+              </div>
+
+              {/* Suggest an Edit / Report Outdated Info CTA */}
+              <div className="pt-2">
+                <SuggestEditModal
+                  breweryId={brewery.id}
+                  brewerySlug={brewery.slug}
+                  breweryName={brewery.name}
+                  variant="outline"
+                  size="md"
+                  buttonText="Suggest an Edit / Report Info"
+                  className="w-full"
+                />
               </div>
 
               {/* Field Verifications */}
