@@ -8,6 +8,8 @@ import {
   sortBreweriesByPostalCode,
   getNearbyBreweriesForTrail,
   getNearbyBreweriesForGuide,
+  validatePostalCode,
+  clearPostalCodeCache,
 } from '../geocoding';
 import { Brewery, BeerTrail, TravelGuide } from '../../types';
 
@@ -112,10 +114,42 @@ describe('Geocoding & Geospatial Utility Helpers', () => {
     });
   });
 
+  describe('validatePostalCode', () => {
+    it('validates a correct 5-digit Maryland ZIP code', () => {
+      const result = validatePostalCode('21701');
+      expect(result.isValid).toBe(true);
+      expect(result.postalCode).toBe('21701');
+      expect(result.coordinates).toEqual({ lat: 39.4292, lng: -77.4045 });
+    });
+
+    it('validates a 3-digit prefix ZIP code', () => {
+      const result = validatePostalCode('217');
+      expect(result.isValid).toBe(true);
+      expect(result.coordinates).toBeDefined();
+    });
+
+    it('rejects malformed ZIP code strings', () => {
+      const result = validatePostalCode('INVALID');
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain('Invalid postal code format');
+    });
+
+    it('rejects unsupported ZIP codes outside target region', () => {
+      const result = validatePostalCode('90210');
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain('outside our supported geographic region');
+    });
+  });
+
   describe('getCoordinatesForPostalCode', () => {
-    it('returns exact center coordinates for known 5-digit MD ZIP codes', () => {
-      const coords = getCoordinatesForPostalCode('21703');
-      expect(coords).toEqual({ lat: 39.3621, lng: -77.4245 });
+    it('returns exact center coordinates for known 5-digit MD ZIP codes and uses caching', () => {
+      clearPostalCodeCache();
+      const coords1 = getCoordinatesForPostalCode('21703');
+      expect(coords1).toEqual({ lat: 39.3621, lng: -77.4245 });
+
+      // Second call hits cache
+      const coords2 = getCoordinatesForPostalCode('21703');
+      expect(coords2).toEqual({ lat: 39.3621, lng: -77.4245 });
     });
 
     it('returns fallback prefix coordinates for known 3-digit MD ZIP prefixes', () => {

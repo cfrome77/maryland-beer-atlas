@@ -10,7 +10,7 @@ import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewe
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { getDataFreshnessInfo } from '@/lib/utils/freshness';
 import { filterBreweries, BrewerySortOption } from '@/lib/utils/filter-breweries';
-import { calculateHaversineDistance, GeographicCoordinates } from '@/lib/utils/geocoding';
+import { calculateHaversineDistance, GeographicCoordinates, validatePostalCode } from '@/lib/utils/geocoding';
 
 // Dynamically import the MapView component to disable SSR since MapLibre uses browser APIs (window, self, etc.)
 const MapView = dynamic(
@@ -212,6 +212,11 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
   // ZIP Code Proximity Search state
   const [radiusPostalCode, setRadiusPostalCode] = useState<string>('');
   const [radiusMiles, setRadiusMiles] = useState<number>(25);
+
+  const mapPostalCodeValidation = useMemo(() => {
+    if (!radiusPostalCode || !radiusPostalCode.trim()) return null;
+    return validatePostalCode(radiusPostalCode);
+  }, [radiusPostalCode]);
 
   // Geolocation state
   const [userLocation, setUserLocation] = useState<GeographicCoordinates | null>(null);
@@ -545,18 +550,33 @@ export function InteractiveMapContent({ breweries, trails = [], guides = [] }: I
               )}
 
               {radiusPostalCode && (
-                <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
-                  <span className="flex items-center gap-1.5 font-semibold">
-                    <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    Filtered within {radiusMiles} miles of ZIP Code <span className="underline font-bold">{radiusPostalCode}</span>
-                  </span>
-                  <button
-                    onClick={() => setRadiusPostalCode('')}
-                    className="text-[11px] font-bold underline hover:text-amber-800 dark:hover:text-amber-300 ml-2 cursor-pointer"
-                  >
-                    Clear ZIP
-                  </button>
-                </div>
+                mapPostalCodeValidation && !mapPostalCodeValidation.isValid ? (
+                  <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                      {mapPostalCodeValidation.error || `Invalid postal code '${radiusPostalCode}'`}
+                    </span>
+                    <button
+                      onClick={() => setRadiusPostalCode('')}
+                      className="text-[11px] font-bold underline hover:text-red-800 dark:hover:text-red-300 ml-2 cursor-pointer"
+                    >
+                      Clear Input
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-xs px-3.5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-400">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      Filtered within {radiusMiles} miles of ZIP Code <span className="underline font-bold">{radiusPostalCode}</span>
+                    </span>
+                    <button
+                      onClick={() => setRadiusPostalCode('')}
+                      className="text-[11px] font-bold underline hover:text-amber-800 dark:hover:text-amber-300 ml-2 cursor-pointer"
+                    >
+                      Clear ZIP
+                    </button>
+                  </div>
+                )
               )}
 
               {locationError && (

@@ -136,9 +136,72 @@ export function calculateHaversineDistance(
 }
 
 /**
+ * In-memory LRU/map cache for postal code coordinate lookups to minimize evaluation latency.
+ */
+const postalCodeCoordinatesCache = new Map<string, GeographicCoordinates | null>();
+
+/**
+ * Clears the in-memory postal code coordinates cache (primarily used in tests).
+ */
+export function clearPostalCodeCache(): void {
+  postalCodeCoordinatesCache.clear();
+}
+
+export interface PostalCodeValidationResult {
+  isValid: boolean;
+  error?: string;
+  postalCode?: string;
+  prefix?: string;
+  coordinates?: GeographicCoordinates | null;
+}
+
+/**
+ * Validates a postal / ZIP code input string for correct US format and region support.
+ */
+export function validatePostalCode(postalCode: string | null | undefined): PostalCodeValidationResult {
+  if (!postalCode || typeof postalCode !== 'string') {
+    return { isValid: false, error: 'Postal code is required.' };
+  }
+
+  const trimmed = postalCode.trim();
+  if (!trimmed) {
+    return { isValid: false, error: 'Postal code cannot be empty.' };
+  }
+
+  // Format check: 5 digits, 3 digits, or ZIP+4 (e.g. 21701-1234)
+  const zipRegex = /^(\d{5}(-\d{4})?|\d{3})$/;
+  if (!zipRegex.test(trimmed)) {
+    return {
+      isValid: false,
+      error: 'Invalid postal code format. Must be a 5-digit ZIP code or 3-digit area prefix.',
+    };
+  }
+
+  const cleaned = trimmed.slice(0, 5);
+  const coords = getCoordinatesForPostalCode(cleaned);
+
+  if (!coords) {
+    return {
+      isValid: false,
+      error: `Postal code '${trimmed}' is outside our supported geographic region.`,
+      postalCode: cleaned,
+      coordinates: null,
+    };
+  }
+
+  return {
+    isValid: true,
+    postalCode: cleaned,
+    prefix: cleaned.slice(0, 3),
+    coordinates: coords,
+  };
+}
+
+/**
  * Returns approximate geographic coordinates for a given postal / ZIP code.
  *
- * Checks exact 5-digit ZIP lookup first, followed by 3-digit prefix lookup.
+ * Uses in-memory caching to optimize lookup latency. Checks exact 5-digit ZIP lookup first,
+ * followed by 3-digit prefix lookup.
  */
 export function getCoordinatesForPostalCode(
   postalCode: string | null | undefined
@@ -148,16 +211,23 @@ export function getCoordinatesForPostalCode(
   const cleaned = postalCode.trim().slice(0, 5);
   if (!cleaned) return null;
 
+  if (postalCodeCoordinatesCache.has(cleaned)) {
+    return postalCodeCoordinatesCache.get(cleaned) || null;
+  }
+
+  let result: GeographicCoordinates | null = null;
+
   if (MARYLAND_POSTAL_CODE_CENTERS[cleaned]) {
-    return MARYLAND_POSTAL_CODE_CENTERS[cleaned];
+    result = MARYLAND_POSTAL_CODE_CENTERS[cleaned];
+  } else {
+    const prefix3 = cleaned.slice(0, 3);
+    if (MARYLAND_POSTAL_PREFIX_CENTERS[prefix3]) {
+      result = MARYLAND_POSTAL_PREFIX_CENTERS[prefix3];
+    }
   }
 
-  const prefix3 = cleaned.slice(0, 3);
-  if (MARYLAND_POSTAL_PREFIX_CENTERS[prefix3]) {
-    return MARYLAND_POSTAL_PREFIX_CENTERS[prefix3];
-  }
-
-  return null;
+  postalCodeCoordinatesCache.set(cleaned, result);
+  return result;
 }
 
 /**
