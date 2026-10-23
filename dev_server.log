@@ -5,16 +5,11 @@
 ▲ Next.js 16.3.0 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 608ms
-✓ Running next.config.ts took 69ms
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
+✓ Ready in 669ms
+✓ Running next.config.ts took 60ms
 
-
-○ Compiling / ...
- HEAD / 200 in 7.2s (next.js: 4.9s, application-code: 2.3s)
- GET /breweries 200 in 2.0s (next.js: 1564ms, application-code: 473ms)
- GET /breweries?postalCode=21701&radius=25 200 in 90ms (next.js: 12ms, application-code: 78ms)
- GET /breweries?postalCode=21701&radius=10 200 in 118ms (next.js: 4ms, application-code: 114ms)
+ HEAD / 200 in 1144ms (next.js: 390ms, application-code: 755ms)
+ GET /breweries 200 in 408ms (next.js: 39ms, application-code: 369ms)
+ GET /breweries?postalCode=21701&radius=25 200 in 73ms (next.js: 7ms, application-code: 67ms)
+ GET /map 200 in 280ms (next.js: 31ms, application-code: 250ms)
+ GET /map 200 in 151ms (next.js: 4ms, application-code: 147ms)
