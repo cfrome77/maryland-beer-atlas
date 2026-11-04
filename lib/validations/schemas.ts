@@ -120,6 +120,14 @@ export const verificationStatusSchema = z.enum([
   'Community Submitted',
 ]);
 
+export const reportTypeSchema = z.enum([
+  'hours_change',
+  'closure_notice',
+  'location_or_contact_update',
+  'amenity_or_beer_update',
+  'other',
+]);
+
 // ==========================================
 // 3. Sub-object & Helper Schemas
 // ==========================================
@@ -270,9 +278,6 @@ export const beerTrailSchema = z.object({
   trailType: trailTypeSchema.optional(),
   categories: z.array(z.string()).nullish(),
   distance: z.string(),
-  totalDistance: z.string().nullish(),
-  elevationGain: z.string().nullish(),
-  terrainType: z.string().nullish(),
   duration: z.string(),
   breweries: z.array(brewerySchema),
   stops: z.array(trailStopSchema).min(1, 'At least one stop is required on a trail itinerary'),
@@ -337,6 +342,29 @@ export const travelGuideSchema = z.object({
     .nullish(),
   tips: z.array(z.string()),
   seo: guideSeoSchema.nullish(),
+});
+
+/**
+ * Zod Schema for Crowdsourced Brewery Report / Suggestion Submissions
+ */
+export const breweryReportSchema = z.object({
+  breweryId: z.string().min(1, 'Brewery ID is required'),
+  brewerySlug: slugSchema,
+  breweryName: z.string().min(1, 'Brewery name is required'),
+  reportType: reportTypeSchema,
+  details: z
+    .string()
+    .trim()
+    .min(5, 'Please provide details with at least 5 characters')
+    .max(1000, 'Details cannot exceed 1000 characters'),
+  reporterEmail: z
+    .string()
+    .trim()
+    .refine((val) => val === '' || z.string().email().safeParse(val).success, {
+      message: 'Please provide a valid email address or leave blank',
+    })
+    .nullish(),
+  reporterName: z.string().trim().max(100).nullish(),
 });
 
 // ==========================================
@@ -604,6 +632,24 @@ export function safeValidateBeerTrail(data: unknown) {
 }
 
 /**
+ * Safely validates raw data as a BreweryReport submission.
+ */
+export function safeValidateBreweryReport(data: unknown) {
+  const result = breweryReportSchema.safeParse(data);
+  if (!result.success) {
+    return {
+      success: false as const,
+      formattedError: formatZodError(result.error, 'Brewery Report'),
+      error: result.error,
+    };
+  }
+  return {
+    success: true as const,
+    data: result.data,
+  };
+}
+
+/**
  * Safely validates raw data as a Brewery.
  */
 export function safeValidateBrewery(data: unknown) {
@@ -656,20 +702,6 @@ export function normalizeTrailData(raw: unknown): unknown {
 
   if (typeof data.description === 'string') {
     data.description = data.description.trim();
-  }
-
-  if (typeof data.elevationGain === 'string') {
-    data.elevationGain = data.elevationGain.trim();
-  }
-
-  if (typeof data.totalDistance === 'string') {
-    data.totalDistance = data.totalDistance.trim();
-  } else if (!data.totalDistance && typeof data.distance === 'string') {
-    data.totalDistance = data.distance;
-  }
-
-  if (typeof data.terrainType === 'string') {
-    data.terrainType = data.terrainType.trim();
   }
 
   // Handle structured stops and legacy breweries
