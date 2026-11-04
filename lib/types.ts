@@ -21,6 +21,7 @@ import {
   guideSeoSchema,
   guideGalleryItemSchema,
   reportTypeSchema,
+  breweryAmenityCorrectionsSchema,
   breweryReportSchema,
 } from './validations/schemas';
 
@@ -57,6 +58,7 @@ export type GuideSeo = z.infer<typeof guideSeoSchema>;
 export type GuideGalleryItem = z.infer<typeof guideGalleryItemSchema>;
 
 export type ReportType = z.infer<typeof reportTypeSchema>;
+export type BreweryAmenityCorrections = z.infer<typeof breweryAmenityCorrectionsSchema>;
 export type BreweryReport = z.infer<typeof breweryReportSchema>;
 
 export type Brewery = z.infer<typeof brewerySchema>;

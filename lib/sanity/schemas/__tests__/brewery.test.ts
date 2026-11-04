@@ -40,6 +40,8 @@ describe('Sanity Brewery Editorial Schema', () => {
     expect(fieldNames).toContain('structuredHours');
     expect(fieldNames).toContain('socialLinks');
     expect(fieldNames).toContain('amenities');
+    expect(fieldNames).toContain('hasKitchen');
+    expect(fieldNames).toContain('hasOutdoorPatio');
 
     type SchemaField = {
       name: string;

@@ -27,6 +27,8 @@ const sampleBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Stout', 'Porter'],
     amenities: ['Dog Friendly', 'Outdoor Seating', 'Food Truck'],
+    hasKitchen: false,
+    hasOutdoorPatio: true,
     featured: true,
     lastVerified: '2026-08-01',
     verificationSource: 'Official Website',
@@ -56,6 +58,8 @@ const sampleBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Amber Ale'],
     amenities: ['Tours', 'Outdoor Seating'],
+    hasKitchen: false,
+    hasOutdoorPatio: true,
     featured: false,
     lastVerified: '2026-07-25',
     verificationSource: 'Official Website',
@@ -83,6 +87,8 @@ const sampleBreweries: Brewery[] = [
     structuredHours: [],
     beerStyles: ['Pilsner', 'Lager'],
     amenities: ['Food Served', 'Dog Friendly'],
+    hasKitchen: true,
+    hasOutdoorPatio: false,
     featured: false,
     lastVerified: '2026-06-10',
     verificationSource: 'Community Report',
@@ -110,6 +116,8 @@ const sampleBreweries: Brewery[] = [
     structuredHours: [],
     beerStyles: ['Farmhouse Ale', 'Saison'],
     amenities: [],
+    hasKitchen: false,
+    hasOutdoorPatio: false,
     featured: false,
     lastVerified: '2025-12-01',
     verificationSource: 'Direct Communication',
@@ -137,6 +145,8 @@ const sampleBreweries: Brewery[] = [
     structuredHours: [],
     beerStyles: ['Gose', 'Sour'],
     amenities: ['Dog Friendly'],
+    hasKitchen: false,
+    hasOutdoorPatio: false,
     featured: false,
     lastVerified: '2026-07-01',
     verificationSource: 'Social Media',
@@ -163,6 +173,24 @@ describe('filterBreweries', () => {
 
   it('filters by region', () => {
     const result = filterBreweries(sampleBreweries, { region: 'Western' });
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Flying Dog Brewery');
+  });
+
+  it('filters by hasKitchen permanent amenity flag', () => {
+    const result = filterBreweries(sampleBreweries, { hasKitchen: true });
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Station Brewpub');
+  });
+
+  it('filters by hasOutdoorPatio permanent amenity flag', () => {
+    const result = filterBreweries(sampleBreweries, { hasOutdoorPatio: true });
+    expect(result).toHaveLength(2);
+    expect(result.map((b) => b.name)).toEqual(['Flying Dog Brewery', 'Heavy Seas Beer']);
+  });
+
+  it('combines hasOutdoorPatio and region filters', () => {
+    const result = filterBreweries(sampleBreweries, { hasOutdoorPatio: true, region: 'Western' });
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe('Flying Dog Brewery');
   });

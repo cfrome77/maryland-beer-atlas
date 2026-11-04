@@ -35,6 +35,27 @@ describe('Brewery Report Zod Validation Schema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('validates reports with structured amenity corrections', () => {
+    const amenityReport = {
+      breweryId: 'flying-dog-brewery',
+      brewerySlug: 'flying-dog-brewery',
+      breweryName: 'Flying Dog Brewery',
+      reportType: 'amenity_or_beer_update' as const,
+      details: 'Brewery now features a permanent on-site kitchen and outdoor patio.',
+      amenityCorrections: {
+        hasKitchen: true,
+        hasOutdoorPatio: true,
+      },
+    };
+
+    const result = safeValidateBreweryReport(amenityReport);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.amenityCorrections?.hasKitchen).toBe(true);
+      expect(result.data.amenityCorrections?.hasOutdoorPatio).toBe(true);
+    }
+  });
+
   it('rejects submissions with details under 5 characters', () => {
     const shortReport = {
       ...validReport,

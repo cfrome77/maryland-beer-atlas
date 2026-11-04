@@ -206,6 +206,8 @@ export function generateSanitySeedDocuments(options?: SeedOptions): any[] {
       structuredHours: b.structuredHours || [],
       socialLinks: b.socialLinks || {},
       amenities: b.amenities || [],
+      hasKitchen: Boolean(b.hasKitchen),
+      hasOutdoorPatio: Boolean(b.hasOutdoorPatio),
       featured: Boolean(b.featured),
       editorialRecommendations: b.editorialRecommendations || [],
       curatedContent: b.curatedContent || {

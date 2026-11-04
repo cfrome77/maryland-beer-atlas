@@ -217,6 +217,8 @@ export const brewerySchema = z.object({
   image: urlSchema,
 
   // --- OPTIONAL / NULLABLE DOMAIN FIELDS ---
+  hasKitchen: z.boolean().nullish(),
+  hasOutdoorPatio: z.boolean().nullish(),
   logo: urlSchema.nullish(),
   statusUpdatedAt: dateSchema.nullish(),
   statusNotes: z.string().nullish(),
@@ -347,6 +349,11 @@ export const travelGuideSchema = z.object({
 /**
  * Zod Schema for Crowdsourced Brewery Report / Suggestion Submissions
  */
+export const breweryAmenityCorrectionsSchema = z.object({
+  hasKitchen: z.boolean().optional(),
+  hasOutdoorPatio: z.boolean().optional(),
+});
+
 export const breweryReportSchema = z.object({
   breweryId: z.string().min(1, 'Brewery ID is required'),
   brewerySlug: slugSchema,
@@ -357,6 +364,7 @@ export const breweryReportSchema = z.object({
     .trim()
     .min(5, 'Please provide details with at least 5 characters')
     .max(1000, 'Details cannot exceed 1000 characters'),
+  amenityCorrections: breweryAmenityCorrectionsSchema.nullish(),
   reporterEmail: z
     .string()
     .trim()

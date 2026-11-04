@@ -20,6 +20,8 @@ export const MAP_BREWERY_PROJECTION = `
   longitude,
   featured,
   amenities,
+  hasKitchen,
+  hasOutdoorPatio,
   "image": coalesce(image.asset->url + "?auto=format&q=80", image.asset->url, image)
 `;
 
@@ -66,6 +68,8 @@ export const FULL_BREWERY_PROJECTION = `
     twitter
   },
   amenities,
+  hasKitchen,
+  hasOutdoorPatio,
   "relatedGuides": *[_type == "guide" && references(^._id)].slug.current,
   "image": coalesce(image.asset->url + "?auto=format&q=80", image.asset->url, image),
   "logo": coalesce(logo.asset->url + "?auto=format&q=80", logo.asset->url, logo),
@@ -115,6 +119,8 @@ export function mergeSanityEditorialWithCanonical(
       structuredHours: (Array.isArray(sanityRecord.structuredHours) && sanityRecord.structuredHours.length > 0) ? sanityRecord.structuredHours : canonical.structuredHours,
       socialLinks: sanityRecord.socialLinks && Object.keys(sanityRecord.socialLinks).length > 0 ? sanityRecord.socialLinks : canonical.socialLinks,
       amenities: (Array.isArray(sanityRecord.amenities) && sanityRecord.amenities.length > 0) ? sanityRecord.amenities : canonical.amenities,
+      hasKitchen: sanityRecord.hasKitchen !== undefined ? sanityRecord.hasKitchen : canonical.hasKitchen,
+      hasOutdoorPatio: sanityRecord.hasOutdoorPatio !== undefined ? sanityRecord.hasOutdoorPatio : canonical.hasOutdoorPatio,
     };
     return normalizeAndValidateBrewery(merged);
   }

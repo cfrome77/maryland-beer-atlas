@@ -37,6 +37,8 @@ export interface BreweryFilterParams {
   status?: OperationalCategory | string;
   amenity?: string;
   amenities?: string[];
+  hasKitchen?: boolean;
+  hasOutdoorPatio?: boolean;
   beerStyle?: BeerStyle | string;
   beerStyles?: (BeerStyle | string)[];
   sort?: BrewerySortOption;
@@ -138,6 +140,8 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
   const targetStatus = filters.status || '';
   const singleAmenity = filters.amenity || '';
   const selectedAmenities = filters.amenities || [];
+  const filterKitchen = filters.hasKitchen;
+  const filterPatio = filters.hasOutdoorPatio;
   const singleBeerStyle = filters.beerStyle || '';
   const selectedBeerStyles = filters.beerStyles || [];
   const radiusPostalCode = (filters.radiusPostalCode || '').trim();
@@ -271,6 +275,29 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
       !selectedAmenities.every((amenity) => brewery.amenities.includes(amenity))
     ) {
       return false;
+    }
+
+    // 6b. Structured Permanent Amenity Feature Flags (Kitchen & Outdoor Patio)
+    if (filterKitchen) {
+      const matchesStructured = brewery.hasKitchen === true;
+      const matchesAmenityKeywords = brewery.amenities.some((a) => {
+        const lower = a.toLowerCase();
+        return lower.includes('kitchen') || lower.includes('full food menu') || lower.includes('restaurant');
+      });
+      if (!matchesStructured && !matchesAmenityKeywords) {
+        return false;
+      }
+    }
+
+    if (filterPatio) {
+      const matchesStructured = brewery.hasOutdoorPatio === true;
+      const matchesAmenityKeywords = brewery.amenities.some((a) => {
+        const lower = a.toLowerCase();
+        return lower.includes('patio') || lower.includes('outdoor seating') || lower.includes('beer garden');
+      });
+      if (!matchesStructured && !matchesAmenityKeywords) {
+        return false;
+      }
     }
 
     // 7. Beer Style / Beer Styles Filter

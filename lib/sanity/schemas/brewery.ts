@@ -255,6 +255,22 @@ export const brewerySchema = {
       of: [{ type: 'string', validation: (Rule: any) => Rule.required().min(2) }],
       validation: (Rule: any) => Rule.max(20),
     },
+    {
+      name: 'hasKitchen',
+      title: 'On-Site Permanent Kitchen',
+      type: 'boolean',
+      group: 'operations',
+      description: 'Whether the brewery operates an on-site permanent food kitchen or restaurant menu.',
+      initialValue: false,
+    },
+    {
+      name: 'hasOutdoorPatio',
+      title: 'Outdoor Patio',
+      type: 'boolean',
+      group: 'operations',
+      description: 'Whether the brewery features dedicated outdoor patio or open-air seating.',
+      initialValue: false,
+    },
 
     // Curation & Editorial Recommendations Group
     {
