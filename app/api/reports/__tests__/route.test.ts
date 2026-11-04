@@ -43,6 +43,52 @@ describe('POST /api/reports API Route', () => {
     expect(json.error).toBe('Invalid JSON request payload');
   });
 
+  it('accepts reports with preconfigured selectedAmenities', async () => {
+    const validBodyWithAmenities = {
+      breweryId: 'heavy-seas-beer',
+      brewerySlug: 'heavy-seas-beer',
+      breweryName: 'Heavy Seas Beer',
+      reportType: 'amenity_or_beer_update',
+      details: 'Added dog friendly patio and arcade games.',
+      selectedAmenities: ['Dog Friendly', 'Outdoor Patio', 'Arcade Games'],
+    };
+
+    const req = new NextRequest('http://localhost:3000/api/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validBodyWithAmenities),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = await res.json();
+    expect(json.success).toBe(true);
+  });
+
+  it('rejects reports with invalid amenity values not in preconfigured list', async () => {
+    const invalidAmenitiesBody = {
+      breweryId: 'heavy-seas-beer',
+      brewerySlug: 'heavy-seas-beer',
+      breweryName: 'Heavy Seas Beer',
+      reportType: 'amenity_or_beer_update',
+      details: 'Added custom fake amenity.',
+      selectedAmenities: ['Dog Friendly', 'Random Nonexistent Amenity'],
+    };
+
+    const req = new NextRequest('http://localhost:3000/api/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(invalidAmenitiesBody),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+
+    const json = await res.json();
+    expect(json.error).toBe('Validation failed');
+  });
+
   it('returns 400 validation error for missing required fields', async () => {
     const invalidBody = {
       breweryId: 'heavy-seas-beer',

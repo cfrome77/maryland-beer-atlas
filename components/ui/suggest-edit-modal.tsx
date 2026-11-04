@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Flag, X, CheckCircle2, AlertCircle, Loader2, Send } from 'lucide-react';
-import { BreweryReport, ReportType } from '@/lib/types';
+import { BreweryReport, ReportType, BreweryAmenity, BREWERY_AMENITIES } from '@/lib/types';
 import { safeValidateBreweryReport } from '@/lib/validations/schemas';
 
 interface SuggestEditModalProps {
   breweryId: string;
   brewerySlug: string;
   breweryName: string;
+  initialAmenities?: string[];
   variant?: 'primary' | 'outline' | 'ghost' | 'secondary';
   size?: 'sm' | 'md' | 'lg';
   buttonText?: string;
@@ -42,6 +43,7 @@ export function SuggestEditModal({
   breweryId,
   brewerySlug,
   breweryName,
+  initialAmenities = [],
   variant = 'outline',
   size = 'md',
   buttonText = 'Suggest an Edit',
@@ -49,6 +51,11 @@ export function SuggestEditModal({
 }: SuggestEditModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [reportType, setReportType] = useState<ReportType>('hours_change');
+  const [selectedAmenities, setSelectedAmenities] = useState<BreweryAmenity[]>(() => {
+    return initialAmenities.filter((a): a is BreweryAmenity =>
+      (BREWERY_AMENITIES as readonly string[]).includes(a)
+    );
+  });
   const [details, setDetails] = useState('');
   const [reporterName, setReporterName] = useState('');
   const [reporterEmail, setReporterEmail] = useState('');
@@ -62,13 +69,26 @@ export function SuggestEditModal({
 
   const resetForm = useCallback(() => {
     setReportType('hours_change');
+    setSelectedAmenities(
+      initialAmenities.filter((a): a is BreweryAmenity =>
+        (BREWERY_AMENITIES as readonly string[]).includes(a)
+      )
+    );
     setDetails('');
     setReporterName('');
     setReporterEmail('');
     setErrorMsg(null);
     setIsSuccess(false);
     setIsSubmitting(false);
-  }, []);
+  }, [initialAmenities]);
+
+  const toggleAmenity = (amenity: BreweryAmenity) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(amenity)
+        ? prev.filter((item) => item !== amenity)
+        : [...prev, amenity]
+    );
+  };
 
   const closeModal = useCallback(() => {
     setIsOpen(false);
@@ -106,6 +126,7 @@ export function SuggestEditModal({
       breweryName,
       reportType,
       details,
+      selectedAmenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
       reporterName: reporterName.trim() || undefined,
       reporterEmail: reporterEmail.trim() || undefined,
     };
@@ -278,6 +299,46 @@ export function SuggestEditModal({
                     <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       {REPORT_TYPE_LABELS[reportType]?.description}
                     </p>
+                  </div>
+
+                  {/* Preconfigured Amenities Checklist */}
+                  <div className="space-y-2 pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                        Brewery Amenities & Features
+                      </label>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {selectedAmenities.length} selected
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Check or uncheck items from our preconfigured list to suggest additions or corrections:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                      {BREWERY_AMENITIES.map((amenity) => {
+                        const isChecked = selectedAmenities.includes(amenity);
+                        return (
+                          <label
+                            key={amenity}
+                            className={`flex items-center gap-2 p-1.5 rounded-lg text-xs cursor-pointer select-none transition-colors ${
+                              isChecked
+                                ? 'bg-amber-500/15 text-zinc-900 dark:text-zinc-100 font-semibold'
+                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              name="amenity"
+                              value={amenity}
+                              checked={isChecked}
+                              onChange={() => toggleAmenity(amenity)}
+                              className="rounded border-zinc-300 dark:border-zinc-700 text-amber-500 focus:ring-amber-500 h-3.5 w-3.5 cursor-pointer accent-amber-500"
+                            />
+                            <span className="truncate">{amenity}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Details text */}

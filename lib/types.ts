@@ -22,6 +22,7 @@ import {
   guideGalleryItemSchema,
   reportTypeSchema,
   breweryReportSchema,
+  breweryAmenitySchema,
 } from './validations/schemas';
 
 /**
@@ -34,6 +35,8 @@ import {
 export type MarylandRegion = z.infer<typeof marylandRegionSchema>;
 export type BreweryType = z.infer<typeof breweryTypeSchema>;
 export { BEER_STYLES, type BeerStyle } from './constants/beer-styles';
+export { BREWERY_AMENITIES, type BreweryAmenity } from './constants/amenities';
+export { breweryAmenitySchema };
 export type BreweryOperatingStatus = z.infer<typeof breweryOperatingStatusSchema>;
 export type VerificationSourceType = z.infer<typeof verificationSourceTypeSchema>;
 export type VerificationConfidence = z.infer<typeof verificationConfidenceSchema>;

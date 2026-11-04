@@ -96,4 +96,59 @@ describe('SuggestEditModal Component', () => {
       expect(screen.getByText('Server temporarily unavailable')).toBeInTheDocument();
     });
   });
+
+  it('renders preconfigured amenities checklist and supports toggling checkboxes', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, message: 'Thank you!' }),
+    });
+    global.fetch = mockFetch;
+
+    render(
+      <SuggestEditModal
+        {...defaultProps}
+        initialAmenities={['Dog Friendly', 'Outdoor Seating']}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /suggest an edit/i }));
+
+    expect(screen.getByText('Brewery Amenities & Features')).toBeInTheDocument();
+    expect(screen.getByText('2 selected')).toBeInTheDocument();
+
+    const dogFriendlyCheckbox = screen.getByRole('checkbox', { name: 'Dog Friendly' });
+    const outdoorSeatingCheckbox = screen.getByRole('checkbox', { name: 'Outdoor Seating' });
+    const foodTrucksCheckbox = screen.getByRole('checkbox', { name: 'Food Trucks' });
+
+    expect(dogFriendlyCheckbox).toBeChecked();
+    expect(outdoorSeatingCheckbox).toBeChecked();
+    expect(foodTrucksCheckbox).not.toBeChecked();
+
+    // Toggle off Dog Friendly, toggle on Food Trucks
+    fireEvent.click(dogFriendlyCheckbox);
+    fireEvent.click(foodTrucksCheckbox);
+
+    expect(dogFriendlyCheckbox).not.toBeChecked();
+    expect(foodTrucksCheckbox).toBeChecked();
+    expect(screen.getByText('2 selected')).toBeInTheDocument();
+
+    // Add details and submit
+    const detailsTextarea = screen.getByPlaceholderText(/e\.g\., Open 2 PM/i);
+    fireEvent.change(detailsTextarea, {
+      target: { value: 'Updated amenities list with food trucks.' },
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /submit suggestion/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/reports',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"selectedAmenities":["Outdoor Seating","Food Trucks"]'),
+        })
+      );
+    });
+  });
 });
