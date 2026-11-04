@@ -270,6 +270,9 @@ export const beerTrailSchema = z.object({
   trailType: trailTypeSchema.optional(),
   categories: z.array(z.string()).nullish(),
   distance: z.string(),
+  totalDistance: z.string().nullish(),
+  elevationGain: z.string().nullish(),
+  terrainType: z.string().nullish(),
   duration: z.string(),
   breweries: z.array(brewerySchema),
   stops: z.array(trailStopSchema).min(1, 'At least one stop is required on a trail itinerary'),
@@ -653,6 +656,20 @@ export function normalizeTrailData(raw: unknown): unknown {
 
   if (typeof data.description === 'string') {
     data.description = data.description.trim();
+  }
+
+  if (typeof data.elevationGain === 'string') {
+    data.elevationGain = data.elevationGain.trim();
+  }
+
+  if (typeof data.totalDistance === 'string') {
+    data.totalDistance = data.totalDistance.trim();
+  } else if (!data.totalDistance && typeof data.distance === 'string') {
+    data.totalDistance = data.distance;
+  }
+
+  if (typeof data.terrainType === 'string') {
+    data.terrainType = data.terrainType.trim();
   }
 
   // Handle structured stops and legacy breweries

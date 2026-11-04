@@ -119,6 +119,24 @@ export const trailSchema = {
       validation: (Rule: any) => Rule.required().min(2),
     },
     {
+      name: 'totalDistance',
+      title: 'Total Distance',
+      type: 'string',
+      description: 'Specific route or hiking distance (e.g., 0.9 miles, 4.5 miles)',
+    },
+    {
+      name: 'elevationGain',
+      title: 'Elevation Gain',
+      type: 'string',
+      description: 'e.g., 45 ft, 210 ft, 450 ft',
+    },
+    {
+      name: 'terrainType',
+      title: 'Terrain Type',
+      type: 'string',
+      description: 'e.g., Paved Walkway, Urban Sidewalk & Boardwalk, Rolling Dirt & Gravel, Hilly Roadway',
+    },
+    {
       name: 'duration',
       title: 'Duration',
       type: 'string',
