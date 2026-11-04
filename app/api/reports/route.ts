@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       breweryName: report.breweryName,
       reportType: report.reportType,
       details: report.details,
+      selectedAmenities: report.selectedAmenities || [],
       reporterEmail: report.reporterEmail || null,
       reporterName: report.reporterName || null,
     });

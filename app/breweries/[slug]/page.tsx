@@ -928,6 +928,7 @@ export default async function BreweryDetailPage({
                   breweryId={brewery.id}
                   brewerySlug={brewery.slug}
                   breweryName={brewery.name}
+                  initialAmenities={brewery.amenities}
                   variant="outline"
                   size="md"
                   buttonText="Suggest an Edit / Report Info"

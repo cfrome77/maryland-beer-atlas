@@ -67,4 +67,30 @@ describe('Brewery Report Zod Validation Schema', () => {
     const result = safeValidateBreweryReport(invalidTypeReport);
     expect(result.success).toBe(false);
   });
+
+  it('validates a report with valid preconfigured amenities', () => {
+    const reportWithAmenities = {
+      ...validReport,
+      selectedAmenities: ['Dog Friendly', 'Outdoor Seating', 'Live Music'],
+    };
+
+    const result = safeValidateBreweryReport(reportWithAmenities);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.selectedAmenities).toEqual(['Dog Friendly', 'Outdoor Seating', 'Live Music']);
+    }
+  });
+
+  it('rejects report containing amenities not in the preconfigured master list', () => {
+    const reportWithInvalidAmenities = {
+      ...validReport,
+      selectedAmenities: ['Dog Friendly', 'Free Helicopter Rides', 'Invalid Custom Amenity'],
+    };
+
+    const result = safeValidateBreweryReport(reportWithInvalidAmenities);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.formattedError).toContain('selectedAmenities');
+    }
+  });
 });
