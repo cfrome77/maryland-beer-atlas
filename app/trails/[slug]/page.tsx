@@ -19,6 +19,7 @@ export async function generateStaticParams() {
 import { Brewery, TrailStop } from '@/lib/types';
 import { BreweryDirectionsAction } from '@/components/ui/brewery-directions-action';
 import { TrailMapView } from '@/components/ui/trail-map-view';
+import { TrailElevationProfile } from '@/components/ui/trail-elevation-profile';
 import { BreweryStatusBadge, BreweryFreshnessBadge } from '@/components/ui/brewery-status-badge';
 import { getNearbyBreweriesForTrail } from '@/lib/utils/geocoding';
 
@@ -208,7 +209,14 @@ function BreweryStopCard({ brewery, index, stop }: BreweryStopCardProps) {
               <div className="text-xs text-zinc-400">Craft Brewery Stop</div>
             )}
 
-            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <Link
+                  href={`/map?brewery=${brewery.slug}`}
+                  className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold text-[11px] inline-flex items-center gap-1 border border-zinc-200 dark:border-zinc-800 transition-colors min-h-[32px]"
+                >
+                  <MapIcon className="w-3 h-3 text-amber-500" />
+                  Map Pin
+                </Link>
               <BreweryDirectionsAction
                 brewery={brewery}
                 variant="secondary"
@@ -348,13 +356,13 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
                 </span>
               </div>
 
-              {/* 4-column Key Metrics Grid */}
+              {/* Key Metrics Grid with Elevation & Terrain */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
                     <Compass className="w-3.5 h-3.5 text-amber-400" /> Total Distance
                   </span>
-                  <p className="text-base font-extrabold text-white">{trail.distance}</p>
+                  <p className="text-base font-extrabold text-white">{trail.totalDistance || trail.distance}</p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
@@ -411,15 +419,29 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
               )}
             </div>
 
+            {/* Elevation Profile & Terrain Visual Breakdown */}
+            <TrailElevationProfile trail={trail} />
+
             {/* Interactive Route Map with Connecting Line */}
             <div className="space-y-4 pb-8 border-b border-zinc-100 dark:border-zinc-850">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                <MapIcon className="w-5 h-5 text-amber-500" />
-                Interactive Trail Map
-              </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                View stops along the trail itinerary connected in geographic sequence. Select pins to preview stop details.
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+                    <MapIcon className="w-5 h-5 text-amber-500" />
+                    Interactive Trail Map
+                  </h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    View stops along the trail itinerary connected in geographic sequence.
+                  </p>
+                </div>
+                <Link
+                  href={`/map?trail=${trail.slug}`}
+                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-xs inline-flex items-center gap-1.5 transition-colors shadow-xs shrink-0 self-start sm:self-auto"
+                >
+                  <MapIcon className="w-3.5 h-3.5" />
+                  View Full Map Layer &rarr;
+                </Link>
+              </div>
               <TrailMapView breweries={trail.breweries} trail={trail} />
             </div>
 
@@ -514,13 +536,22 @@ export default async function TrailDetailPage({ params }: TrailDetailPageProps) 
                       </div>
 
                       <div className="flex items-center justify-between gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-850">
-                        <BreweryDirectionsAction
-                          brewery={brewery}
-                          variant="secondary"
-                          size="sm"
-                          preferredApp="both"
-                          label="Directions"
-                        />
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            href={`/map?brewery=${brewery.slug}`}
+                            className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold text-[11px] inline-flex items-center gap-1 border border-zinc-200 dark:border-zinc-800 transition-colors min-h-[32px]"
+                          >
+                            <MapIcon className="w-3 h-3 text-amber-500" />
+                            Map Pin
+                          </Link>
+                          <BreweryDirectionsAction
+                            brewery={brewery}
+                            variant="secondary"
+                            size="sm"
+                            preferredApp="both"
+                            label="Directions"
+                          />
+                        </div>
                         <Link
                           href={`/breweries/${brewery.slug}`}
                           className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold text-[11px] inline-flex items-center gap-1 transition-colors min-h-[32px]"

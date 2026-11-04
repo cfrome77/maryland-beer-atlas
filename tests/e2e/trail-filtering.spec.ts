@@ -63,11 +63,11 @@ test.describe('Trail Filtering & Itinerary Navigation', () => {
 
     // Verify Trip Overview card metrics
     await expect(page.getByText('Trip Overview & Key Details')).toBeVisible();
-    await expect(page.getByText('Total Distance')).toBeVisible();
+    await expect(page.getByText('Total Distance').first()).toBeVisible();
     await expect(page.getByText('Brewery Stops')).toBeVisible();
 
     // Verify timeline stop numbers exist
-    await expect(page.getByText('Stop #1')).toBeVisible();
-    await expect(page.getByText('Stop #2')).toBeVisible();
+    await expect(page.getByText('Stop #1').first()).toBeVisible();
+    await expect(page.getByText('Stop #2').first()).toBeVisible();
   });
 });
