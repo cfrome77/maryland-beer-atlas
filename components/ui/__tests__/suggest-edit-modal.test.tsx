@@ -74,6 +74,52 @@ describe('SuggestEditModal Component', () => {
     });
   });
 
+  it('renders amenity checkboxes when category is amenity_or_beer_update and sends corrections', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, message: 'Thank you!' }),
+    });
+    global.fetch = mockFetch;
+
+    render(<SuggestEditModal {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /suggest an edit/i }));
+
+    const selectDropdown = screen.getByRole('combobox');
+    fireEvent.change(selectDropdown, { target: { value: 'amenity_or_beer_update' } });
+
+    expect(screen.getByText('Permanent Amenity Updates')).toBeInTheDocument();
+    const kitchenCheckbox = screen.getByLabelText(/Has Permanent Kitchen/i);
+    const patioCheckbox = screen.getByLabelText(/Has Outdoor Patio/i);
+
+    expect(kitchenCheckbox).not.toBeChecked();
+    expect(patioCheckbox).not.toBeChecked();
+
+    fireEvent.click(kitchenCheckbox);
+    fireEvent.click(patioCheckbox);
+
+    expect(kitchenCheckbox).toBeChecked();
+    expect(patioCheckbox).toBeChecked();
+
+    const detailsTextarea = screen.getByPlaceholderText(/e\.g\., Open 2 PM/i);
+    fireEvent.change(detailsTextarea, {
+      target: { value: 'They added a permanent pizza kitchen and expanded outdoor patio seating.' },
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /submit suggestion/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/reports',
+        expect.objectContaining({
+          body: expect.stringContaining('"hasKitchen":true'),
+        })
+      );
+      expect(screen.getByText('Suggestion Received!')).toBeInTheDocument();
+    });
+  });
+
   it('displays error message when API request fails', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: false,

@@ -94,6 +94,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
   const initialPostalCode = searchParams?.get('postalCode') || '';
   const initialRadius = searchParams?.get('radius') ? parseInt(searchParams.get('radius')!, 10) : 25;
   const initialTrail = searchParams?.get('trail') || '';
+  const initialKitchen = searchParams?.get('hasKitchen') === 'true';
+  const initialPatio = searchParams?.get('hasOutdoorPatio') === 'true';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedRegion, setSelectedRegion] = useState<MarylandRegion | ''>(initialRegion);
@@ -107,6 +109,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
   const [radiusPostalCode, setRadiusPostalCode] = useState<string>(initialPostalCode);
   const [radiusMiles, setRadiusMiles] = useState<number>(initialRadius);
   const [selectedTrail, setSelectedTrail] = useState<string>(initialTrail);
+  const [filterKitchen, setFilterKitchen] = useState<boolean>(initialKitchen);
+  const [filterPatio, setFilterPatio] = useState<boolean>(initialPatio);
 
   const postalCodeValidation = useMemo(() => {
     if (!radiusPostalCode || !radiusPostalCode.trim()) return null;
@@ -158,6 +162,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     postalCode: string;
     radius: number;
     trail: string;
+    kitchen: boolean;
+    patio: boolean;
   }>({
     search: initialSearch,
     region: initialRegion,
@@ -171,6 +177,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     postalCode: initialPostalCode,
     radius: initialRadius,
     trail: initialTrail,
+    kitchen: initialKitchen,
+    patio: initialPatio,
   });
 
   const filterStateRef = useRef({
@@ -184,6 +192,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     radiusPostalCode,
     radiusMiles,
     selectedTrail,
+    filterKitchen,
+    filterPatio,
   });
 
   useEffect(() => {
@@ -198,8 +208,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
       radiusPostalCode,
       radiusMiles,
       selectedTrail,
+      filterKitchen,
+      filterPatio,
     };
-  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedSort, radiusPostalCode, radiusMiles, selectedTrail]);
+  }, [selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio]);
 
   useEffect(() => {
     const currentSearch = searchParams?.get('search') || '';
@@ -214,6 +226,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     const currentPostalCode = searchParams?.get('postalCode') || '';
     const currentRadius = searchParams?.get('radius') ? parseInt(searchParams.get('radius')!, 10) : 25;
     const currentTrail = searchParams?.get('trail') || '';
+    const currentKitchen = searchParams?.get('hasKitchen') === 'true';
+    const currentPatio = searchParams?.get('hasOutdoorPatio') === 'true';
 
     const prev = prevParamsRef.current;
     const hasChanged =
@@ -228,7 +242,9 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
       currentSort !== prev.sort ||
       currentPostalCode !== prev.postalCode ||
       currentRadius !== prev.radius ||
-      currentTrail !== prev.trail;
+      currentTrail !== prev.trail ||
+      currentKitchen !== prev.kitchen ||
+      currentPatio !== prev.patio;
 
     if (hasChanged) {
       setSearchQuery(currentSearch);
@@ -243,6 +259,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
       setRadiusPostalCode(currentPostalCode);
       setRadiusMiles(currentRadius);
       setSelectedTrail(currentTrail);
+      setFilterKitchen(currentKitchen);
+      setFilterPatio(currentPatio);
 
       prevParamsRef.current = {
         search: currentSearch,
@@ -257,6 +275,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
         postalCode: currentPostalCode,
         radius: currentPostalCode ? currentRadius : 25,
         trail: currentTrail,
+        kitchen: currentKitchen,
+        patio: currentPatio,
       };
     }
   }, [searchParams]);
@@ -274,6 +294,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     postalCode: string = '',
     radius: number = 25,
     trail: string = '',
+    kitchen: boolean = false,
+    patio: boolean = false,
     replace: boolean = false
   ) => {
     const params = new URLSearchParams();
@@ -286,6 +308,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     if (beerStyle) params.set('beerStyle', beerStyle);
     if (quickGuide) params.set('quickGuide', quickGuide);
     if (sort && sort !== 'name-asc') params.set('sort', sort);
+    if (kitchen) params.set('hasKitchen', 'true');
+    if (patio) params.set('hasOutdoorPatio', 'true');
     if (postalCode) {
       params.set('postalCode', postalCode);
       params.set('radius', radius.toString());
@@ -318,8 +342,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
         radiusPostalCode: pc,
         radiusMiles: rm,
         selectedTrail: tr,
+        filterKitchen: fk,
+        filterPatio: fp,
       } = filterStateRef.current;
-      applyFilters(searchQuery, r, t, c, a, s, bs, '', st, pc, rm, tr, true);
+      applyFilters(searchQuery, r, t, c, a, s, bs, '', st, pc, rm, tr, fk, fp, true);
     }, 400);
 
     return () => clearTimeout(timer);
@@ -341,8 +367,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
         selectedSort: st,
         radiusMiles: rm,
         selectedTrail: tr,
+        filterKitchen: fk,
+        filterPatio: fp,
       } = filterStateRef.current;
-      applyFilters(searchQuery, r, t, c, a, s, bs, selectedQuickGuide, st, radiusPostalCode, rm, tr, true);
+      applyFilters(searchQuery, r, t, c, a, s, bs, selectedQuickGuide, st, radiusPostalCode, rm, tr, fk, fp, true);
     }, 400);
 
     return () => clearTimeout(timer);
@@ -368,10 +396,10 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
       setSelectedStatus(targetStatus);
       setSelectedBeerStyle(targetBeerStyle);
 
-      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, targetBeerStyle, val, selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+      applyFilters(searchQuery, targetRegion, targetType, targetCounty, targetAmenity, targetStatus, targetBeerStyle, val, selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
     } else {
       setSelectedQuickGuide('');
-      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+      applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
     }
   };
 
@@ -386,62 +414,74 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
   const handleRadiusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = parseInt(e.target.value, 10);
     setRadiusMiles(val);
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, selectedSort, radiusPostalCode, val, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, selectedSort, radiusPostalCode, val, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleTrailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedTrail(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, val);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, val, filterKitchen, filterPatio);
   };
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as MarylandRegion | '';
     setSelectedRegion(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, val, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BreweryType | '';
     setSelectedType(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, val, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleCountyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedCounty(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, selectedType, val, selectedAmenity, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleAmenityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedAmenity(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, val, selectedStatus, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedStatus(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, val, selectedBeerStyle, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleBeerStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BeerStyle | '';
     setSelectedBeerStyle(val);
     setSelectedQuickGuide('');
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, val, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, val, '', selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as BrewerySortOption;
     setSelectedSort(val);
-    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, val, radiusPostalCode, radiusMiles, selectedTrail);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, val, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, filterPatio);
+  };
+
+  const toggleKitchen = () => {
+    const nextVal = !filterKitchen;
+    setFilterKitchen(nextVal);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, selectedSort, radiusPostalCode, radiusMiles, selectedTrail, nextVal, filterPatio);
+  };
+
+  const togglePatio = () => {
+    const nextVal = !filterPatio;
+    setFilterPatio(nextVal);
+    applyFilters(searchQuery, selectedRegion, selectedType, selectedCounty, selectedAmenity, selectedStatus, selectedBeerStyle, selectedQuickGuide, selectedSort, radiusPostalCode, radiusMiles, selectedTrail, filterKitchen, nextVal);
   };
 
   const resetFilters = () => {
@@ -457,6 +497,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     setRadiusPostalCode('');
     setRadiusMiles(25);
     setSelectedTrail('');
+    setFilterKitchen(false);
+    setFilterPatio(false);
     router.push('/breweries');
   };
 
@@ -468,6 +510,8 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
     amenity: selectedAmenity,
     status: selectedStatus,
     beerStyle: selectedBeerStyle || undefined,
+    hasKitchen: filterKitchen || undefined,
+    hasOutdoorPatio: filterPatio || undefined,
     radiusPostalCode: radiusPostalCode || undefined,
     radiusMiles,
     trailId: selectedTrail || undefined,
@@ -814,6 +858,41 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
           </div>
         </div>
 
+        {/* Row 3: Feature Toggles (Permanent Amenities) */}
+        <div className="pt-2 flex flex-wrap items-center gap-2.5">
+          <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 mr-1 flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-amber-500" />
+            Key Amenities:
+          </span>
+          <button
+            type="button"
+            onClick={toggleKitchen}
+            aria-pressed={filterKitchen}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+              filterKitchen
+                ? 'bg-amber-500 text-zinc-950 border-amber-500 font-bold shadow-sm'
+                : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-amber-400'
+            }`}
+          >
+            <Utensils className="w-3.5 h-3.5" />
+            <span>Permanent Kitchen</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={togglePatio}
+            aria-pressed={filterPatio}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+              filterPatio
+                ? 'bg-amber-500 text-zinc-950 border-amber-500 font-bold shadow-sm'
+                : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-amber-400'
+            }`}
+          >
+            <Trees className="w-3.5 h-3.5" />
+            <span>Outdoor Patio</span>
+          </button>
+        </div>
+
         {/* Result Count and active filters status with aria-live */}
         <div
           aria-live="polite"
@@ -823,7 +902,7 @@ function BreweriesDirectoryContent({ breweries, guides = [], trails = [], recomm
           <div>
             Showing <span className="font-bold text-zinc-800 dark:text-zinc-200">{filteredBreweries.length}</span> of {breweries.length} breweries
           </div>
-          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedStatus || selectedBeerStyle || selectedQuickGuide || radiusPostalCode || selectedTrail) && (
+          {(searchQuery || selectedRegion || selectedType || selectedCounty || selectedAmenity || selectedStatus || selectedBeerStyle || selectedQuickGuide || radiusPostalCode || selectedTrail || filterKitchen || filterPatio) && (
             <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
               <Filter className="w-3 h-3 fill-current" />
               Active filters applied

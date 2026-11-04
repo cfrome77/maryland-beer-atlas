@@ -43,6 +43,8 @@ const mockBreweries: Brewery[] = [
     ],
     beerStyles: ['IPA', 'Stout'],
     amenities: ['Dog Friendly', 'Outdoor Seating'],
+    hasKitchen: false,
+    hasOutdoorPatio: true,
     featured: true,
     lastVerified: '2026-08-01',
     verificationSource: 'Official Website',
@@ -69,7 +71,9 @@ const mockBreweries: Brewery[] = [
     hours: [{ day: 'Tuesday', hours: '12 PM - 10 PM' }],
     structuredHours: [],
     beerStyles: ['Pilsner', 'Sour'],
-    amenities: ['Outdoor Seating'],
+    amenities: ['Outdoor Seating', 'Kitchen'],
+    hasKitchen: true,
+    hasOutdoorPatio: false,
     featured: false,
     lastVerified: '2026-07-28',
     verificationSource: 'Community Submit',
@@ -190,6 +194,32 @@ describe('BreweriesDirectoryContent', () => {
     fireEvent.change(sortSelect, { target: { value: 'county-asc' } });
 
     expect(mockPush).toHaveBeenCalledWith('/breweries?sort=county-asc');
+  });
+
+  it('filters breweries when Permanent Kitchen toggle is clicked', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const kitchenBtn = screen.getByRole('button', { name: /Permanent Kitchen/i });
+    expect(kitchenBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(kitchenBtn);
+
+    expect(screen.queryByText('Brewery One')).not.toBeInTheDocument();
+    expect(screen.getByText('Brewery Two')).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('hasKitchen=true'));
+  });
+
+  it('filters breweries when Outdoor Patio toggle is clicked', () => {
+    render(<BreweriesDirectoryContainer breweries={mockBreweries} />);
+
+    const patioBtn = screen.getByRole('button', { name: /Outdoor Patio/i });
+    expect(patioBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(patioBtn);
+
+    expect(screen.getByText('Brewery One')).toBeInTheDocument();
+    expect(screen.queryByText('Brewery Two')).not.toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('hasOutdoorPatio=true'));
   });
 
   it('filters breweries using multi-criteria filter combinations simultaneously', () => {

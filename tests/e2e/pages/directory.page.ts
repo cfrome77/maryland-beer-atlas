@@ -15,6 +15,8 @@ export class DirectoryPage {
   readonly statusSelect: Locator;
   readonly beerStyleSelect: Locator;
   readonly amenitySelect: Locator;
+  readonly kitchenToggle: Locator;
+  readonly patioToggle: Locator;
   readonly sortSelect: Locator;
   readonly resetFiltersButton: Locator;
   readonly resultsCountBanner: Locator;
@@ -30,12 +32,14 @@ export class DirectoryPage {
     this.radiusSelect = page.getByLabel('Distance radius in miles');
     this.trailSelect = page.getByLabel('Filter by Regional Beer Trail');
     this.quickGuideSelect = page.getByLabel('Popular guides and presets');
-    this.regionSelect = page.getByLabel('Filter by region');
+    this.regionSelect = page.getByLabel('Filter by region', { exact: true });
     this.countySelect = page.getByLabel('Filter by county');
     this.typeSelect = page.getByLabel('Filter by brewery type');
     this.statusSelect = page.getByLabel('Filter by operational status');
     this.beerStyleSelect = page.getByLabel('Filter by beer style');
     this.amenitySelect = page.getByLabel('Filter by amenity');
+    this.kitchenToggle = page.getByRole('button', { name: 'Permanent Kitchen' });
+    this.patioToggle = page.getByRole('button', { name: 'Outdoor Patio' });
     this.sortSelect = page.getByLabel('Sort breweries');
     this.resetFiltersButton = page.getByRole('button', { name: 'Reset All Filters' }).or(page.getByRole('button', { name: 'Reset Filters' }));
     this.resultsCountBanner = page.locator('div[aria-live="polite"]').first();
@@ -78,6 +82,14 @@ export class DirectoryPage {
 
   async selectStatus(status: string) {
     await this.statusSelect.selectOption(status);
+  }
+
+  async toggleKitchen() {
+    await this.kitchenToggle.click();
+  }
+
+  async togglePatio() {
+    await this.patioToggle.click();
   }
 
   async resetFilters() {

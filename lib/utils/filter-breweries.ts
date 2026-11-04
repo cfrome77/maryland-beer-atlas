@@ -281,10 +281,12 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
     if (filterKitchen) {
       const matchesStructured = brewery.hasKitchen === true;
       const matchesAmenityKeywords = brewery.amenities.some((a) => {
-        const lower = a.toLowerCase();
-        return lower.includes('kitchen') || lower.includes('full food menu') || lower.includes('restaurant');
+        const lower = a.toLowerCase().trim();
+        return lower === 'kitchen' || lower.includes('kitchen') || lower === 'full food menu' || lower === 'restaurant';
       });
-      if (!matchesStructured && !matchesAmenityKeywords) {
+      if (brewery.hasKitchen !== undefined && brewery.hasKitchen !== null) {
+        if (!brewery.hasKitchen) return false;
+      } else if (!matchesAmenityKeywords) {
         return false;
       }
     }
@@ -292,10 +294,12 @@ export function filterBreweries(breweries: Brewery[], filters: BreweryFilterPara
     if (filterPatio) {
       const matchesStructured = brewery.hasOutdoorPatio === true;
       const matchesAmenityKeywords = brewery.amenities.some((a) => {
-        const lower = a.toLowerCase();
+        const lower = a.toLowerCase().trim();
         return lower.includes('patio') || lower.includes('outdoor seating') || lower.includes('beer garden');
       });
-      if (!matchesStructured && !matchesAmenityKeywords) {
+      if (brewery.hasOutdoorPatio !== undefined && brewery.hasOutdoorPatio !== null) {
+        if (!brewery.hasOutdoorPatio) return false;
+      } else if (!matchesAmenityKeywords) {
         return false;
       }
     }

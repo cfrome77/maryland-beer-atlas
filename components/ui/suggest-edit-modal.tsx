@@ -52,6 +52,8 @@ export function SuggestEditModal({
   const [details, setDetails] = useState('');
   const [reporterName, setReporterName] = useState('');
   const [reporterEmail, setReporterEmail] = useState('');
+  const [correctKitchen, setCorrectKitchen] = useState<boolean>(false);
+  const [correctPatio, setCorrectPatio] = useState<boolean>(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -65,6 +67,8 @@ export function SuggestEditModal({
     setDetails('');
     setReporterName('');
     setReporterEmail('');
+    setCorrectKitchen(false);
+    setCorrectPatio(false);
     setErrorMsg(null);
     setIsSuccess(false);
     setIsSubmitting(false);
@@ -106,6 +110,13 @@ export function SuggestEditModal({
       breweryName,
       reportType,
       details,
+      amenityCorrections:
+        reportType === 'amenity_or_beer_update'
+          ? {
+              hasKitchen: correctKitchen,
+              hasOutdoorPatio: correctPatio,
+            }
+          : undefined,
       reporterName: reporterName.trim() || undefined,
       reporterEmail: reporterEmail.trim() || undefined,
     };
@@ -279,6 +290,35 @@ export function SuggestEditModal({
                       {REPORT_TYPE_LABELS[reportType]?.description}
                     </p>
                   </div>
+
+                  {/* Amenity & Feature corrections if category is amenity_or_beer_update */}
+                  {reportType === 'amenity_or_beer_update' && (
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                      <span className="block text-xs font-bold text-amber-900 dark:text-amber-300">
+                        Permanent Amenity Updates
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label className="flex items-center gap-2 cursor-pointer text-zinc-800 dark:text-zinc-200 font-medium">
+                          <input
+                            type="checkbox"
+                            checked={correctKitchen}
+                            onChange={(e) => setCorrectKitchen(e.target.checked)}
+                            className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700"
+                          />
+                          <span>Has Permanent Kitchen</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-zinc-800 dark:text-zinc-200 font-medium">
+                          <input
+                            type="checkbox"
+                            checked={correctPatio}
+                            onChange={(e) => setCorrectPatio(e.target.checked)}
+                            className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700"
+                          />
+                          <span>Has Outdoor Patio</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Details text */}
                   <div className="space-y-1.5">
